@@ -1,0 +1,92 @@
+service:
+  name: we-care-nlu
+  component: 2
+  generative_decoding: false
+
+embeddings:
+  default_model: labse          # semantic default when weights exist
+  test_model: hash              # CI / no-download
+  models:
+    hash:
+      kind: hash
+      hf_id: null
+      dim: 256
+      amharic_sentence_encoder: false
+      notes: Deterministic test backend. Not semantic.
+    amharic_base:
+      kind: sentence_transformer
+      hf_id: rasyosef/roberta-amharic-text-embedding-base
+      dim: 768
+      max_length: 510
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      domain: general Amharic passage retrieval (ACL 2025 Findings), not clinical
+    amharic_medium:
+      kind: sentence_transformer
+      hf_id: rasyosef/roberta-amharic-text-embedding-medium
+      dim: 512
+      max_length: 510
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      domain: lighter Amharic retriever from the same paper
+    labse:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/LaBSE
+      dim: 768
+      max_length: 256
+      pooling: cls
+      normalize: true
+      amharic_sentence_encoder: true
+      languages_include_amharic: true
+      notes: Strong for translation-pair / cross-lingual retrieval; weaker for non-translation paraphrase.
+    afro_xlmr:
+      kind: encoder_mean_pool
+      hf_id: Davlan/afro-xlmr-base
+      dim: 768
+      max_length: 256
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: false
+      notes: MLM encoder. Mean-pooled features are a baseline, not STS-trained embeddings.
+    st_multilingual_mpnet:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      dim: 768
+      max_length: 128
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      notes: XLM-R family sentence-transformer. Evaluate on Amharic medical pairs before preferring it.
+
+retrieval:
+  dense_weight: 0.55
+  sparse_weight: 0.45
+  candidate_k: 40
+  top_k: 8
+  min_fused_score: 0.12
+  abstain_below: 0.22
+  reranker: medical_features     # medical_features | cross_encoder | none
+  cross_encoder_id: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+  cross_encoder_amharic_validated: false
+  polarity_penalty: 0.55
+  unreviewed_penalty: 0.08
+
+intent:
+  backend: lexicon_prototype     # lexicon_prototype | encoder_trained
+  min_confidence: 0.35
+  multi_label_threshold: 0.5
+
+ner:
+  backend: gazetteer_regex
+  min_confidence: 0.5
+
+safety:
+  emergency_always_rule_based: true
+  require_source_for_claims: true
+  unreviewed_is_not_verified: true
+
+postgres:
+  dsn: postgresql://wecare:wecare@localhost:5432/wecare_nlu
+  vector_dim: 768

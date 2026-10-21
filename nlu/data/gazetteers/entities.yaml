@@ -1,0 +1,39 @@
+contraceptive_method:
+  injectable_contraceptive: ["መርፌ", "በመርፌ የሚሰጥ", "injectable", "DMPA", "Depo"]
+  implant: ["ኢምፕላንት", "implant", "Implanon", "Jadelle"]
+  iud: ["አይዩዲ", "አይዩሲዲ", "IUCD", "IUD", "ማህፀን ውስጥ"]
+  condom: ["ኮንዶም", "condom"]
+  oral_pill: ["ክኒን", "በአፍ የሚወሰድ", "OCP", "pill"]
+  emergency_contraception: ["የአስቸኳይ የእርግዝና መከላከያ", "emergency contracept"]
+  sterilization: ["ቋሚ ዘዴ", "vasectomy", "tubal"]
+medicine:
+  oxytocin: ["ኦክሲቶሲን", "oxytocin"]
+  misoprostol: ["ሚሶፕሮስቶል", "misoprostol"]
+  doxycycline: ["ዶክሲሳይክሊን", "doxycycline"]
+  mifepristone: ["ሚፌፕሪስቶን", "mifepristone"]
+condition:
+  hiv: ["ኤች.አይ.ቪ", "HIV", "ኤድስ", "AIDS"]
+  sti: ["ኤስቲአይ", "STI", "በግብረ ሥጋ ግንኙነት የሚተላለፍ"]
+  cervical_cancer: ["የማኅጸን ጫፍ ካንሰር", "cervical cancer"]
+  pph: ["ከወሊድ በኋላ የደም መፍሰስ", "PPH"]
+  ectopic_pregnancy: ["ከማህፀን ውጭ እርግዝና", "ectopic"]
+symptom:
+  bleeding: ["መድማት", "የደም መፍሰስ", "bleeding"]
+  pain: ["ሕመም", "pain"]
+  headache: ["ራስ ምታት", "headache"]
+procedure:
+  referral: ["ሪፈራል", "referral"]
+  counselling: ["ምክር", "counselling", "counseling"]
+anatomy:
+  uterus: ["ማህፀን", "uterus"]
+  breast: ["ጡት", "breast"]
+  cervix: ["ማኅጸን ጫፍ", "cervix"]
+pregnancy_status:
+  pregnant: ["ነፍሰ ጡር", "እርጉዝ", "እርግዝና", "pregnant"]
+  postpartum: ["ከወሊድ በኋላ", "postpartum"]
+breastfeeding_status:
+  breastfeeding: ["ጡት ማጥባት", "ጡት እያጠባ", "breastfeed", "lactat"]
+risk_factor:
+  migraine: ["ማይግሬን", "migraine"]
+  smoking: ["ሲጋራ", "smok"]
+  hypertension: ["የደም ግፊት", "hypertension"]

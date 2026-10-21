@@ -1,0 +1,81 @@
+# Working lexicon for Amharic medical intents.
+# This is not a trained classifier. Patterns are OR-matched after preprocessing.
+
+intents:
+  greeting:
+    patterns: ["ሰላም", "ታዲያስ", "እንደምን", "ሃይ", "hello", "hi"]
+  conversation_end:
+    patterns: ["አመሰግናለሁ", "ቻው", "ደህና ሁን", "ይብቃ", "thank you", "bye"]
+  clarification:
+    patterns: ["አልገባኝም", "እንደገና", "ምን ማለትህ", "ግልጽ", "what do you mean"]
+  emergency:
+    patterns:
+      - "አስቸኳይ"
+      - "መድማት"
+      - "ከባድ ሕመም"
+      - "መተንፈስ አልችልም"
+      - "ንቃተ ህሊና"
+      - "emergency"
+      - "unconscious"
+      - "heavy bleeding"
+      - "can't breathe"
+  out_of_domain:
+    patterns: ["እግር ኳስ", "ፊልም", "የአየር ሁኔታ", "weather", "football"]
+  side_effects:
+    patterns: ["የጎንዮሽ ጉዳት", "ጎንዮሽ", "side effect", "adverse"]
+  contraindications:
+    patterns: ["ተቃራኒ", "የተከለከለ", "አይመከርም", "መጠቀም አይቻልም", "contraindicat", "must not"]
+  eligibility:
+    patterns: ["መጠቀም ይቻላል", "ብቁ", "ማን ሊጠቀም", "can i use", "eligible", "allowed"]
+  family_planning_methods:
+    patterns:
+      - "የእርግዝና መከላከያ"
+      - "እርግዝናን ለመከላከል"
+      - "መከላከያ"
+      - "የቤተሰብ ምጣኔ"
+      - "አማራጮች"
+      - "ዘዴዎች"
+      - "ልጅ ላለመውለድ"
+      - "contracept"
+      - "family planning"
+  method_comparison:
+    patterns: ["ልዩነት", "የትኛው ይሻላል", "ማነፃፀር", "compare", "difference"]
+  pregnancy_breastfeeding:
+    patterns: ["እርጉዝ", "ነፍሰ ጡር", "እርግዝና", "ጡት ማጥባት", "ከወሊድ በኋላ", "pregnan", "breastfeed", "lactat"]
+  definition:
+    patterns: ["ምንድን ነው", "ምንድን ናቸው", "ማለት", "what is", "define"]
+  symptoms:
+    patterns: ["ምልክት", "ሕመም ስሜት", "symptom"]
+  causes:
+    patterns: ["ምክንያት", "ለምን ይከሰታል", "cause"]
+  prevention:
+    patterns: ["መከላከል", "እንዴት ይቆማል", "prevent"]
+  treatment:
+    patterns: ["ሕክምና", "እንዴት ይታከማል", "treatment"]
+  medication:
+    patterns: ["መድኃኒት", "ክኒን", "መጠን", "medicine", "dose", "mg"]
+  follow_up:
+    patterns: ["እና ከዚያ", "የጎንዮሽ ጉዳቱስ", "እንዴትስ", "ለምንስ", "what about"]
+  general_medical_info:
+    patterns: ["መረጃ", "ንገረኝ", "information"]
+
+priority:
+  - emergency
+  - out_of_domain
+  - greeting
+  - conversation_end
+  - clarification
+  - follow_up
+  - contraindications
+  - side_effects
+  - eligibility
+  - method_comparison
+  - pregnancy_breastfeeding
+  - family_planning_methods
+  - medication
+  - treatment
+  - symptoms
+  - causes
+  - prevention
+  - definition
+  - general_medical_info

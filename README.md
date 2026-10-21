@@ -1,5 +1,7 @@
 # We Care — English→Amharic Medical PDF Translation Pipeline
 
+**Component 1** of the non-generative Amharic medical chatbot. **Component 2** (Amharic NLU + retrieval) lives in [`nlu/`](nlu/README.md).
+
 Production-oriented **English-to-Amharic** pipeline for Ethiopian Ministry of Health reproductive-health guidelines, family-planning materials, clinical guidance, and related PDFs.
 
 The system extracts selectable PDF text, segments it safely, translates with NLLB / AfriScience-MT models (or a mock backend for tests), enforces a bilingual medical glossary, runs automated medical QA, and writes Amharic PDF, bilingual review PDF, DOCX, alignments, and a quality report.

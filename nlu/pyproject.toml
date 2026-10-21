@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "we-care-nlu"
+version = "1.0.0"
+description = "Amharic medical NLU and hybrid semantic retrieval (non-generative)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.27.0",
+  "pydantic>=2.5.0",
+  "pydantic-settings>=2.2.0",
+  "pyyaml>=6.0",
+  "numpy>=1.26.0",
+  "httpx>=0.27.0",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+ml = [
+  "torch>=2.1.0",
+  "transformers>=4.40.0",
+  "sentence-transformers>=3.0.0",
+]
+db = [
+  "psycopg[binary]>=3.1.0",
+  "pgvector>=0.3.0",
+]
+dev = ["pytest>=8.0.0", "httpx>=0.27.0"]
+
+[project.scripts]
+we-care-nlu = "we_care_nlu.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

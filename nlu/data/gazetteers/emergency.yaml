@@ -1,0 +1,21 @@
+# Rule-based emergency cues. These fire even if classifiers disagree.
+amharic:
+  - አስቸኳይ
+  - ከባድ መድማት
+  - መተንፈስ አልችልም
+  - ንቃተ ህሊና የለኝም
+  - ደረት ሕመም
+  - መናድ
+  - ራስን መሳት
+  - ራስን የማጥፋት
+english:
+  - emergency
+  - heavy bleeding
+  - cannot breathe
+  - can't breathe
+  - unconscious
+  - chest pain
+  - seizure
+  - suicide
+  - overdosed
+action: "This engine does not give first-aid instructions. Flag for Component 3 to route to emergency guidance and advise seeking in-person care."

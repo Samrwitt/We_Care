@@ -1,0 +1,42 @@
+# Alternative expressions that share meaning. Used for query expansion (additive),
+# never as a substitute for retrieval polarity checks.
+groups:
+  contraceptive_methods:
+    - የእርግዝና መከላከያ ዘዴዎች
+    - የቤተሰብ ምጣኔ ዘዴዎች
+    - እርግዝናን ለመከላከል አማራጮች
+    - ልጅ ላለመውለድ መንገዶች
+  injectable:
+    - መርፌ
+    - በመርፌ የሚሰጥ የእርግዝና መከላከያ
+    - injectable
+    - DMPA
+  implant:
+    - ኢምፕላንት
+    - implant
+  iud:
+    - አይዩዲ
+    - አይዩሲዲ
+    - IUCD
+    - IUD
+    - ማህፀን ውስጥ መከላከያ
+  condom:
+    - ኮንዶም
+    - condom
+  pill:
+    - ክኒን
+    - በአፍ የሚወሰድ
+    - oral contraceptive
+  side_effects:
+    - የጎንዮሽ ጉዳት
+    - የጎንዮሽ ጉዳቱ
+    - side effect
+  contraindication:
+    - ተቃራኒ ሁኔታ
+    - የተከለከለ
+    - contraindication
+  breastfeeding:
+    - ጡት ማጥባት
+    - ጡት እያጠባሁ
+    - breastfeeding
+    - lactation
