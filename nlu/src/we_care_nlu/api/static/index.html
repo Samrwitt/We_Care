@@ -223,7 +223,9 @@
         return `<p class="clarify">${esc(CLARIFY[data.clarification_question_key] || "እባክዎ ጥያቄውን ያብራሩ።")}</p>`;
       }
       const named = (data.entities || []).some((e) => e.type === "contraceptive_method");
-      const hits = (data.retrieval_results || []).filter((h) => h.amharic_text && !h.polarity_conflict);
+      const allHits = (data.retrieval_results || []).filter((h) => h.amharic_text && !h.polarity_conflict);
+      const specific = allHits.filter((h) => h.evidence_id !== "chunk_methods" && h.evidence_id !== "chunk_choose_with_provider");
+      const hits = named && specific.length ? specific : allHits;
       const maxn = named ? 3 : 1;
       const picked = [];
       const seen = new Set();

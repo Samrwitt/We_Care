@@ -27,6 +27,8 @@ intents:
     patterns: ["ተቃራኒ", "የተከለከለ", "አይመከርም", "መጠቀም አይቻልም", "contraindicat", "must not"]
   eligibility:
     patterns: ["መጠቀም ይቻላል", "ብቁ", "ማን ሊጠቀም", "can i use", "eligible", "allowed"]
+  missed_dose:
+    patterns: ["ረሳ", "ከተረሳ", "ረሳሁ", "missed pill", "forgot"]
   access:
     patterns: ["የት ይገኛል", "የት እገኛለሁ", "የት ልውሰድ", "where can i get", "where to get"]
   duration:
@@ -77,6 +79,7 @@ priority:
   - eligibility
   - method_comparison
   - pregnancy_breastfeeding
+  - missed_dose
   - access
   - duration
   - how_it_works

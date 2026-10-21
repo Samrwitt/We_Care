@@ -30,6 +30,7 @@ INTENT_NEEDLES = {
     "duration": ("ዓመት", "ሳምንት", "years", "weeks", "every"),
     "family_planning_methods": ("ዘዴዎች", "አማራጮች", "options", "include"),
     "how_it_works": ("ይሠራል", "works by", "stopping ovulation"),
+    "missed_dose": ("ከተረሳ", "missed", "as soon as remembered"),
 }
 
 

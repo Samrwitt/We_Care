@@ -123,7 +123,7 @@ class HybridRetriever:
             blob = f"{chunk.amharic_text} {chunk.english_text}".lower()
             if intent:
                 if any(n.lower() in blob for n in INTENT_NEEDLES.get(intent) or ()):
-                    score += 0.12
+                    score += 0.45 if intent == "missed_dose" else 0.12
             for term in method_terms(entities or []):
                 if term.lower() in blob:
                     score += 0.18
