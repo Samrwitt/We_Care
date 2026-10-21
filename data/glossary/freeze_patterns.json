@@ -1,0 +1,12 @@
+{
+  "description": "Regexes for spans that must not be translated: INN drug names, device names, units, and identifiers. Reviewers should still check context.",
+  "patterns": [
+    "\\b(?:medroxyprogesterone|levonorgestrel|etonogestrel|norethisterone|norgestrel|ulipristal|mifepristone|misoprostol|oxytocin|tranexamic acid|magnesium sulfate|magnesium sulphate|ceftriaxone|doxycycline|azithromycin|benzathine penicillin|tenofovir|efavirenz|dolutegravir|lamivudine)\\b",
+    "\\b(?:DMPA|LNG-IUS|LNG IUS|Cu-IUD|TCu 380A|Implanon|Jadelle|Sayana Press|Depo-Provera)\\b",
+    "\\b(?:WHO|UNFPA|UNAIDS|CDC|FIGO|ICM|NICE)\\b",
+    "\\b(?:mg|mcg|µg|mL|ml|IU|mmHg)\\b",
+    "\\b\\d+(?:\\.\\d+)?\\s*(?:mg|mcg|µg|mL|ml|IU)\\b",
+    "\\bISBN[- ]\\d+\\b",
+    "\\bhttps?://\\S+\\b"
+  ]
+}

@@ -1,0 +1,14 @@
+services:
+  we-care-mt:
+    build: .
+    image: we-care-mt:1.0.0
+    working_dir: /app
+    volumes:
+      - ./data/source_pdfs:/app/data/source_pdfs:ro
+      - ./output:/app/output
+      - ./cache:/app/cache
+      - ./checkpoints:/app/checkpoints
+      - ./.hf_cache:/app/.hf_cache
+    environment:
+      HF_HOME: /app/.hf_cache
+    command: ["translate", "/app/data/source_pdfs", "--model", "mock", "--backend", "mock", "-o", "/app/output"]

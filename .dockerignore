@@ -1,0 +1,19 @@
+.git
+.venv
+__pycache__
+*.pyc
+output
+outputs
+cache
+checkpoints
+logs
+.hf_cache
+models
+RH Guidelines-*.zip
+data/source_pdfs
+.pytest_cache
+htmlcov
+dist
+build
+*.egg-info
+agent-transcripts

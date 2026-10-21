@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -15,9 +14,12 @@ from we_care_mt.schema import ContentBlock, DocumentStructure, ExtractionWarning
 
 def extract_pdf(path: str | Path, config: dict[str, Any] | None = None) -> DocumentStructure:
     try:
-        import fitz  # PyMuPDF
-    except ImportError as exc:  # pragma: no cover
-        raise RuntimeError("PyMuPDF is required. Install with: pip install pymupdf") from exc
+        import pymupdf as fitz  # PyMuPDF 1.24+ / 2.x
+    except ImportError:
+        try:
+            import fitz  # legacy import
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError("PyMuPDF is required. Install with: pip install pymupdf") from exc
 
     cfg = config or {}
     pdf_path = Path(path).resolve()

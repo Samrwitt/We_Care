@@ -1,0 +1,14 @@
+Terms seen in Ethiopian RH guidelines that do not yet have a verified bilingual glossary entry.
+Do not invent translations for these; flag them for a bilingual clinician / MoH reviewer.
+
+- method mix (as a program term)
+- one stop shopping / smart integration
+- missed opportunity (program M&E sense)
+- dual protection vs dual method use
+- provider-initiated testing and counselling (PITC) vs HTC wording
+- visual inspection with acetic acid (VIA) — keep VIA, confirm Amharic expansion
+- reproductive organ cancers (ROC) as an umbrella term
+- Women Development Army (WDA) — keep WDA; Amharic rendering varies by region
+- Health Extension Program package names that are locally branded
+- brand names of implants and injectables beyond INN
+- MEC category numbers (must remain 1–4; never localize the scale)
