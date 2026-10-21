@@ -1,0 +1,82 @@
+# We Care English→Amharic medical translation pipeline
+# Paths are relative to the project root unless absolute.
+
+project_root: .
+
+paths:
+  source_pdf_dir: data/source_pdfs
+  output_dir: output
+  glossary: data/glossary/medical_glossary.csv
+  freeze_patterns: data/glossary/freeze_patterns.json
+  eval_set: data/evaluation/sample_eval.jsonl
+  google_translate_baseline: data/evaluation/google_translate_baseline.jsonl
+  fonts_dir: data/fonts
+  cache_dir: cache
+  checkpoint_dir: checkpoints
+  log_dir: logs
+  hf_cache_dir: .hf_cache
+
+extraction:
+  exclude_repeating_headers: true
+  header_repeat_min_pages: 3
+  header_band_frac: 0.08
+  footer_band_frac: 0.08
+  min_heading_size_delta: 1.6
+  detect_tables: true
+  flag_empty_pages: true
+  two_column_gap_min_pt: 18.0
+  preserve_source_page: true
+
+segmentation:
+  max_chars: 420
+  max_tokens_hint: 180
+  min_chars: 1
+  keep_list_items_atomic: true
+  protect_abbreviations: true
+
+inference:
+  default_model: dsfsi_600m
+  device: auto          # auto | cuda | cpu
+  batch_size: 4
+  num_beams: 5
+  max_new_tokens: 256
+  max_input_tokens: 200
+  length_penalty: 1.0
+  repetition_penalty: 1.05
+  do_sample: false
+  num_return_sequences: 1
+  cache_translations: true
+  checkpoint_every: 20
+  oom_retry: true
+  min_batch_size: 1
+
+glossary:
+  apply_pre_translation_protection: true
+  apply_post_translation_enforcement: true
+  longest_match_first: true
+  flag_unverified_terms: true
+  case_sensitive: false
+
+qa:
+  length_ratio_min: 0.25
+  length_ratio_max: 4.0
+  untranslated_latin_ratio: 0.55
+  critical_number_mismatch_severity: critical
+  require_human_review_always: true
+
+output:
+  generate_amharic_pdf: true
+  generate_bilingual_pdf: true
+  generate_docx: true
+  generate_alignment_json: true
+  generate_alignment_csv: true
+  generate_qa_report: true
+  page_size: A4
+  font_amharic: NotoSansEthiopic-Regular.ttf
+  font_amharic_bold: NotoSansEthiopic-Bold.ttf
+  font_latin: NotoSans-Regular.ttf
+  font_latin_bold: NotoSans-Bold.ttf
+
+logging:
+  level: INFO
+  json_logs: false

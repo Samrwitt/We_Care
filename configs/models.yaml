@@ -1,0 +1,70 @@
+# Model registry. None of these models is clinically validated.
+# facebook/nllb-200-distilled-600M is CC-BY-NC (research / non-commercial).
+# DSFSI AfriScience-MT models are Apache-2.0 and were fine-tuned on scientific,
+# not clinical, text. Medical use requires qualified human review.
+
+language:
+  source_code: eng_Latn
+  target_code: amh_Ethi
+  source_name: English
+  target_name: Amharic
+
+models:
+  dsfsi_600m:
+    hf_id: dsfsi/nllb_200_distilled_600m-eng-amh
+    display_name: DSFSI NLLB-200 Distilled 600M English→Amharic
+    license: Apache-2.0
+    base_model: facebook/nllb-200-distilled-600M
+    domain: scientific / academic (AfriScience-MT)
+    clinically_validated: false
+    params_b: 0.6
+    recommended_vram_gb: 6
+    cpu_ok: true
+    max_input_tokens: 256
+    tokenizer_compat: NllbTokenizer / NllbTokenizerFast
+    notes: >
+      Fine-tuned English→Amharic NLLB. Reported AfriScience-MT test BLEU 18.57,
+      chrF 44.38. Not a medical model. Prefer for scientific phrasing over the
+      unfine-tuned baseline, but do not treat as clinically safe.
+
+  dsfsi_1_3b:
+    hf_id: dsfsi/nllb_200_1.3b-eng-amh
+    display_name: DSFSI NLLB-200 1.3B English→Amharic
+    license: Apache-2.0
+    base_model: facebook/nllb-200-1.3B
+    domain: scientific / academic (AfriScience-MT)
+    clinically_validated: false
+    params_b: 1.3
+    recommended_vram_gb: 12
+    cpu_ok: false
+    max_input_tokens: 256
+    tokenizer_compat: NllbTokenizer / NllbTokenizerFast
+    notes: >
+      Larger fine-tuned English→Amharic NLLB. Reported AfriScience-MT test BLEU
+      19.28, chrF 45.51. Higher memory cost. Not clinically validated.
+
+  nllb_baseline_600m:
+    hf_id: facebook/nllb-200-distilled-600M
+    display_name: Meta NLLB-200 Distilled 600M (baseline)
+    license: CC-BY-NC-4.0
+    base_model: facebook/nllb-200-distilled-600M
+    domain: general web / Wikimedia-style (not medical)
+    clinically_validated: false
+    params_b: 0.6
+    recommended_vram_gb: 6
+    cpu_ok: true
+    max_input_tokens: 512
+    tokenizer_compat: NllbTokenizer / NllbTokenizerFast
+    notes: >
+      Multilingual baseline. Meta states it is not intended for medical or legal
+      domain text or certified translation. CC-BY-NC: do not use commercially.
+      Use amh_Ethi as the forced BOS / target language code.
+
+backends:
+  mock:
+    display_name: Glossary-aware mock translator (tests / smoke)
+    license: Apache-2.0
+    clinically_validated: false
+    notes: >
+      Does not call a neural model. Applies the glossary and preserves numbers.
+      For pipeline tests only. Never use mock output for clinical documents.
