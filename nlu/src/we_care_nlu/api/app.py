@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from we_care_nlu import __version__
 from we_care_nlu.config import load_config
 from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, SearchRequest
 from we_care_nlu.pipeline import NLUEngine
+
+_UI = Path(__file__).resolve().parent / "static" / "index.html"
 
 _ENGINE: NLUEngine | None = None
 
@@ -53,14 +57,26 @@ class ResolveBody(BaseModel):
     context: dict[str, Any] | None = None
 
 
-@app.get("/")
-def root() -> dict[str, Any]:
+@app.get("/", response_class=HTMLResponse)
+def root() -> HTMLResponse:
+    return HTMLResponse(_UI.read_text(encoding="utf-8"))
+
+
+@app.get("/ui", response_class=HTMLResponse)
+def ui() -> HTMLResponse:
+    return root()
+
+
+@app.get("/meta")
+def meta() -> dict[str, Any]:
     return {
         "service": "we-care-nlu",
         "component": 2,
         "status": "ok",
+        "ui": "/",
         "docs": "/docs",
         "endpoints": [
+            "GET /",
             "GET /health",
             "GET /models",
             "POST /documents/ingest",

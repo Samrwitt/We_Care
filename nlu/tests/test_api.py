@@ -21,7 +21,13 @@ def test_health_and_models():
     c = client()
     root = c.get("/")
     assert root.status_code == 200
-    assert root.json()["service"] == "we-care-nlu"
+    assert "text/html" in root.headers["content-type"]
+    assert "ዌ ኬር" in root.text
+    assert "/nlp/analyze" in root.text
+    meta = c.get("/meta")
+    assert meta.status_code == 200
+    assert meta.json()["service"] == "we-care-nlu"
+    assert meta.json()["generative_decoding"] is False
     h = c.get("/health")
     assert h.status_code == 200
     assert h.json()["generative_decoding"] is False
