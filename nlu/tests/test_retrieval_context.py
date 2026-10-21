@@ -5,6 +5,7 @@ from we_care_nlu.contracts.schemas import AnalyzeRequest, ContextState
 from we_care_nlu.pipeline import NLUEngine
 
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_kb.json"
+USER_KB = Path(__file__).resolve().parents[1] / "data" / "kb" / "fp_user_kb.json"
 
 
 def engine():
@@ -74,3 +75,36 @@ def test_emergency_rule_overrides():
     out = eng.analyze(AnalyzeRequest(text="ከባድ መድማት አለብኝ አስቸኳይ ነው"))
     assert out.intent == "emergency"
     assert out.safety["emergency"]["source"] == "rule_based"
+
+
+def user_engine():
+    eng = NLUEngine(load_config(), model_key="hash")
+    eng.ingest_file(str(USER_KB), default_review_status="unreviewed")
+    return eng
+
+
+def test_user_questions_retrieve_matching_method():
+    eng = user_engine()
+    pairs = [
+        ("ኮንዶም ምንድን ነው?", "chunk_condom_def"),
+        ("ክኒን ከተረሳ ምን ላድርግ?", "chunk_pill_missed"),
+        ("ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?", "chunk_implant_def"),
+        ("የአስቸኳይ መከላከያ መቼ ይወሰዳል?", "chunk_ec_when"),
+        ("ኮንዶም የት ይገኛል?", "chunk_condom_access"),
+    ]
+    for question, expected in pairs:
+        out = eng.analyze(AnalyzeRequest(text=question))
+        ids = [h.evidence_id for h in out.retrieval_results[:4]]
+        assert expected in ids, (question, ids)
+
+
+def test_followup_query_uses_prior_method_for_retrieval():
+    eng = user_engine()
+    ctx = ContextState(
+        turn_index=1,
+        last_method="injectable_contraceptive",
+        last_entities=[{"type": "contraceptive_method", "value": "injectable_contraceptive", "surface": "መርፌ"}],
+    )
+    out = eng.analyze(AnalyzeRequest(text="የጎንዮሽ ጉዳቱስ?", context=ctx))
+    ids = [h.evidence_id for h in out.retrieval_results[:3]]
+    assert "chunk_injectable_se" in ids

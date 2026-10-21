@@ -3,16 +3,21 @@
 groups:
   contraceptive_methods:
     - የእርግዝና መከላከያ ዘዴዎች
-    - የቤተሰብ ምጣኔ ዘዴዎች
-    - እርግዝናን ለመከላከል አማራጮች
-    - ልጅ ላለመውለድ መንገዶች
+    - የእርግዝና መከላከያ
+    - የቤተሰብ ምጣኔ
+    - እርግዝናን ለመከላከል
+    - አማራጮች
+    - ዘዴዎች
+    - ልጅ ላለመውለድ
   injectable:
     - መርፌ
     - በመርፌ የሚሰጥ የእርግዝና መከላከያ
+    - ዴፖ
     - injectable
     - DMPA
   implant:
     - ኢምፕላንት
+    - በትር
     - implant
   iud:
     - አይዩዲ
@@ -27,6 +32,15 @@ groups:
     - ክኒን
     - በአፍ የሚወሰድ
     - oral contraceptive
+  emergency:
+    - የአስቸኳይ መከላከያ
+    - የአስቸኳይ ክኒን
+    - emergency contraception
+  access:
+    - የት ይገኛል
+    - የት እገኛለሁ
+    - ጤና ተቋም
+    - available
   side_effects:
     - የጎንዮሽ ጉዳት
     - የጎንዮሽ ጉዳቱ

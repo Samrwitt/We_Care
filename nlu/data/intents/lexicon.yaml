@@ -3,7 +3,7 @@
 
 intents:
   greeting:
-    patterns: ["ሰላም", "ታዲያስ", "እንደምን", "ሃይ", "hello", "hi"]
+    patterns: ["ሰላም", "ታዲያስ", "እንደምን", "ሃይ", "ጤና ይስጥልኝ", "hello", "hi"]
   conversation_end:
     patterns: ["አመሰግናለሁ", "ቻው", "ደህና ሁን", "ይብቃ", "thank you", "bye"]
   clarification:
@@ -27,6 +27,12 @@ intents:
     patterns: ["ተቃራኒ", "የተከለከለ", "አይመከርም", "መጠቀም አይቻልም", "contraindicat", "must not"]
   eligibility:
     patterns: ["መጠቀም ይቻላል", "ብቁ", "ማን ሊጠቀም", "can i use", "eligible", "allowed"]
+  access:
+    patterns: ["የት ይገኛል", "የት እገኛለሁ", "የት ልውሰድ", "where can i get", "where to get"]
+  duration:
+    patterns: ["ለምን ያህል", "ምን ያህል ጊዜ", "ለምን ጊዜ", "how long", "how many years"]
+  how_it_works:
+    patterns: ["እንዴት ይሠራል", "እንዴት ይሰራል", "እንዴት ነው የሚሰራው", "how does it work"]
   family_planning_methods:
     patterns:
       - "የእርግዝና መከላከያ"
@@ -71,6 +77,9 @@ priority:
   - eligibility
   - method_comparison
   - pregnancy_breastfeeding
+  - access
+  - duration
+  - how_it_works
   - family_planning_methods
   - medication
   - treatment

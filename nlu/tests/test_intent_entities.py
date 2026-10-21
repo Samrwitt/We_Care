@@ -45,3 +45,12 @@ def test_does_not_invent_pregnancy():
 def test_contraception_phrase_is_not_pregnant_status():
     ents = NER.extract("የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?")
     assert not any(e.type == "pregnancy_status" for e in ents)
+
+
+def test_depo_maps_to_injectable():
+    ents = NER.extract("ዴፖ መውሰድ እችላለሁ?")
+    assert any(e.value == "injectable_contraceptive" for e in ents)
+
+
+def test_greeting_intent():
+    assert CLF.predict("ሰላም")["intent"] == "greeting"

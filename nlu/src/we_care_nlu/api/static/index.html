@@ -3,21 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ዌ ኬር · ማስረጃ</title>
+  <title>ዌ ኬር</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,560;9..144,680&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --paper: #f3eadc;
-      --paper-2: #efe4d2;
       --ink: #1a2420;
       --mute: #5c6a64;
       --pine: #11463c;
-      --pine-2: #0c322c;
-      --leaf: #2f7a66;
       --clay: #b85c38;
-      --gold: #b8942a;
       --card: #fffaf2;
       --line: rgba(26, 36, 32, 0.12);
       --shadow: 0 10px 28px rgba(17, 40, 34, 0.08);
@@ -25,50 +21,31 @@
     * { box-sizing: border-box; }
     html, body { height: 100%; height: 100dvh; margin: 0; overflow: hidden; }
     body {
-      font-family: "Noto Sans Ethiopic", "IBM Plex Sans", sans-serif;
+      font-family: "Noto Sans Ethiopic", sans-serif;
       color: var(--ink);
       background:
         repeating-linear-gradient(transparent, transparent 27px, rgba(184, 92, 56, 0.05) 28px),
         radial-gradient(1200px 500px at 10% -10%, #f7f1e6, var(--paper));
     }
     .shell {
-      max-width: 760px;
+      max-width: 720px;
       margin: 0 auto;
       height: 100%;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
     }
     header {
-      padding: 18px 20px 12px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-end;
+      padding: 16px 20px 12px;
       border-bottom: 1px solid var(--line);
       background: var(--paper);
-      flex-shrink: 0;
     }
-    .brand { display: flex; flex-direction: column; gap: 2px; }
     .wordmark {
-      font-family: Fraunces, "Noto Sans Ethiopic", serif;
-      font-size: 28px;
-      letter-spacing: -0.03em;
+      font-size: 26px;
+      font-weight: 700;
       color: var(--pine);
       line-height: 1;
     }
-    .wordmark span { color: var(--clay); }
-    .tag {
-      font-family: "IBM Plex Sans", sans-serif;
-      font-size: 12px;
-      color: var(--mute);
-    }
-    .status {
-      text-align: right;
-      font-size: 12px;
-      color: var(--mute);
-      font-family: "IBM Plex Sans", sans-serif;
-    }
-    .status b { color: var(--pine); font-weight: 600; }
+    .tag { margin-top: 4px; font-size: 13px; color: var(--mute); }
     #log {
       padding: 18px 20px 20px;
       overflow-y: auto;
@@ -77,7 +54,7 @@
       flex-direction: column;
       gap: 14px;
     }
-    .welcome {
+    .welcome, .card {
       background: var(--card);
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
@@ -85,27 +62,27 @@
       border-radius: 4px 18px 18px 18px;
     }
     .welcome h2 {
-      margin: 0 0 6px;
-      font-family: Fraunces, serif;
+      margin: 0 0 8px;
       font-size: 20px;
-      color: var(--pine-2);
+      font-weight: 600;
+      color: var(--pine);
     }
-    .welcome p { margin: 0 0 12px; color: var(--mute); font-size: 14px; line-height: 1.5; }
+    .welcome p { margin: 0 0 14px; color: var(--mute); font-size: 15px; line-height: 1.55; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip, button, .send {
+    .chip, .send {
       font-family: inherit;
       cursor: pointer;
       border: 1px solid var(--line);
       background: #fff;
       color: var(--pine);
       border-radius: 999px;
-      padding: 7px 12px;
+      padding: 8px 12px;
       font-size: 13px;
     }
-    .chip:hover, .ghost:hover { background: var(--paper-2); }
-    .user, .bot { max-width: 92%; }
+    .chip:hover { background: #efe4d2; }
     .user {
       align-self: flex-end;
+      max-width: 92%;
       background: var(--pine);
       color: #f7f3ea;
       padding: 10px 14px;
@@ -113,73 +90,21 @@
       font-size: 16px;
       line-height: 1.55;
     }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: 4px 16px 16px 16px;
-      overflow: hidden;
-    }
-    .stamp-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      padding: 10px 14px 0;
-      font-family: "IBM Plex Sans", sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--mute);
-    }
-    .stamp {
-      border: 1.5px solid var(--clay);
-      color: var(--clay);
-      padding: 1px 7px;
-      border-radius: 3px;
-      font-weight: 600;
-    }
-    .stamp.warn { border-color: var(--gold); color: #7a6210; }
-    .stamp.bad { border-color: #8b1e1e; color: #8b1e1e; }
-    .am { padding: 8px 16px 4px; font-size: 17.5px; line-height: 1.7; }
-    .en {
-      padding: 0 16px 12px;
-      color: var(--mute);
-      font-family: "IBM Plex Sans", sans-serif;
-      font-size: 13.5px;
-      line-height: 1.5;
-      font-style: italic;
-    }
-    .meta {
-      padding: 8px 16px 12px;
-      border-top: 1px dashed var(--line);
-      font-size: 12px;
-      color: var(--mute);
-      font-family: "IBM Plex Sans", sans-serif;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .clarify, .empty, .emerg {
-      padding: 12px 16px;
+    .card { padding: 14px 16px; }
+    .am { margin: 0 0 10px; font-size: 17px; line-height: 1.7; }
+    .am:last-child { margin-bottom: 0; }
+    .emerg, .clarify, .empty, .wait {
       margin: 0;
-      font-size: 15px;
-      line-height: 1.55;
+      font-size: 16px;
+      line-height: 1.6;
     }
-    .emerg { background: #f8e6e2; color: #6d1d16; }
-    .empty { color: var(--mute); }
-    .others { padding: 0 16px 12px; }
-    .others details { font-size: 13px; color: var(--mute); }
-    .others li { margin: 4px 0; }
+    .emerg { color: #6d1d16; }
+    .empty, .wait { color: var(--mute); }
     .composer {
-      padding: 8px 16px 14px;
+      padding: 10px 16px 14px;
       background: var(--paper);
       border-top: 1px solid var(--line);
-      flex-shrink: 0;
-      z-index: 2;
     }
-    .composer .chips { margin-bottom: 8px; }
     .box {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -213,60 +138,45 @@
       font-weight: 600;
     }
     .send:disabled { opacity: 0.5; cursor: wait; }
-    .fine {
-      margin: 8px 6px 0;
-      font-size: 11px;
-      color: var(--mute);
-      font-family: "IBM Plex Sans", sans-serif;
-    }
-    .busy { opacity: 0.7; }
+    .fine { margin: 8px 6px 0; font-size: 12px; color: var(--mute); }
   </style>
 </head>
 <body>
   <div class="shell">
     <header>
-      <div class="brand">
-        <div class="wordmark">ዌ ኬር <span>· ማስረጃ</span></div>
-        <div class="tag">Retrieved guideline text · no generated answer</div>
-      </div>
-      <div class="status" id="status">connecting…</div>
+      <div class="wordmark">ዌ ኬር</div>
+      <div class="tag">የቤተሰብ ምጣኔ መረጃ</div>
     </header>
     <div id="log"></div>
     <div class="composer">
-      <div class="chips" id="starters"></div>
       <div class="box">
-        <textarea id="q" rows="1" placeholder="ጥያቄዎን በአማርኛ ይጻፉ…"></textarea>
+        <textarea id="q" rows="1" placeholder="ጥያቄዎን ይጻፉ…"></textarea>
         <button class="send" id="go" type="button">ላክ</button>
       </div>
-      <p class="fine">Unreviewed machine translations are not clinically verified. This is retrieved evidence, not medical advice.</p>
+      <p class="fine">ይህ የመረጃ መልስ ነው። የሐኪም ምክር አይተካም።</p>
     </div>
   </div>
   <script>
     const STARTERS = [
       "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?",
-      "የመርፌ የጎንዮሽ ጉዳት ምንድን ነው?",
+      "ኮንዶም ምንድን ነው?",
+      "ክኒን ከተረሳ ምን ላድርግ?",
+      "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
       "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
-      "ጡት በማጥባት ጊዜ የትኛው ዘዴ የተከለከለ ነው?",
     ];
     const CLARIFY = {
       which_method: "የትኛውን የእርግዝና መከላከያ ዘዴ ማለትዎ ነው?",
     };
+    const TALK = {
+      greeting: "ሰላም፣ እንኳን ደህና መጡ። ስለ እርግዝና መከላከያ መጠየቅ ይችላሉ።",
+      conversation_end: "ደህና ሁኑ። ሌላ ጥያቄ ካለዎት እዚህ ይመለሱ።",
+      out_of_domain: "አሁን የምሰጠው መረጃ ስለ የቤተሰብ ምጣኔ ነው። እባክዎ ስለ እርግዝና መከላከያ ይጠይቁ።",
+    };
     const log = document.getElementById("log");
     const q = document.getElementById("q");
     const go = document.getElementById("go");
-    const status = document.getElementById("status");
-    const starters = document.getElementById("starters");
     const conversationId = crypto.randomUUID();
     let context = null;
-
-    STARTERS.forEach((t) => {
-      const b = document.createElement("button");
-      b.className = "chip";
-      b.type = "button";
-      b.textContent = t;
-      b.onclick = () => { q.value = t; send(); };
-      starters.appendChild(b);
-    });
 
     function el(html) {
       const d = document.createElement("div");
@@ -278,52 +188,57 @@
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[c]));
     }
-    function addUser(text) {
-      log.appendChild(el(`<div class="user">${esc(text)}</div>`));
+    function add(html) {
+      const node = el(html);
+      log.appendChild(node);
       log.scrollTop = log.scrollHeight;
+      return node;
     }
-    function score(n) {
-      if (n == null) return "—";
-      return Number(n).toFixed(2);
-    }
-    function render(data) {
-      const hit = (data.retrieval_results || [])[0];
-      const safety = data.safety || {};
-      const emergency = safety.emergency || {};
-      const conflict = (safety.evidence_conflict || {}).conflict;
-      const unreviewed = (safety.review_notes || []).join(" ");
-      const parts = [];
+
+    const welcome = add(`
+      <div class="welcome">
+        <h2>እንኳን ደህና መጡ</h2>
+        <p>ስለ እርግዝና መከላከያ መጠየቅ ይችላሉ። ከታች ካሉት ጥያቄዎች አንዱን ይንኩ ወይም የራስዎን ይጻፉ።</p>
+        <div class="chips" id="starters"></div>
+      </div>
+    `);
+    STARTERS.forEach((t) => {
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.textContent = t;
+      b.onclick = () => { q.value = t; send(); };
+      document.getElementById("starters").appendChild(b);
+    });
+
+    function replyText(data) {
+      const emergency = (data.safety || {}).emergency || {};
       if (emergency.is_emergency) {
-        parts.push(`<p class="emerg">አስቸኳይ ምልክት ተገኝቷል። ወደ ቅርብ የጤና ተቋም ይሂዱ። ይህ ምርመራ አይደለም።</p>`);
+        return `<p class="emerg">ይህ አስቸኳይ ሊሆን ይችላል። እባክዎ ወደ ቅርብ የጤና ተቋም ይሂዱ።</p>`;
+      }
+      if (TALK[data.intent]) {
+        return `<p class="am">${esc(TALK[data.intent])}</p>`;
       }
       if (data.requires_clarification) {
-        const ask = CLARIFY[data.clarification_question_key] || "እባክዎ ጥያቄውን ያብራሩ።";
-        parts.push(`<p class="clarify">${esc(ask)}</p>`);
+        return `<p class="clarify">${esc(CLARIFY[data.clarification_question_key] || "እባክዎ ጥያቄውን ያብራሩ።")}</p>`;
       }
-      if (hit && hit.amharic_text) {
-        const stamps = [`<span class="stamp">ማስረጃ</span>`];
-        if (hit.review_status === "unreviewed") stamps.push(`<span class="stamp warn">unreviewed</span>`);
-        if (conflict) stamps.push(`<span class="stamp bad">conflict</span>`);
-        const others = (data.retrieval_results || []).slice(1, 4)
-          .filter((h) => h.amharic_text)
-          .map((h) => `<li>${esc(h.amharic_text)}</li>`)
-          .join("");
-        parts.push(`
-          <div class="stamp-row">${stamps.join("")}<span>${esc(data.intent)} · ${esc(data.confidence_status)}</span></div>
-          <div class="am">${esc(hit.amharic_text)}</div>
-          ${hit.english_text ? `<div class="en">${esc(hit.english_text)}</div>` : ""}
-          <div class="meta">
-            <span>${esc(hit.document_title || hit.document_id)}${hit.page ? " · p." + hit.page : ""}</span>
-            <span>score ${score(hit.fused_score)}</span>
-          </div>
-          ${others ? `<div class="others"><details><summary>ሌሎች ክፍሎች</summary><ul>${others}</ul></details></div>` : ""}
-        `);
-      } else if (!data.requires_clarification) {
-        parts.push(`<p class="empty">ምንም ማስረጃ አልተገኘም። እውቀት ቋቱ ባዶ ሊሆን ይችላል — ከታች «ናሙና ጫን» ይሞክሩ።</p>`);
+      const named = (data.entities || []).some((e) => e.type === "contraceptive_method");
+      const hits = (data.retrieval_results || []).filter((h) => h.amharic_text && !h.polarity_conflict);
+      const maxn = named ? 3 : 1;
+      const picked = [];
+      const seen = new Set();
+      for (const h of hits) {
+        if (picked.length >= maxn) break;
+        if (h.fused_score != null && picked.length && h.fused_score < 0.16) break;
+        const key = h.amharic_text.slice(0, 40);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        picked.push(h);
       }
-      const card = el(`<article class="card">${parts.join("")}</article>`);
-      log.appendChild(card);
-      log.scrollTop = log.scrollHeight;
+      if (picked.length) {
+        return picked.map((h) => `<p class="am">${esc(h.amharic_text)}</p>`).join("");
+      }
+      return `<p class="empty">ይቅርታ፣ ለዚህ ጥያቄ በቂ መረጃ የለኝም።</p>`;
     }
     function nextContext(data) {
       const ents = data.entities || [];
@@ -336,66 +251,43 @@
         last_method: (method && method.value) || (context && context.last_method) || null,
       };
     }
-    async function health() {
+    async function ready() {
       try {
         const h = await (await fetch("/health")).json();
-        status.innerHTML = `<b>${h.chunks}</b> passages<br>${esc(h.embedder)} · no generation`;
-        if (h.chunks === 0 && !document.getElementById("loadkb")) {
-          const b = document.createElement("button");
-          b.id = "loadkb";
-          b.className = "chip";
-          b.textContent = "ናሙና እውቀት ጫን";
-          b.onclick = ingestSample;
-          starters.prepend(b);
+        if ((h.chunks || 0) < 20) {
+          await fetch("/documents/ingest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              path: "data/kb/fp_user_kb.json",
+              document_version: "demo",
+              review_status: "unreviewed",
+            }),
+          });
         }
       } catch {
-        status.textContent = "server offline";
+        /* shown only if a question later fails */
       }
-    }
-    async function ingestSample() {
-      const btn = document.getElementById("loadkb");
-      if (btn) btn.disabled = true;
-      const res = await fetch("/documents/ingest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: "tests/fixtures/mini_kb.json",
-          document_version: "test",
-          review_status: "unreviewed",
-        }),
-      });
-      if (!res.ok) {
-        alert("Ingest failed. Is the server running from the nlu/ folder?");
-        if (btn) btn.disabled = false;
-        return;
-      }
-      if (btn) btn.remove();
-      await health();
     }
     async function send() {
       const text = q.value.trim();
       if (!text) return;
       q.value = "";
-      addUser(text);
-      starters.style.display = "none";
-      const hello = log.querySelector(".welcome");
-      if (hello) hello.style.display = "none";
+      add(`<div class="user">${esc(text)}</div>`);
+      if (welcome && welcome.remove) welcome.remove();
       go.disabled = true;
+      const wait = add(`<article class="card"><p class="wait">እባክዎ ይጠብቁ…</p></article>`);
       try {
         const res = await fetch("/nlp/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text,
-            conversation_id: conversationId,
-            context,
-          }),
+          body: JSON.stringify({ text, conversation_id: conversationId, context }),
         });
         const data = await res.json();
-        render(data);
+        wait.innerHTML = replyText(data);
         context = nextContext(data);
-      } catch (err) {
-        log.appendChild(el(`<article class="card"><p class="empty">${esc(err.message)}</p></article>`));
+      } catch {
+        wait.innerHTML = `<p class="empty">አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።</p>`;
       } finally {
         go.disabled = false;
         q.focus();
@@ -403,12 +295,6 @@
       }
     }
 
-    log.appendChild(el(`
-      <div class="welcome">
-        <h2>መጽሐፉ ይመልሳል። ሞዴል አይጽፍም።</h2>
-        <p>Ask in Amharic. The desk returns the closest guideline passage, with its English alignment underneath. Nothing here is a generated clinical answer.</p>
-      </div>
-    `));
     go.onclick = send;
     q.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -416,7 +302,7 @@
         send();
       }
     });
-    health();
+    ready();
   </script>
 </body>
 </html>

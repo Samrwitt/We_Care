@@ -14,8 +14,21 @@ from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, Searc
 from we_care_nlu.pipeline import NLUEngine
 
 _UI = Path(__file__).resolve().parent / "static" / "index.html"
+_DEFAULT_KB = Path(__file__).resolve().parents[3] / "data" / "kb" / "fp_user_kb.json"
 
 _ENGINE: NLUEngine | None = None
+
+
+def _ensure_kb() -> None:
+    import os
+
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return
+    eng = get_engine()
+    if len(eng.retriever.index.chunks) > 0:
+        return
+    if _DEFAULT_KB.exists():
+        eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
 
 
 def get_engine() -> NLUEngine:
@@ -32,7 +45,7 @@ def get_engine() -> NLUEngine:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    get_engine()
+    _ensure_kb()
     yield
 
 

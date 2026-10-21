@@ -12,6 +12,7 @@ from we_care_nlu.contracts.schemas import ChunkRecord, RetrievalHit
 from we_care_nlu.embeddings.registry import Embedder, cosine
 from we_care_nlu.kb.ingest import tokenize
 from we_care_nlu.preprocess.normalize import has_negation, preprocess
+from we_care_nlu.retrieval.expand import INTENT_NEEDLES, expand_query, method_terms
 
 CONTRA_CUES = ("ተቃራኒ", "የተከለከለ", "አይመከርም", "contraindicat", "must not", "do not use")
 ALLOW_CUES = ("ይቻላል", "ይመከራል", "can be used", "is indicated", "may be used")
@@ -73,7 +74,14 @@ class HybridRetriever:
             self.index.rebuild(self.embedder)
         return added
 
-    def search(self, query: str, top_k: int | None = None, filters: dict[str, Any] | None = None) -> list[RetrievalHit]:
+    def search(
+        self,
+        query: str,
+        top_k: int | None = None,
+        filters: dict[str, Any] | None = None,
+        intent: str | None = None,
+        entities: list[Any] | None = None,
+    ) -> list[RetrievalHit]:
         if not self.index.chunks or self.index.bm25 is None:
             return []
         cfg = self.cfg
@@ -81,6 +89,9 @@ class HybridRetriever:
         cand = int(cfg.get("candidate_k") or 40)
         dw = float(cfg.get("dense_weight") or 0.55)
         sw = float(cfg.get("sparse_weight") or 0.45)
+        if getattr(self.embedder, "model_key", "") == "hash":
+            dw, sw = 0.2, 0.8
+        query = expand_query(query)
         q_tokens = tokenize(query)
         bm25_raw = np.array(self.index.bm25.get_scores(q_tokens), dtype=np.float32)
         if bm25_raw.max() > 0:
@@ -109,6 +120,14 @@ class HybridRetriever:
             polarity_conflict = q_pol in {"contra", "allow"} and c_pol in {"contra", "allow"} and q_pol != c_pol
             c_bf = any(c.lower() in (chunk.amharic_text + chunk.english_text).lower() for c in BF_CUES)
             score = float(fused[int(idx)])
+            blob = f"{chunk.amharic_text} {chunk.english_text}".lower()
+            if intent:
+                if any(n.lower() in blob for n in INTENT_NEEDLES.get(intent) or ()):
+                    score += 0.12
+            for term in method_terms(entities or []):
+                if term.lower() in blob:
+                    score += 0.18
+                    break
             if polarity_conflict:
                 score -= float(cfg.get("polarity_penalty") or 0.55)
             if q_bf and c_bf and polarity_conflict:

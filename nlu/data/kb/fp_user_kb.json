@@ -1,0 +1,202 @@
+{
+  "document_name": "fp_user_kb.json",
+  "title": "Family Planning user knowledge base",
+  "segments": [
+    {
+      "segment_id": "chunk_methods",
+      "kind": "paragraph",
+      "page_number": 8,
+      "source_text": "Contraceptive method options include condoms, oral contraceptive pills, injectables, implants, IUCD, emergency contraception, and permanent methods.",
+      "translated_text": "የእርግዝና መከላከያ ዘዴዎች ኮንዶም፣ በአፍ የሚወሰድ ክኒን፣ መርፌ፣ ኢምፕላንት፣ አይዩሲዲ፣ የአስቸኳይ መከላከያ እና ቋሚ ዘዴዎችን ያካትታሉ።"
+    },
+    {
+      "segment_id": "chunk_choose_with_provider",
+      "kind": "paragraph",
+      "page_number": 8,
+      "source_text": "The best method depends on a person's health, breastfeeding status, and preference. A trained health worker should help with the choice.",
+      "translated_text": "ምርጡ ዘዴ በጤና ሁኔታ፣ በጡት ማጥባት እና በምርጫ ላይ ይወሰናል። የሰለጠነ የጤና ባለሙያ በምርጫው ሊረዳ ይገባል።"
+    },
+    {
+      "segment_id": "chunk_condom_def",
+      "kind": "paragraph",
+      "page_number": 9,
+      "source_text": "A condom is a barrier method used during sex. It helps prevent pregnancy and also reduces the risk of sexually transmitted infections, including HIV.",
+      "translated_text": "ኮንዶም በግብረ ሥጋ ግንኙነት ጊዜ የሚያገለግል መከላከያ ነው። እርግዝናን ለመከላከል ይረዳል እንዲሁም ኤች.አይ.ቪን ጨምሮ በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን አደጋ ይቀንሳል።"
+    },
+    {
+      "segment_id": "chunk_condom_use",
+      "kind": "paragraph",
+      "page_number": 9,
+      "source_text": "A new condom should be used for every sex act. It must be put on before any genital contact and should not be reused.",
+      "translated_text": "ለእያንዳንዱ ግንኙነት አዲስ ኮንዶም መጠቀም ያስፈልጋል። ከማንኛውም የብልት ንክኪ በፊት መደረግ አለበት እና እንደገና አይጠቀምም።"
+    },
+    {
+      "segment_id": "chunk_condom_access",
+      "kind": "paragraph",
+      "page_number": 9,
+      "source_text": "Condoms are available at health facilities, health extension workers, and many pharmacies.",
+      "translated_text": "ኮንዶም በጤና ተቋማት፣ በጤና ኤክስቴንሽን ሠራተኞች እና በብዙ መድኃኒት ቤቶች ይገኛል።"
+    },
+    {
+      "segment_id": "chunk_pill_def",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "Oral contraceptive pills are taken by mouth every day at the same time. Combined pills contain estrogen and progestin. Progestin-only pills contain progestin only.",
+      "translated_text": "በአፍ የሚወሰድ የእርግዝና መከላከያ ክኒን በየቀኑ በተመሳሳይ ሰዓት ይወሰዳል። ጥምር ክኒን ኢስትሮጅንና ፕሮጄስቲን አለው። ፕሮጄስቲን ብቻ ያለው ክኒን ፕሮጄስቲን ብቻ ነው ያለው።"
+    },
+    {
+      "segment_id": "chunk_pill_missed",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "If one pill is missed, take it as soon as remembered and continue the pack. If two or more pills are missed, ask a health worker what to do and use a condom in the meantime.",
+      "translated_text": "አንድ ክኒን ከተረሳ በተቻለ ፍጥነት ይውሰዱና ጥቅሉን ይቀጥሉ። ሁለት ወይም ከዚያ በላይ ከተረሳ በጤና ባለሙያ ይጠይቁ እና እስከዚያው ኮንዶም ይጠቀሙ።"
+    },
+    {
+      "segment_id": "chunk_pill_se",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "Side effects of contraceptive pills may include nausea, breast tenderness, and changes in bleeding. These are not the same as contraindications.",
+      "translated_text": "የክኒን የጎንዮሽ ጉዳት ማቅለሽለሽ፣ የጡት ሕመም እና የደም መፍሰስ ለውጥን ሊያካትት ይችላል። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።"
+    },
+    {
+      "segment_id": "chunk_injectable_def",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "An injectable contraceptive is a progestin given by intramuscular injection, commonly every 13 weeks.",
+      "translated_text": "በመርፌ የሚሰጥ የእርግዝና መከላከያ በጡንቻ ውስጥ የሚሰጥ ፕሮጄስቲን ሲሆን ብዙ ጊዜ በየ 13 ሳምንቱ ይሰጣል።"
+    },
+    {
+      "segment_id": "chunk_injectable_how",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "The injectable mainly works by stopping ovulation. Return to fertility may be delayed after the last injection.",
+      "translated_text": "መርፌ በዋናነት እንቁላል መውጣትን በማቆም ይሠራል። ከመጨረሻው መርፌ በኋላ ወደ መውለድ ችሎታ መመለስ ሊዘገይ ይችላል።"
+    },
+    {
+      "segment_id": "chunk_injectable_se",
+      "kind": "paragraph",
+      "page_number": 11,
+      "source_text": "Side effects of the injectable may include irregular bleeding and delayed return to fertility. These are not the same as contraindications.",
+      "translated_text": "የመርፌ የጎንዮሽ ጉዳት መደበኛ ያልሆነ የደም መፍሰስ እና ወደ መውለድ ችሎታ መዘግየትን ሊያካትት ይችላል። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።"
+    },
+    {
+      "segment_id": "chunk_implant_def",
+      "kind": "paragraph",
+      "page_number": 11,
+      "source_text": "An implant is a small rod placed under the skin of the upper arm. It can prevent pregnancy for three to five years depending on the type, and fertility usually returns quickly after removal.",
+      "translated_text": "ኢምፕላንት ከላይኛው ክንድ ቆዳ ሥር የሚገባ ትንሽ ዘንግ ነው። እንደ ዓይነቱ ለሦስት እስከ አምስት ዓመት እርግዝናን ይከላከላል። ከተወገደ በኋላ መውለድ ችሎታ ብዙ ጊዜ በፍጥነት ይመለሳል።"
+    },
+    {
+      "segment_id": "chunk_implant_se",
+      "kind": "paragraph",
+      "page_number": 11,
+      "source_text": "The most common side effect of the implant is irregular or no monthly bleeding. This is not the same as a contraindication.",
+      "translated_text": "የኢምፕላንት በጣም የተለመደ የጎንዮሽ ጉዳት መደበኛ ያልሆነ ወይም የሌለ የወር አበባ ነው። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።"
+    },
+    {
+      "segment_id": "chunk_iucd_def",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "An IUCD is a small device placed in the uterus by a trained provider. Copper IUCDs can prevent pregnancy for many years.",
+      "translated_text": "አይዩሲዲ በሰለጠነ ባለሙያ በማህፀን ውስጥ የሚገባ ትንሽ መሣሪያ ነው። የመዳብ አይዩሲዲ ለብዙ ዓመታት እርግዝናን ሊከላከል ይችላል።"
+    },
+    {
+      "segment_id": "chunk_iucd_se",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "Copper IUCD side effects may include cramping and heavier monthly bleeding, especially in the first months.",
+      "translated_text": "የመዳብ አይዩሲዲ የጎንዮሽ ጉዳት በተለይ በመጀመሪያዎቹ ወራት የሆድ ቁርጠት እና የከበደ የወር አበባን ሊያካትት ይችላል።"
+    },
+    {
+      "segment_id": "chunk_ec_def",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "Emergency contraception is used after unprotected sex to reduce the chance of pregnancy. It should be taken as soon as possible, and it does not end an existing pregnancy. It is not for regular contraception.",
+      "translated_text": "የአስቸኳይ የእርግዝና መከላከያ ያለ መከላከያ ከተደረገ ግንኙነት በኋላ የእርግዝና ዕድልን ለመቀነስ ይውላል። በተቻለ ፍጥነት መወሰድ አለበት። ያለውን እርግዝና አያቋርጥም። ለመደበኛ መከላከያ አይደለም።"
+    },
+    {
+      "segment_id": "chunk_ec_when",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "Emergency contraceptive pills work best if taken as soon as possible, and can be used up to five days after unprotected sex. A health facility can advise which option is available.",
+      "translated_text": "የአስቸኳይ መከላከያ ክኒን በተቻለ ፍጥነት ከተወሰደ ይሻላል፣ ያለ መከላከያ ግንኙነት ከተደረገ እስከ አምስት ቀን ድረስ ሊውል ይችላል። የትኛው ዓይነት እንዳለ የጤና ተቋም ያስረዳል።"
+    },
+    {
+      "segment_id": "chunk_permanent",
+      "kind": "paragraph",
+      "page_number": 13,
+      "source_text": "Permanent methods are surgical. Tubal ligation is for women and vasectomy is for men. They are intended for people who do not want more children. Counselling is required first.",
+      "translated_text": "ቋሚ ዘዴዎች የቀዶ ሕክምና ናቸው። ለሴቶች የቧንቧ ማሰር እና ለወንዶች ቫሴክቶሚ አሉ። ሌላ ልጅ የማይፈልጉ ሰዎች የሚመርጡዋቸው ናቸው። መጀመሪያ ምክር ያስፈልጋል።"
+    },
+    {
+      "segment_id": "chunk_lam",
+      "kind": "paragraph",
+      "page_number": 13,
+      "source_text": "The lactational amenorrhea method can prevent pregnancy in the first six months after birth if the baby is exclusively breastfed, menstrual bleeding has not returned, and feeding is frequent day and night.",
+      "translated_text": "በጡት ማጥባት የሚደረግ መከላከያ ከወሊድ በኋላ በመጀመሪያዎቹ ስድስት ወራት ሊሠራ ይችላል ከሆነ ሕፃኑ ጡት ብቻ የሚጠባ ከሆነ፣ የወር አበባ ካልተመለሰ እና ቀንና ማታ በተደጋጋሚ የሚጠባ ከሆነ።"
+    },
+    {
+      "segment_id": "chunk_bf_allowed",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "Progestin-only injectables can be used while breastfeeding after the first six weeks postpartum.",
+      "translated_text": "ፕሮጄስቲን ብቻ ያለው መርፌ ከወሊድ በኋላ ከስድስት ሳምንታት በኋላ ጡት በማጥባት ጊዜ መጠቀም ይቻላል።"
+    },
+    {
+      "segment_id": "chunk_bf_allowed_pop",
+      "kind": "paragraph",
+      "page_number": 13,
+      "source_text": "Progestin-only pills and implants can be considered while breastfeeding. A health worker should confirm timing after birth.",
+      "translated_text": "ፕሮጄስቲን ብቻ ያለው ክኒን እና ኢምፕላንት ጡት በማጥባት ጊዜ ሊታሰቡ ይችላሉ። ከወሊድ በኋላ መቼ እንደሚጀመር የጤና ባለሙያ ያረጋግጣል።"
+    },
+    {
+      "segment_id": "chunk_bf_contra",
+      "kind": "paragraph",
+      "page_number": 13,
+      "source_text": "Combined hormonal contraceptives are contraindicated during the first six months of breastfeeding.",
+      "translated_text": "ጥምር ሆርሞናዊ የእርግዝና መከላከያዎች በጡት ማጥባት የመጀመሪያዎቹ ስድስት ወራት የተከለከሉ ናቸው።"
+    },
+    {
+      "segment_id": "chunk_hiv_fp",
+      "kind": "paragraph",
+      "page_number": 14,
+      "source_text": "Most contraceptive methods can be used by people living with HIV. Condoms are also important because they help prevent HIV and other sexually transmitted infections.",
+      "translated_text": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።"
+    },
+    {
+      "segment_id": "chunk_dual_protection",
+      "kind": "paragraph",
+      "page_number": 14,
+      "source_text": "Dual protection means using a condom plus another contraceptive method. This helps prevent both pregnancy and sexually transmitted infections.",
+      "translated_text": "ድርብ መከላከያ ማለት ኮንዶምን ከሌላ የእርግዝና መከላከያ ጋር መጠቀም ነው። ይህ እርግዝናን እና በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ለመከላከል ይረዳል።"
+    },
+    {
+      "segment_id": "chunk_where",
+      "kind": "paragraph",
+      "page_number": 15,
+      "source_text": "Family planning services are given at health posts, health centres, and hospitals. A health extension worker can also advise and refer.",
+      "translated_text": "የቤተሰብ ምጣኔ አገልግሎት በጤና ኬላ፣ በጤና ጣቢያ እና በሆስፒታል ይሰጣል። የጤና ኤክስቴንሽን ሠራተኛም ምክር ሰጥቶ ሊልክ ይችላል።"
+    },
+    {
+      "segment_id": "chunk_adolescents",
+      "kind": "paragraph",
+      "page_number": 15,
+      "source_text": "Adolescents can use most contraceptive methods after counselling. Condoms are important for preventing both pregnancy and infections.",
+      "translated_text": "ጎረምሶች ከምክር በኋላ አብዛኞቹን የእርግዝና መከላከያ ዘዴዎች መጠቀም ይችላሉ። ኮንዶም እርግዝናንና በሽታን ስለሚከላከል አስፈላጊ ነው።"
+    },
+    {
+      "segment_id": "chunk_emergency_contra",
+      "kind": "paragraph",
+      "page_number": 14,
+      "source_text": "Misoprostol must not be used if ectopic pregnancy is suspected.",
+      "translated_text": "ከማህፀን ውጭ እርግዝና ከተጠረጠረ ሚሶፕሮስቶል መጠቀም የተከለከለ ነው።"
+    },
+    {
+      "segment_id": "chunk_seek_care",
+      "kind": "paragraph",
+      "page_number": 16,
+      "source_text": "Seek care urgently for very heavy bleeding, severe pain, fainting, or if you think you may be pregnant while using a method.",
+      "translated_text": "ከባድ የደም መፍሰስ፣ ኃይለኛ ሕመም፣ መዝለቅ ወይም ዘዴ እየተጠቀሙ እርጉዝ ልትሆኑ እንደሆነ ከጠረጠሩ ወዲያውኑ የጤና ተቋም ይሂዱ።"
+    }
+  ]
+}

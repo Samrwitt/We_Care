@@ -107,4 +107,20 @@ def ingest_path(path: str | Path, **kwargs) -> list[ChunkRecord]:
 
 def tokenize(text: str) -> list[str]:
     pre = preprocess(text)
-    return [t for t in pre.normalized.replace(".", " ").replace(",", " ").split() if t]
+    raw = [
+        t
+        for t in pre.normalized.replace(".", " ").replace(",", " ").replace("?", " ").replace("!", " ").split()
+        if t
+    ]
+    stripped: list[str] = []
+    for tok in raw:
+        if any("\u1200" <= ch <= "\u137F" for ch in tok) and len(tok) >= 5 and tok.endswith("ን"):
+            stripped.append(tok[:-1])
+    raw = raw + stripped
+    extra: list[str] = []
+    for tok in raw:
+        if any("\u1200" <= ch <= "\u137F" for ch in tok) and len(tok) >= 4:
+            extra.append(tok[:4])
+            if len(tok) >= 5:
+                extra.append(tok[:5])
+    return raw + extra

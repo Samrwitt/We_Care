@@ -1,11 +1,12 @@
 contraceptive_method:
-  injectable_contraceptive: ["መርፌ", "በመርፌ የሚሰጥ", "injectable", "DMPA", "Depo"]
-  implant: ["ኢምፕላንት", "implant", "Implanon", "Jadelle"]
+  injectable_contraceptive: ["መርፌ", "በመርፌ የሚሰጥ", "ዴፖ", "injectable", "DMPA", "Depo"]
+  implant: ["ኢምፕላንት", "በትር", "implant", "Implanon", "Jadelle"]
   iud: ["አይዩዲ", "አይዩሲዲ", "IUCD", "IUD", "ማህፀን ውስጥ"]
   condom: ["ኮንዶም", "condom"]
   oral_pill: ["ክኒን", "በአፍ የሚወሰድ", "OCP", "pill"]
-  emergency_contraception: ["የአስቸኳይ የእርግዝና መከላከያ", "emergency contracept"]
+  emergency_contraception: ["የአስቸኳይ የእርግዝና መከላከያ", "የአስቸኳይ ክኒን", "የአስቸኳይ መከላከያ", "emergency contracept"]
   sterilization: ["ቋሚ ዘዴ", "vasectomy", "tubal"]
+  lam: ["LAM", "በጡት ማጥባት የሚደረግ መከላከያ"]
 medicine:
   oxytocin: ["ኦክሲቶሲን", "oxytocin"]
   misoprostol: ["ሚሶፕሮስቶል", "misoprostol"]

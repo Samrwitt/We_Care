@@ -13,6 +13,7 @@ from we_care_nlu.kb.ingest import ingest_alignment, ingest_path
 from we_care_nlu.ner.extract import EntityExtractor
 from we_care_nlu.preprocess.normalize import preprocess
 from we_care_nlu.retrieval.engine import HybridRetriever
+from we_care_nlu.retrieval.expand import expand_query, method_terms
 from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review_warnings
 
 
@@ -54,7 +55,14 @@ class NLUEngine:
                 intent_out["intent_labels"].insert(0, "emergency")
 
         filters = dict(req.filters or {})
-        hits = self.retriever.search(pre.normalized, top_k=req.top_k, filters=filters)
+        search_q = expand_query(pre.normalized, method_terms(entities))
+        hits = self.retriever.search(
+            search_q,
+            top_k=req.top_k,
+            filters=filters,
+            intent=intent_out["intent"],
+            entities=entities,
+        )
         conflicts = evidence_conflicts(hits, pre.normalized)
         review = review_warnings(hits)
         abstain_thr = float((self.cfg.get("retrieval") or {}).get("abstain_below") or 0.22)
