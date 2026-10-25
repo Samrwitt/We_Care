@@ -10,11 +10,13 @@ from pydantic import BaseModel, Field
 
 from we_care_nlu import __version__
 from we_care_nlu.config import load_config
-from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, SearchRequest
+from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, ReplyResponse, SearchRequest
 from we_care_nlu.pipeline import NLUEngine
 
 _UI = Path(__file__).resolve().parent / "static" / "index.html"
-_DEFAULT_KB = Path(__file__).resolve().parents[3] / "data" / "kb" / "fp_user_kb.json"
+_KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
+_GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
+_DEFAULT_KB = _KB_DIR / "fp_user_kb.json"
 
 _ENGINE: NLUEngine | None = None
 
@@ -27,7 +29,9 @@ def _ensure_kb() -> None:
     eng = get_engine()
     if len(eng.retriever.index.chunks) > 0:
         return
-    if _DEFAULT_KB.exists():
+    if _GUIDELINES_KB.exists():
+        eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
+    elif _DEFAULT_KB.exists():
         eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
 
 
@@ -94,6 +98,7 @@ def meta() -> dict[str, Any]:
             "GET /models",
             "POST /documents/ingest",
             "POST /nlp/analyze",
+            "POST /nlp/reply",
             "POST /retrieval/search",
             "POST /nlp/resolve-context",
         ],
@@ -157,6 +162,11 @@ def ingest(body: IngestBody) -> dict[str, Any]:
 @app.post("/nlp/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
     return get_engine().analyze(req)
+
+
+@app.post("/nlp/reply", response_model=ReplyResponse)
+def reply(req: AnalyzeRequest) -> ReplyResponse:
+    return get_engine().reply(req)
 
 
 @app.post("/retrieval/search")

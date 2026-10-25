@@ -1,0 +1,5 @@
+name: we-care
+
+include:
+  - path: mt/docker-compose.yml
+  - path: nlu/docker-compose.yml

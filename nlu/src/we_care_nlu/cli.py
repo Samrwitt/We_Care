@@ -39,6 +39,22 @@ def analyze(
 
 
 @app.command()
+def reply(
+    text: str = typer.Argument(...),
+    model: str = typer.Option("hash", "--model"),
+    kb: Optional[Path] = typer.Option(None, "--kb"),
+) -> None:
+    """Translate an Amharic question to English, retrieve, and render an Amharic reply."""
+    eng = NLUEngine(load_config(), model_key=model)
+    if kb:
+        eng.ingest_file(str(kb), default_review_status="source")
+    from we_care_nlu.contracts.schemas import AnalyzeRequest
+
+    out = eng.reply(AnalyzeRequest(text=text))
+    typer.echo(out.model_dump_json(indent=2, ensure_ascii=False))
+
+
+@app.command()
 def serve(host: str = "0.0.0.0", port: int = 8088) -> None:
     import uvicorn
 

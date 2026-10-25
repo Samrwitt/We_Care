@@ -2,11 +2,19 @@
 
 **Component 2** of the non-generative Amharic medical chatbot.
 
-This service understands Amharic questions, extracts medical slots, and retrieves evidence from translated guidelines. It returns **JSON only**. It does not call GPT/Gemini/Claude/Llama/Qwen and does not decode chatbot replies.
+This service takes an Amharic question, turns it into English, and retrieves evidence from the original English guidelines. It then returns a short Amharic reply plus the English sentence, page, and evidence id. It does not call GPT/Gemini/Claude/Llama/Qwen and does not write a free-form answer. `POST /nlp/reply` is the user-facing route. `generative_answer` is always `null`.
 
 Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
-It consumes Component 1 alignment JSON (`*.alignment.json`) and will feed Component 3 (rule-based dialogue manager).
+The knowledge base is the English text of the guideline PDFs. Those PDFs are not translated in advance. A reply translates only the one English sentence that was retrieved. If that translation drops a number or flips a contraindication into permission, the Amharic sentence is withheld.
+
+```bash
+pip install 'pymupdf==1.26.4'
+PYTHONPATH=src python scripts/ingest_guidelines.py \
+  --pdf-dir ../data/guidelines
+```
+
+That writes `data/kb/rh_guidelines_en.json`. The API loads it on startup. Without neural weights, questions are mapped to English with the gazetteer and the guideline sentence is returned in English (`translation_status: source_only`). Set `WE_CARE_TRANSLATION=nllb` to use `facebook/nllb-200-distilled-600M` for both directions. The DSFSI English→Amharic models cannot translate the question.
 
 ## What works without downloading neural weights
 

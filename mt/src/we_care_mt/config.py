@@ -9,17 +9,18 @@ from typing import Any
 import yaml
 
 
+def _is_mt_root(candidate: Path) -> bool:
+    return (candidate / "src" / "we_care_mt").is_dir() and (candidate / "configs" / "default.yaml").is_file()
+
+
 def _project_root_from(start: Path | None = None) -> Path:
-    cur = (start or Path.cwd()).resolve()
-    for candidate in [cur, *cur.parents]:
-        if (candidate / "configs" / "default.yaml").exists():
-            return candidate
-        if (candidate / "pyproject.toml").exists() and (candidate / "src" / "we_care_mt").exists():
-            return candidate
-    # Installed package fallback: walk up from this file to repo if present.
     here = Path(__file__).resolve()
     for candidate in here.parents:
-        if (candidate / "configs" / "default.yaml").exists():
+        if _is_mt_root(candidate):
+            return candidate
+    cur = (start or Path.cwd()).resolve()
+    for candidate in [cur, *cur.parents]:
+        if _is_mt_root(candidate):
             return candidate
     return cur
 

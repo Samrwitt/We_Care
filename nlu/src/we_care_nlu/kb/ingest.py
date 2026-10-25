@@ -58,6 +58,8 @@ def ingest_alignment(
         am = (row.get("translated_text") or "").strip()
         if kind == "heading":
             current_heading = am or en
+        if row.get("section"):
+            current_heading = str(row["section"])
         if not en and not am:
             continue
         if kind in {"header", "footer", "page_number"}:
@@ -66,10 +68,12 @@ def ingest_alignment(
         if key in seen:
             continue
         seen.add(key)
-        flags = (row.get("flags") or "")
+        flags = str(row.get("flags") or "")
         status = default_review_status
         if "human_reviewed" in flags:
             status = "reviewed"
+        if "source_english" in flags:
+            status = "source"
         page = row.get("page_number")
         try:
             page_i = int(page) if page not in (None, "") else None
@@ -92,7 +96,7 @@ def ingest_alignment(
             review_status=status,
             medical_subject=_subject(text_for_terms),
             document_version=document_version,
-            source_kind="phase1_alignment",
+            source_kind="english_guideline" if "source_english" in flags else "phase1_alignment",
             terms=terms,
             content_hash=key,
         )
@@ -102,6 +106,13 @@ def ingest_alignment(
 
 def ingest_path(path: str | Path, **kwargs) -> list[ChunkRecord]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
+    documents = data.get("documents")
+    if isinstance(documents, list) and "segments" not in data:
+        chunks: list[ChunkRecord] = []
+        for doc in documents:
+            if isinstance(doc, dict):
+                chunks.extend(ingest_alignment(doc, **kwargs))
+        return chunks
     return ingest_alignment(data, **kwargs)
 
 

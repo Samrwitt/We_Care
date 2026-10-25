@@ -93,6 +93,32 @@ class AnalyzeResponse(BaseModel):
     generative_answer: None = None
 
 
+class ReplyResponse(BaseModel):
+    """One user turn. Retrieval runs on the English query. The reply is not generated."""
+
+    amharic_reply: str
+    english_query: str
+    english_reply: str = ""
+    translation_backend: str
+    translation_status: Literal["translated", "template", "source_only", "abstained", "qa_failed"]
+    qa_ok: bool = True
+    qa_notes: list[str] = Field(default_factory=list)
+    evidence_id: str | None = None
+    document_id: str = ""
+    document_title: str = ""
+    page: int | None = None
+    section: str = ""
+    review_status: str = ""
+    intent: str
+    intent_labels: list[str] = Field(default_factory=list)
+    entities: list[Entity] = Field(default_factory=list)
+    requires_clarification: bool = False
+    clarification_question_key: str | None = None
+    confidence_status: str
+    safety: dict[str, Any] = Field(default_factory=dict)
+    generative_answer: None = None
+
+
 class SearchRequest(BaseModel):
     query: str
     language: str | None = "am"

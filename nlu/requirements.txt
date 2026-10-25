@@ -6,6 +6,7 @@ pyyaml>=6.0
 numpy>=1.26.0
 httpx>=0.27.0
 python-multipart>=0.0.9
+# English PDF ingest: pymupdf==1.26.4
 # Optional neural backends:
 # torch transformers sentence-transformers
 # Optional Postgres:

@@ -1,6 +1,6 @@
 # We Care — English→Amharic Medical PDF Translation Pipeline
 
-**Component 1** of the non-generative Amharic medical chatbot. **Component 2** (Amharic NLU + retrieval) lives in [`nlu/`](nlu/README.md).
+**Component 1** of the non-generative Amharic medical chatbot. This package lives in `mt/`. **Component 2** (Amharic understanding and retrieval) lives in [`nlu/`](../nlu/README.md).
 
 Production-oriented **English-to-Amharic** pipeline for Ethiopian Ministry of Health reproductive-health guidelines, family-planning materials, clinical guidance, and related PDFs.
 
@@ -76,7 +76,7 @@ Package: `src/we_care_mt/` with modules `extraction`, `segmentation`, `translati
 Python 3.10+ (3.11/3.12 recommended). GPU optional (CUDA PyTorch).
 
 ```bash
-cd We_Care
+cd mt
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -218,8 +218,10 @@ Mark `@pytest.mark.slow` / `@pytest.mark.gpu` if you add live-model tests locall
 
 ## Docker
 
+From the repository root:
+
 ```bash
-docker compose build
+docker compose build we-care-mt
 docker compose run --rm we-care-mt translate /app/data/source_pdfs --model mock --backend mock -o /app/output
 ```
 

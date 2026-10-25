@@ -23,7 +23,7 @@ def test_health_and_models():
     assert root.status_code == 200
     assert "text/html" in root.headers["content-type"]
     assert "ዌ ኬር" in root.text
-    assert "/nlp/analyze" in root.text
+    assert "/nlp/reply" in root.text
     meta = c.get("/meta")
     assert meta.status_code == 200
     assert meta.json()["service"] == "we-care-nlu"

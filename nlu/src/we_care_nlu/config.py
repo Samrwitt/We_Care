@@ -7,7 +7,11 @@ import yaml
 
 
 def package_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    here = Path(__file__).resolve()
+    for candidate in here.parents:
+        if (candidate / "src" / "we_care_nlu").is_dir() and (candidate / "pyproject.toml").is_file():
+            return candidate
+    return here.parents[2]
 
 
 def load_config(path: str | Path | None = None) -> dict[str, Any]:

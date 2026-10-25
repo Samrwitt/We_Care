@@ -16,9 +16,21 @@ def load_emergency(path: Path | None = None) -> dict[str, Any]:
         return yaml.safe_load(fh) or {}
 
 
+# Family-planning phrases that contain an emergency cue but are not emergencies.
+_BENIGN_EMERGENCY_PHRASES = (
+    "የአስቸኳይ የእርግዝና መከላከያ",
+    "የአስቸኳይ መከላከያ",
+    "የአስቸኳይ ክኒን",
+    "emergency contraception",
+    "emergency contraceptive",
+)
+
+
 def emergency_flags(text: str) -> dict[str, Any]:
     data = load_emergency()
     low = text.lower()
+    for phrase in _BENIGN_EMERGENCY_PHRASES:
+        low = low.replace(phrase.lower(), " ")
     hits = []
     for cue in (data.get("amharic") or []) + (data.get("english") or []):
         if cue.lower() in low:

@@ -22,7 +22,8 @@ models/downloaded/
 .env
 *.swp
 RH Guidelines-*.zip
-data/source_pdfs/*.pdf
-!data/samples/
+data/guidelines/*.pdf
+mt/data/source_pdfs/*.pdf
+nlu/data/kb/rh_guidelines_en.json
 examples/output/**
 !examples/output/README.md

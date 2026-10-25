@@ -99,7 +99,8 @@
       line-height: 1.6;
     }
     .emerg { color: #6d1d16; }
-    .empty, .wait { color: var(--mute); }
+    .empty, .wait, .src, .cite { color: var(--mute); }
+    .src, .cite { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
     .composer {
       padding: 10px 16px 14px;
       background: var(--paper);
@@ -211,6 +212,18 @@
       document.getElementById("starters").appendChild(b);
     });
 
+    function renderTurn(data) {
+      const status = data.translation_status || "";
+      let html = `<p class="am">${esc(data.amharic_reply || "")}</p>`;
+      if (status === "source_only" && data.english_reply) {
+        html += `<p class="src">${esc(data.english_reply)}</p>`;
+      }
+      if (data.document_title) {
+        const page = data.page ? " · ገጽ " + data.page : "";
+        html += `<p class="cite">${esc(data.document_title)}${page}</p>`;
+      }
+      return html;
+    }
     function replyText(data) {
       const emergency = (data.safety || {}).emergency || {};
       if (emergency.is_emergency) {
@@ -256,7 +269,7 @@
     async function ready() {
       try {
         const h = await (await fetch("/health")).json();
-        if ((h.chunks || 0) < 20) {
+        if ((h.chunks || 0) === 0) {
           await fetch("/documents/ingest", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -280,13 +293,13 @@
       go.disabled = true;
       const wait = add(`<article class="card"><p class="wait">እባክዎ ይጠብቁ…</p></article>`);
       try {
-        const res = await fetch("/nlp/analyze", {
+        const res = await fetch("/nlp/reply", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, conversation_id: conversationId, context }),
         });
         const data = await res.json();
-        wait.innerHTML = replyText(data);
+        wait.innerHTML = renderTurn(data);
         context = nextContext(data);
       } catch {
         wait.innerHTML = `<p class="empty">አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።</p>`;
