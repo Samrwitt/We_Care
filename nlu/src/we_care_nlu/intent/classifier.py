@@ -61,6 +61,7 @@ class IntentClassifier:
             "contraindications",
             "eligibility",
             "family_planning_methods",
+            "genital_ulcer",
             "emergency",
         }
         if "definition" in {h[0] for h in hits} and not (aspect_override & set(labels)):

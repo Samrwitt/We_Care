@@ -44,6 +44,20 @@ def test_emergency_contraception_is_not_an_emergency():
     assert emergency_flags("ከባድ መድማት አለብኝ")["is_emergency"] is True
 
 
+def test_missing_guideline_uses_intent_advice_and_referral():
+    eng = NLUEngine(model_key="hash")
+    out = eng.reply(AnalyzeRequest(text="የብልት ቁስለት ምንድን ነው?"))
+    assert out.translation_status == "template"
+    assert out.intent == "genital_ulcer"
+    assert "9394" in out.amharic_reply
+    assert "https://wecare.et/articles/135" in out.amharic_reply
+    assert "https://wecare.et/booking" in out.amharic_reply
+    english = eng.reply(AnalyzeRequest(text="What is a genital ulcer?"))
+    assert english.intent == "genital_ulcer"
+    assert "9394" in english.english_reply
+    assert "https://wecare.et/articles/135" in english.english_reply
+
+
 def test_reply_uses_english_span_without_neural_translation():
     eng = NLUEngine(model_key="hash")
     eng.ingest_alignment_dict(

@@ -18,6 +18,7 @@ from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review
 from we_care_nlu.translation import build_translator
 from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import covered_question, map_to_english
+from we_care_nlu.translation.advice import intent_advice
 from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span
 
 
@@ -151,6 +152,17 @@ class NLUEngine:
 
         span, hit = select_span(english_query, analysis.retrieval_results, analysis.intent)
         if analysis.safety.get("unsupported_question") or not span:
+            advice = intent_advice(analysis.intent)
+            if advice:
+                amharic, english = advice
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=amharic,
+                    english_query=english_query,
+                    english_reply=english,
+                    status="template",
+                    cited={},
+                )
             return self._reply_template("abstain", "abstained", original, english_query, analysis)
 
         cited = citation(hit)

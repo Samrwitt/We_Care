@@ -95,7 +95,8 @@
       line-height: 1.55;
     }
     .card { padding: 14px 16px; }
-    .am { margin: 0 0 10px; font-size: 17px; line-height: 1.7; }
+    .am { margin: 0 0 10px; font-size: 17px; line-height: 1.7; white-space: pre-wrap; }
+    .am a { color: var(--primary); }
     .am:last-child { margin-bottom: 0; }
     .emerg, .clarify, .empty, .wait {
       margin: 0;
@@ -150,15 +151,15 @@
   <div class="shell">
     <header>
       <div class="wordmark">ዌ ኬር</div>
-      <div class="tag">የቤተሰብ ምጣኔ መረጃ</div>
+      <div class="tag">የሥርዓተ-ተዋልዶ ጤና መረጃ · Reproductive health information</div>
     </header>
     <div id="log"></div>
     <div class="composer">
       <div class="box">
-        <textarea id="q" rows="1" placeholder="ጥያቄዎን ይጻፉ…"></textarea>
+        <textarea id="q" rows="1" placeholder="ጥያቄዎን ይጻፉ… / Ask in English"></textarea>
         <button class="send" id="go" type="button">ላክ</button>
       </div>
-      <p class="fine">ይህ የመረጃ መልስ ነው። የሐኪም ምክር አይተካም።</p>
+      <p class="fine">ይህ መልስ የሐኪም ምክር አይተካም። This is information, not a clinical exam.</p>
     </div>
   </div>
   <script>
@@ -168,6 +169,8 @@
       "ክኒን ከተረሳ ምን ላድርግ?",
       "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
       "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
+      "What are the contraceptive methods?",
+      "How long does an implant last?",
     ];
     const CLARIFY = {
       which_method: "የትኛውን የእርግዝና መከላከያ ዘዴ ማለትዎ ነው?",
@@ -203,7 +206,7 @@
     const welcome = add(`
       <div class="welcome">
         <h2>እንኳን ደህና መጡ</h2>
-        <p>ስለ እርግዝና መከላከያ መጠየቅ ይችላሉ። ከታች ካሉት ጥያቄዎች አንዱን ይንኩ ወይም የራስዎን ይጻፉ።</p>
+        <p>ስለ እርግዝና መከላከያ በአማርኛ ወይም በእንግሊዝኛ መጠየቅ ይችላሉ። You can ask in Amharic or English. ከታች ካሉት ጥያቄዎች አንዱን ይንኩ ወይም የራስዎን ይጻፉ።</p>
         <div class="chips" id="starters"></div>
       </div>
     `);
@@ -216,11 +219,23 @@
       document.getElementById("starters").appendChild(b);
     });
 
-    function renderTurn(data) {
-      const status = data.translation_status || "";
-      let html = `<p class="am">${esc(data.amharic_reply || "")}</p>`;
-      if (status === "source_only" && data.english_reply) {
-        html += `<p class="src">${esc(data.english_reply)}</p>`;
+    function linkify(s) {
+      return esc(s).replace(/https?:\/\/[^\s]+/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+    }
+    function askedInEnglish(text) {
+      const eth = (String(text).match(/[\u1200-\u137F]/g) || []).length;
+      const lat = (String(text).match(/[A-Za-z]/g) || []).length;
+      return lat > eth;
+    }
+    function renderTurn(data, userText) {
+      const am = data.amharic_reply || "";
+      const en = data.english_reply || "";
+      const englishAsk = askedInEnglish(userText || "");
+      const first = englishAsk ? (en || am) : (am || en);
+      const second = first === am ? en : am;
+      let html = `<p class="am">${linkify(first)}</p>`;
+      if (second && second !== first) {
+        html += `<p class="src">${linkify(second)}</p>`;
       }
       if (data.document_title) {
         const page = data.page ? " · ገጽ " + data.page : "";
@@ -295,7 +310,7 @@
       add(`<div class="user">${esc(text)}</div>`);
       if (welcome && welcome.remove) welcome.remove();
       go.disabled = true;
-      const wait = add(`<article class="card"><p class="wait">እባክዎ ይጠብቁ…</p></article>`);
+      const wait = add(`<article class="card"><p class="wait">እባክዎ ይጠብቁ… / Please wait…</p></article>`);
       try {
         const res = await fetch("/nlp/reply", {
           method: "POST",
@@ -303,10 +318,10 @@
           body: JSON.stringify({ text, conversation_id: conversationId, context }),
         });
         const data = await res.json();
-        wait.innerHTML = renderTurn(data);
+        wait.innerHTML = renderTurn(data, text);
         context = nextContext(data);
       } catch {
-        wait.innerHTML = `<p class="empty">አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።</p>`;
+        wait.innerHTML = `<p class="empty">አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ። Could not get an answer. Please try again.</p>`;
       } finally {
         go.disabled = false;
         q.focus();

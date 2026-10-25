@@ -52,6 +52,19 @@ intents:
     patterns: ["እርጉዝ", "ነፍሰ ጡር", "እርግዝና", "ጡት ማጥባት", "ከወሊድ በኋላ", "pregnan", "breastfeed", "lactat"]
   definition:
     patterns: ["ምንድን ነው", "ምንድን ናቸው", "ማለት", "what is", "define"]
+  genital_ulcer:
+    patterns:
+      - "የብልት ቁስለት"
+      - "ብልት ቁስለት"
+      - "ቁስለት"
+      - "ሄርፒስ"
+      - "ሃርፒስ"
+      - "ቂጥኝ"
+      - "ቻንክሮይድ"
+      - "genital ulcer"
+      - "herpes"
+      - "syphilis"
+      - "chancroid"
   symptoms:
     patterns: ["ምልክት", "ሕመም ስሜት", "symptom"]
   causes:
@@ -86,6 +99,7 @@ priority:
   - family_planning_methods
   - medication
   - treatment
+  - genital_ulcer
   - symptoms
   - causes
   - prevention
