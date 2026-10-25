@@ -44,6 +44,19 @@ def version() -> None:
 
 
 @app.command()
+def serve(
+    ctx: typer.Context,
+    host: str = typer.Option("0.0.0.0", "--host"),
+    port: int = typer.Option(8090, "--port"),
+    model: str = typer.Option("nllb_baseline_600m", "--model", "-m"),
+) -> None:
+    """Keep Facebook NLLB loaded and translate one sentence per request."""
+    from we_care_mt.span_server import serve_span
+
+    serve_span(ctx.obj["cfg"], model_key=model, host=host, port=port)
+
+
+@app.command()
 def translate(
     ctx: typer.Context,
     input_path: Path = typer.Argument(..., exists=True, help="PDF file or folder of PDFs"),

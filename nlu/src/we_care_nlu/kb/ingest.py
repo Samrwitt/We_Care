@@ -120,7 +120,7 @@ def tokenize(text: str) -> list[str]:
     pre = preprocess(text)
     raw = [
         t
-        for t in pre.normalized.replace(".", " ").replace(",", " ").replace("?", " ").replace("!", " ").split()
+        for t in pre.normalized.lower().replace(".", " ").replace(",", " ").replace("?", " ").replace("!", " ").split()
         if t
     ]
     stripped: list[str] = []

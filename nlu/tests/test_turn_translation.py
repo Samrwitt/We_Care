@@ -1,8 +1,20 @@
 from we_care_nlu.contracts.schemas import AnalyzeRequest, ChunkRecord
 from we_care_nlu.pipeline import NLUEngine
 from we_care_nlu.safety.rules import emergency_flags
+from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import map_to_english
 from we_care_nlu.translation.reply import reply_qa
+
+
+class LoadingTranslator:
+    can_translate_reply = True
+    backend = "mt"
+
+    def to_english(self, text: str) -> str:
+        raise TranslatorNotReady("loading")
+
+    def to_amharic(self, text: str) -> str:
+        raise TranslatorNotReady("loading")
 
 
 class DroppingTranslator:
@@ -59,6 +71,78 @@ def test_reply_uses_english_span_without_neural_translation():
     assert "አልተተረጎመም" in out.amharic_reply
     assert "Contraceptive method options" in out.english_reply
     assert out.generative_answer is None
+
+
+def test_known_question_skips_the_model_until_the_sentence():
+    eng = NLUEngine(model_key="hash")
+
+    class Counting:
+        can_translate_reply = True
+        backend = "mt"
+
+        def __init__(self):
+            self.english_calls = 0
+            self.amharic_calls = 0
+
+        def to_english(self, text: str) -> str:
+            self.english_calls += 1
+            return text
+
+        def to_amharic(self, text: str) -> str:
+            self.amharic_calls += 1
+            return "ኮንዶም፣ ክኒን፣ መርፌ እና ኢምፕላንት አሉ።"
+
+    counter = Counting()
+    eng.translator = counter
+    eng.ingest_alignment_dict(
+        {
+            "document_name": "Guideline.pdf",
+            "title": "Family Planning",
+            "segments": [
+                {
+                    "segment_id": "en-methods",
+                    "kind": "paragraph",
+                    "page_number": 4,
+                    "section": "Methods",
+                    "source_text": "Contraceptive method options include condoms, pills, injectables, and implants.",
+                    "translated_text": "",
+                    "flags": "source_english",
+                }
+            ],
+        }
+    )
+    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
+    assert counter.english_calls == 0
+    assert counter.amharic_calls == 1
+    assert out.translation_status == "translated"
+    assert "ኮንዶም" in out.amharic_reply
+
+
+def test_loading_translator_still_returns_the_english_sentence():
+    eng = NLUEngine(model_key="hash")
+    eng.translator = LoadingTranslator()
+    eng.ingest_alignment_dict(
+        {
+            "document_name": "Guideline.pdf",
+            "title": "Family Planning",
+            "segments": [
+                {
+                    "segment_id": "en-methods",
+                    "kind": "paragraph",
+                    "page_number": 4,
+                    "section": "Methods",
+                    "source_text": "Contraceptive method options include condoms, pills, injectables, and implants.",
+                    "translated_text": "",
+                    "flags": "source_english",
+                }
+            ],
+        }
+    )
+    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
+    assert out.translation_status == "source_only"
+    assert "እየተጫነ" in out.amharic_reply
+    assert "Contraceptive method options" in out.english_reply
+    assert out.page == 4
 
 
 def test_bad_reply_translation_is_not_shown():

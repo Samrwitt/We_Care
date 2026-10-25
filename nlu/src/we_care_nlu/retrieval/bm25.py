@@ -21,6 +21,11 @@ class BM25Okapi:
             t: math.log((self.n_docs - n + 0.5) / (n + 0.5) + 1.0) for t, n in df.items()
         }
         self.doc_tf = [Counter(doc) for doc in corpus]
+        inverted: dict[str, list[int]] = {}
+        for i, tf_map in enumerate(self.doc_tf):
+            for term in tf_map:
+                inverted.setdefault(term, []).append(i)
+        self.inverted = inverted
 
     def get_scores(self, query: list[str]) -> list[float]:
         scores = [0.0] * self.n_docs
@@ -30,10 +35,8 @@ class BM25Okapi:
             idf = self.idf.get(q)
             if idf is None:
                 continue
-            for i, tf_map in enumerate(self.doc_tf):
-                tf = tf_map.get(q, 0)
-                if not tf:
-                    continue
+            for i in self.inverted.get(q, ()):
+                tf = self.doc_tf[i][q]
                 dl = self.doc_len[i]
                 denom = tf + self.k1 * (1 - self.b + self.b * dl / (self.avgdl or 1.0))
                 scores[i] += idf * (tf * (self.k1 + 1) / denom)

@@ -16,6 +16,8 @@ from we_care_nlu.retrieval.engine import HybridRetriever
 from we_care_nlu.retrieval.expand import expand_query, method_terms
 from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review_warnings
 from we_care_nlu.translation import build_translator
+from we_care_nlu.translation.mt_client import TranslatorNotReady
+from we_care_nlu.translation.phrase_map import covered_question, map_to_english
 from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span
 
 
@@ -114,10 +116,19 @@ class NLUEngine:
 
     def reply(self, req: AnalyzeRequest) -> ReplyResponse:
         original = req.text or ""
+        translator_loading = False
         if detect_language(original) == "en":
             english_query = original
         else:
-            english_query = self.translator.to_english(original)
+            covered = covered_question(original)
+            if covered is not None:
+                english_query = covered
+            else:
+                try:
+                    english_query = self.translator.to_english(original)
+                except TranslatorNotReady:
+                    english_query = map_to_english(original)
+                    translator_loading = True
         analysis = self.analyze(
             AnalyzeRequest(
                 text=english_query,
@@ -143,9 +154,27 @@ class NLUEngine:
             return self._reply_template("abstain", "abstained", original, english_query, analysis)
 
         cited = citation(hit)
+        if translator_loading:
+            return self._reply_from_analysis(
+                analysis,
+                amharic_reply=TEMPLATES["loading"]["am"],
+                english_query=english_query,
+                english_reply=span,
+                status="source_only",
+                cited=cited,
+            )
         if self.translator.can_translate_reply:
             try:
                 amharic = self.translator.to_amharic(span)
+            except TranslatorNotReady:
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=TEMPLATES["loading"]["am"],
+                    english_query=english_query,
+                    english_reply=span,
+                    status="source_only",
+                    cited=cited,
+                )
             except Exception as exc:
                 failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
                 failed.qa_ok = False

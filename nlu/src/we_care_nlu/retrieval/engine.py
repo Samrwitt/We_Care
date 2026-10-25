@@ -48,11 +48,16 @@ class KnowledgeIndex:
             corpus.append(blob)
             self.tokens.append(tokenize(blob))
         self.bm25 = BM25Okapi(self.tokens) if self.tokens else None
-        if embedder is not None and corpus:
+        # The hash embedder is a test stand-in. Scoring it over every sentence
+        # only slows search, so hash mode stays on BM25.
+        use_dense = embedder is not None and corpus and getattr(embedder, "model_key", "") != "hash"
+        if use_dense:
             self.embeddings = embedder.encode(corpus)
             self.model_key = embedder.model_key
         else:
             self.embeddings = None
+            if embedder is not None:
+                self.model_key = embedder.model_key
 
 
 class HybridRetriever:

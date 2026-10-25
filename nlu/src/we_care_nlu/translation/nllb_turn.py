@@ -6,6 +6,8 @@ the multilingual facebook/nllb-200-distilled-600M checkpoint (CC-BY-NC).
 
 from __future__ import annotations
 
+import threading
+
 from we_care_nlu.translation.protect import protect, restore
 
 
@@ -25,10 +27,17 @@ class NLLBTurnTranslator:
         self._model = None
         self._tokenizer = None
         self._resolved_device = "cpu"
+        self._load_lock = threading.Lock()
 
     def _load(self) -> None:
         if self._model is not None:
             return
+        with self._load_lock:
+            if self._model is not None:
+                return
+            self._load_weights()
+
+    def _load_weights(self) -> None:
         import torch
         from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 

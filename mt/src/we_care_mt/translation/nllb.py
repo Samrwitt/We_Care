@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 from we_care_mt.constants import NLLB_SRC_LANG, NLLB_TGT_LANG
@@ -75,6 +76,10 @@ class NLLBTranslator:
         model_kwargs = dict(kwargs)
         if self.device == "cuda":
             model_kwargs["torch_dtype"] = torch.float16
+        else:
+            cores = os.cpu_count() or 1
+            torch.set_num_threads(cores)
+            logger.info("CPU inference threads=%s", cores)
         model = AutoModelForSeq2SeqLM.from_pretrained(self.hf_id, **model_kwargs)
         model.to(self.device)
         model.eval()
@@ -101,14 +106,41 @@ class NLLBTranslator:
         repetition_penalty: float = 1.05,
         do_sample: bool = False,
     ) -> list[str]:
+        return self.translate_langs(
+            texts,
+            src_lang=self.src_lang,
+            tgt_lang=self.tgt_lang,
+            max_input_tokens=max_input_tokens,
+            max_new_tokens=max_new_tokens,
+            num_beams=num_beams,
+            length_penalty=length_penalty,
+            repetition_penalty=repetition_penalty,
+            do_sample=do_sample,
+        )
+
+    def translate_langs(
+        self,
+        texts: list[str],
+        *,
+        src_lang: str,
+        tgt_lang: str,
+        max_input_tokens: int = 200,
+        max_new_tokens: int = 256,
+        num_beams: int = 5,
+        length_penalty: float = 1.0,
+        repetition_penalty: float = 1.05,
+        do_sample: bool = False,
+    ) -> list[str]:
+        """Translate with one loaded model. src_lang and tgt_lang are NLLB codes."""
         if self._model is None or self._tokenizer is None:
             self.load()
-        assert self._model is not None and self._tokenizer is not None and self._tgt_id is not None
+        assert self._model is not None and self._tokenizer is not None
         import torch
 
         tokenizer = self._tokenizer
         if hasattr(tokenizer, "src_lang"):
-            tokenizer.src_lang = self.src_lang
+            tokenizer.src_lang = src_lang
+        tgt_id = lang_token_id(tokenizer, tgt_lang)
         encoded = tokenizer(
             texts,
             return_tensors="pt",
@@ -118,13 +150,15 @@ class NLLBTranslator:
         )
         encoded = {k: v.to(self.device) for k, v in encoded.items()}
         gen_kwargs: dict[str, Any] = {
-            "forced_bos_token_id": self._tgt_id,
+            "forced_bos_token_id": tgt_id,
             "max_new_tokens": max_new_tokens,
             "num_beams": num_beams,
             "length_penalty": length_penalty,
             "repetition_penalty": repetition_penalty,
             "do_sample": do_sample,
         }
+        if num_beams > 1:
+            gen_kwargs["early_stopping"] = True
         with torch.inference_mode():
             outputs = self._model.generate(**encoded, **gen_kwargs)
         decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)

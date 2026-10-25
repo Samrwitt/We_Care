@@ -115,6 +115,18 @@ def map_to_english(text: str) -> str:
     return " ".join("".join(parts).split())
 
 
+def covered_question(text: str) -> str | None:
+    """English query when the phrase list covers the whole question.
+
+    Known questions stay on this list so retrieval keeps its polarity words
+    and the model is only asked to translate the guideline sentence.
+    """
+    mapped = map_to_english(text)
+    if not mapped.strip() or _ETH.search(mapped):
+        return None
+    return mapped
+
+
 class PhraseMapTranslator:
     """Query translator only. Reply sentences stay in English until NLLB is enabled."""
 

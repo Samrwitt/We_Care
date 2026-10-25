@@ -6,12 +6,18 @@ services:
         TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
     image: we-care-mt:1.0.0
     working_dir: /app
+    ports:
+      - "8090:8090"
     volumes:
       - ../data/guidelines:/app/data/source_pdfs:ro
       - ./output:/app/output
       - ./cache:/app/cache
       - ./checkpoints:/app/checkpoints
-      - ./.hf_cache:/app/.hf_cache
+      - nlu_hf:/app/.hf_cache
     environment:
       HF_HOME: /app/.hf_cache
-    command: ["translate", "/app/data/source_pdfs", "--model", "mock", "--backend", "mock", "-o", "/app/output"]
+      HF_HUB_DISABLE_XET: "1"
+    command: ["serve", "--host", "0.0.0.0", "--port", "8090", "--model", "nllb_baseline_600m"]
+
+volumes:
+  nlu_hf:

@@ -27,12 +27,11 @@ def _ensure_kb() -> None:
     if os.environ.get("PYTEST_CURRENT_TEST"):
         return
     eng = get_engine()
-    if len(eng.retriever.index.chunks) > 0:
-        return
-    if _GUIDELINES_KB.exists():
-        eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
-    elif _DEFAULT_KB.exists():
-        eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
+    if len(eng.retriever.index.chunks) == 0:
+        if _GUIDELINES_KB.exists():
+            eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
+        elif _DEFAULT_KB.exists():
+            eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
 
 
 def get_engine() -> NLUEngine:
@@ -115,6 +114,7 @@ def health() -> dict[str, Any]:
         "generative_decoding": False,
         "chunks": len(eng.retriever.index.chunks),
         "embedder": eng.model_key,
+        "translation_backend": getattr(eng.translator, "backend", ""),
         "version": __version__,
     }
 
