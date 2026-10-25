@@ -1,34 +1,15 @@
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_USER: wecare
-      POSTGRES_PASSWORD: wecare
-      POSTGRES_DB: wecare_nlu
-    ports:
-      - "5432:5432"
-    volumes:
-      - nlu_pg:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wecare -d wecare_nlu"]
-      interval: 5s
-      retries: 10
-
   nlu:
     build: .
     environment:
       WE_CARE_NLU_MODEL: hash
       WE_CARE_TRANSLATION: mt
       WE_CARE_MT_URL: http://we-care-mt:8090
-      NLU_POSTGRES_DSN: postgresql://wecare:wecare@postgres:5432/wecare_nlu
     ports:
       - "8088:8088"
     depends_on:
-      postgres:
-        condition: service_healthy
       we-care-mt:
         condition: service_started
 
 volumes:
-  nlu_pg:
   nlu_hf:

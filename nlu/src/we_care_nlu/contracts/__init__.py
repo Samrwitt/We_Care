@@ -4,7 +4,6 @@ from we_care_nlu.contracts.schemas import (
     ChunkRecord,
     ContextState,
     Entity,
-    IngestRequest,
     RetrievalHit,
     SearchRequest,
 )
@@ -15,7 +14,6 @@ __all__ = [
     "ChunkRecord",
     "ContextState",
     "Entity",
-    "IngestRequest",
     "RetrievalHit",
     "SearchRequest",
 ]

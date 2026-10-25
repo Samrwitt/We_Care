@@ -1,3 +1,5 @@
+import threading
+
 from we_care_mt.span import SpanTranslator
 from we_care_mt.translation.cache import TranslationCache
 
@@ -30,6 +32,18 @@ def test_repeat_sentence_is_cached(tmp_path):
     assert first["text"] == second["text"]
     assert calls["n"] == 1
     assert second["qa_notes"] == ["cache_hit"]
+    err = []
+
+    def other_thread():
+        try:
+            service.translate("Condoms are available.", "en-am")
+        except Exception as exc:
+            err.append(exc)
+
+    worker = threading.Thread(target=other_thread)
+    worker.start()
+    worker.join()
+    assert err == []
 
 
 def test_question_goes_to_english_without_glossary_placeholders():

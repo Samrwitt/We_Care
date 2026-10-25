@@ -83,19 +83,10 @@ ner:
   min_confidence: 0.5
 
 translation:
-  # map: Amharic questions become English phrases without a neural model.
-  # nllb: facebook/nllb-200-distilled-600M does Amharic→English and English→Amharic.
-  # DSFSI checkpoints are English→Amharic only, so they cannot translate the question.
+  # map: known Amharic questions become English phrases. Sentence translation is we-care-mt.
   backend: map
-  model: facebook/nllb-200-distilled-600M
-  device: auto
-  num_beams: 4
 
 safety:
   emergency_always_rule_based: true
   require_source_for_claims: true
   unreviewed_is_not_verified: true
-
-postgres:
-  dsn: postgresql://wecare:wecare@localhost:5432/wecare_nlu
-  vector_dim: 768

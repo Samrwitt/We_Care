@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from typing import Iterable
-
-
 def accuracy(y_true: list[str], y_pred: list[str]) -> float:
     if not y_true:
         return 0.0
@@ -58,10 +54,3 @@ def mrr(ranked_ids: list[list[str]], relevant: list[set[str]]) -> float:
                 break
         total += rr
     return total / len(ranked_ids)
-
-
-def group_by_cluster(rows: Iterable[dict], cluster_key: str = "cluster") -> dict[str, list[dict]]:
-    out: dict[str, list[dict]] = defaultdict(list)
-    for row in rows:
-        out[str(row.get(cluster_key))].append(row)
-    return dict(out)

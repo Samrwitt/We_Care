@@ -127,14 +127,6 @@ class SearchRequest(BaseModel):
     model_key: str | None = None
 
 
-class IngestRequest(BaseModel):
-    path: str | None = None
-    alignment: dict[str, Any] | None = None
-    document_id: str | None = None
-    document_version: str = "unknown"
-    review_status: str = "unreviewed"
-
-
 class ChunkRecord(BaseModel):
     evidence_id: str
     document_id: str

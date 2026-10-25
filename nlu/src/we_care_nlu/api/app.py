@@ -78,11 +78,6 @@ def root() -> HTMLResponse:
     return HTMLResponse(_UI.read_text(encoding="utf-8"))
 
 
-@app.get("/ui", response_class=HTMLResponse)
-def ui() -> HTMLResponse:
-    return root()
-
-
 @app.get("/meta")
 def meta() -> dict[str, Any]:
     return {
