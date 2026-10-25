@@ -7,7 +7,7 @@ services:
     image: we-care-mt:1.0.0
     working_dir: /app
     volumes:
-      - ./data/source_pdfs:/app/data/source_pdfs:ro
+      - ../data/guidelines:/app/data/source_pdfs:ro
       - ./output:/app/output
       - ./cache:/app/cache
       - ./checkpoints:/app/checkpoints

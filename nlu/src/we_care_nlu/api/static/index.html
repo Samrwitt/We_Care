@@ -9,43 +9,48 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --paper: #f3eadc;
-      --ink: #1a2420;
-      --mute: #5c6a64;
-      --pine: #11463c;
-      --clay: #b85c38;
-      --card: #fffaf2;
-      --line: rgba(26, 36, 32, 0.12);
-      --shadow: 0 10px 28px rgba(17, 40, 34, 0.08);
+      --primary: #8f3f97;
+      --light: #eee2ef;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; height: 100dvh; margin: 0; overflow: hidden; }
     body {
       font-family: "Noto Sans Ethiopic", sans-serif;
-      color: var(--ink);
-      background:
-        repeating-linear-gradient(transparent, transparent 27px, rgba(184, 92, 56, 0.05) 28px),
-        radial-gradient(1200px 500px at 10% -10%, #f7f1e6, var(--paper));
+      color: var(--primary);
+      background: var(--light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 28px 20px;
     }
+    ::selection { background: var(--primary); color: #fff; }
     .shell {
-      max-width: 720px;
-      margin: 0 auto;
+      width: min(400px, 100%);
       height: 100%;
+      max-height: 860px;
+      background: #fff;
+      border: 1px solid var(--primary);
+      border-radius: 32px;
+      overflow: hidden;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
     }
+    @media (max-width: 440px) {
+      body { padding: 12px; }
+      .shell { border-radius: 24px; }
+    }
     header {
       padding: 16px 20px 12px;
-      border-bottom: 1px solid var(--line);
-      background: var(--paper);
+      border-bottom: 1px solid var(--primary);
+      background: var(--primary);
     }
     .wordmark {
       font-size: 26px;
       font-weight: 700;
-      color: var(--pine);
+      color: #fff;
       line-height: 1;
     }
-    .tag { margin-top: 4px; font-size: 13px; color: var(--mute); }
+    .tag { margin-top: 4px; font-size: 13px; color: #fff; }
     #log {
       padding: 18px 20px 20px;
       overflow-y: auto;
@@ -55,9 +60,8 @@
       gap: 14px;
     }
     .welcome, .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
+      background: var(--light);
+      border: 1px solid var(--primary);
       padding: 16px 18px;
       border-radius: 4px 18px 18px 18px;
     }
@@ -65,26 +69,26 @@
       margin: 0 0 8px;
       font-size: 20px;
       font-weight: 600;
-      color: var(--pine);
+      color: var(--primary);
     }
-    .welcome p { margin: 0 0 14px; color: var(--mute); font-size: 15px; line-height: 1.55; }
+    .welcome p { margin: 0 0 14px; color: var(--primary); font-size: 15px; line-height: 1.55; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .chip, .send {
       font-family: inherit;
       cursor: pointer;
-      border: 1px solid var(--line);
+      border: 1px solid var(--primary);
       background: #fff;
-      color: var(--pine);
+      color: var(--primary);
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 13px;
     }
-    .chip:hover { background: #efe4d2; }
+    .chip:hover { background: var(--primary); color: #fff; }
     .user {
       align-self: flex-end;
       max-width: 92%;
-      background: var(--pine);
-      color: #f7f3ea;
+      background: var(--primary);
+      color: #fff;
       padding: 10px 14px;
       border-radius: 16px 16px 4px 16px;
       font-size: 16px;
@@ -98,13 +102,12 @@
       font-size: 16px;
       line-height: 1.6;
     }
-    .emerg { color: #6d1d16; }
-    .empty, .wait, .src, .cite { color: var(--mute); }
+    .emerg, .empty, .wait, .src, .cite, .clarify, .am { color: var(--primary); }
     .src, .cite { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
     .composer {
       padding: 10px 16px 14px;
-      background: var(--paper);
-      border-top: 1px solid var(--line);
+      background: #fff;
+      border-top: 1px solid var(--primary);
     }
     .box {
       display: grid;
@@ -112,10 +115,9 @@
       gap: 8px;
       align-items: end;
       background: #fff;
-      border: 1px solid var(--line);
+      border: 1px solid var(--primary);
       border-radius: 18px;
       padding: 8px 8px 8px 14px;
-      box-shadow: var(--shadow);
     }
     textarea {
       width: 100%;
@@ -128,18 +130,20 @@
       min-height: 44px;
       max-height: 140px;
       background: transparent;
-      color: var(--ink);
+      color: var(--primary);
     }
+    textarea::placeholder { color: var(--primary); }
     .send {
-      background: var(--pine);
-      color: #f7f3ea;
+      background: var(--primary);
+      color: #fff;
       border: 0;
       min-width: 72px;
       height: 40px;
       font-weight: 600;
     }
-    .send:disabled { opacity: 0.5; cursor: wait; }
-    .fine { margin: 8px 6px 0; font-size: 12px; color: var(--mute); }
+    .send:disabled { cursor: wait; }
+    :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .fine { margin: 8px 6px 0; font-size: 12px; color: var(--primary); }
   </style>
 </head>
 <body>
