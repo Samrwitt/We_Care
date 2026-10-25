@@ -1,6 +1,9 @@
 services:
   we-care-mt:
-    build: .
+    build:
+      context: .
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
     image: we-care-mt:1.0.0
     working_dir: /app
     volumes:

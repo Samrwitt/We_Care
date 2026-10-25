@@ -1,6 +1,10 @@
+.git
 .venv
+venv
 __pycache__
 .pytest_cache
 *.pyc
 .hf_cache
 *.egg-info
+tests
+docs

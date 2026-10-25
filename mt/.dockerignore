@@ -1,5 +1,6 @@
 .git
 .venv
+venv
 __pycache__
 *.pyc
 output
@@ -12,6 +13,7 @@ models
 RH Guidelines-*.zip
 data/source_pdfs
 .pytest_cache
+tests
 htmlcov
 dist
 build
