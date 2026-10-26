@@ -56,10 +56,20 @@ class SentenceTransformerEmbedder:
         self.dim = int(spec.get("dim") or 768)
         self.amharic_sentence_encoder = bool(spec.get("amharic_sentence_encoder", True))
         self._batch_size = int(spec.get("batch_size") or 32)
-        cache = os.environ.get("SENTENCE_TRANSFORMERS_HOME") or os.environ.get("HF_HOME")
+        try:
+            import torch
+
+            requested = int(os.environ.get("WE_CARE_TORCH_THREADS") or 0)
+            cores = os.cpu_count() or 1
+            threads = requested if requested > 0 else min(4, cores)
+            torch.set_num_threads(max(1, threads))
+        except Exception:
+            pass
+        # Prefer HF_HOME/hub via huggingface_hub. Only override when ST has its own home.
         kwargs: dict[str, Any] = {}
-        if cache:
-            kwargs["cache_folder"] = cache
+        st_home = os.environ.get("SENTENCE_TRANSFORMERS_HOME")
+        if st_home:
+            kwargs["cache_folder"] = st_home
         self._model = SentenceTransformer(self.hf_id, **kwargs)
 
     def encode(self, texts: list[str]) -> np.ndarray:

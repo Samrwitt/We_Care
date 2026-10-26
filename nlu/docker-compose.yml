@@ -1,19 +1,37 @@
 services:
   nlu:
-    build: .
+    build:
+      context: .
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+    image: we-care-nlu:1.0.0
+    restart: unless-stopped
     environment:
       WE_CARE_NLU_MODEL: labse
       WE_CARE_TRANSLATION: mt
       WE_CARE_MT_URL: http://we-care-mt:8090
       HF_HOME: /app/.hf_cache
       HF_HUB_DISABLE_XET: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      HF_TOKEN: ${HF_TOKEN:-}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "4"
+      MKL_NUM_THREADS: "4"
+      WE_CARE_TORCH_THREADS: "4"
     volumes:
       - nlu_hf:/app/.hf_cache
     ports:
       - "8088:8088"
     depends_on:
       we-care-mt:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "scripts/docker_health.py"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
 
 volumes:
   nlu_hf:

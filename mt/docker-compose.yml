@@ -4,20 +4,33 @@ services:
       context: .
       args:
         TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+        WE_CARE_MT_PROFILE: span
     image: we-care-mt:1.0.0
     working_dir: /app
+    restart: unless-stopped
     ports:
       - "8090:8090"
     volumes:
-      - ../data/guidelines:/app/data/source_pdfs:ro
-      - ./output:/app/output
+      # Span translation cache + Hugging Face weights (shared with nlu).
       - ./cache:/app/cache
-      - ./checkpoints:/app/checkpoints
       - nlu_hf:/app/.hf_cache
     environment:
       HF_HOME: /app/.hf_cache
       HF_HUB_DISABLE_XET: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      HF_TOKEN: ${HF_TOKEN:-}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "4"
+      MKL_NUM_THREADS: "4"
+      WE_CARE_TORCH_THREADS: "4"
     command: ["serve", "--host", "0.0.0.0", "--port", "8090", "--model", "nllb_baseline_600m"]
+    healthcheck:
+      test: ["CMD", "python", "scripts/docker_health.py"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   nlu_hf:

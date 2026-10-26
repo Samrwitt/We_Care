@@ -8,3 +8,13 @@ __pycache__
 *.egg-info
 tests
 docs
+**/*.md
+!README.md
+.coverage
+htmlcov
+dist
+build
+*.safetensors
+*.bin
+*.pt
+.DS_Store

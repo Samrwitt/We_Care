@@ -18,4 +18,9 @@ htmlcov
 dist
 build
 *.egg-info
-agent-transcripts
+**/*.md
+!README.md
+*.safetensors
+*.bin
+*.pt
+.DS_Store

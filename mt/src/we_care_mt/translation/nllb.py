@@ -77,9 +77,12 @@ class NLLBTranslator:
         if self.device == "cuda":
             model_kwargs["torch_dtype"] = torch.float16
         else:
+            # Cap threads so chat latency stays stable under concurrent load.
+            requested = int(os.environ.get("WE_CARE_TORCH_THREADS") or 0)
             cores = os.cpu_count() or 1
-            torch.set_num_threads(cores)
-            logger.info("CPU inference threads=%s", cores)
+            threads = requested if requested > 0 else min(4, cores)
+            torch.set_num_threads(max(1, threads))
+            logger.info("CPU inference threads=%s", torch.get_num_threads())
         model = AutoModelForSeq2SeqLM.from_pretrained(self.hf_id, **model_kwargs)
         model.to(self.device)
         model.eval()

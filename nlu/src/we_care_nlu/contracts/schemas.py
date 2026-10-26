@@ -61,7 +61,8 @@ class RetrievalHit(BaseModel):
     fused_score: float
     rerank_score: float | None = None
     polarity_conflict: bool = False
-    source_kind: Literal["document_evidence"] = "document_evidence"
+    source_kind: str = "document_evidence"
+    source_url: str = ""
 
 
 class AnalyzeResponse(BaseModel):
@@ -94,7 +95,7 @@ class AnalyzeResponse(BaseModel):
 
 
 class ReplyResponse(BaseModel):
-    """One user turn. Retrieval runs on the English query. The reply is not generated."""
+    """One user turn. Grounded reply from KB spans. Not generative."""
 
     amharic_reply: str
     english_query: str
@@ -109,6 +110,7 @@ class ReplyResponse(BaseModel):
     page: int | None = None
     section: str = ""
     review_status: str = ""
+    source_url: str = ""
     intent: str
     intent_labels: list[str] = Field(default_factory=list)
     entities: list[Entity] = Field(default_factory=list)
@@ -142,3 +144,4 @@ class ChunkRecord(BaseModel):
     heading: str = ""
     terms: list[str] = Field(default_factory=list)
     content_hash: str = ""
+    source_url: str = ""

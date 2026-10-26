@@ -1,14 +1,17 @@
-"""Ingest Component 1 alignment JSON into knowledge chunks."""
+"""Ingest alignment JSON and WeCare Amharic article KB into knowledge chunks."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 from we_care_nlu.contracts.schemas import ChunkRecord
 from we_care_nlu.preprocess.normalize import preprocess
+
+_ETH = re.compile(r"[\u1200-\u137F]")
 
 
 def _hash(text: str) -> str:
@@ -20,14 +23,28 @@ def _subject(text: str) -> str:
     mapping = [
         ("contracept", "family_planning"),
         ("የእርግዝና መከላከያ", "family_planning"),
+        ("የወሊድ መቆጣጠሪያ", "family_planning"),
         ("የቤተሰብ ምጣኔ", "family_planning"),
+        ("iud", "family_planning"),
+        ("አይ.ዩ.ዲ", "family_planning"),
         ("hiv", "hiv"),
         ("ኤች.አይ.ቪ", "hiv"),
+        ("ኤችአይቪ", "hiv"),
+        ("sti", "sti"),
+        ("አባላዘር", "sti"),
+        ("ivf", "maternal"),
+        ("ፅንስ ማዳቀል", "maternal"),
         ("pregnan", "maternal"),
         ("እርግዝና", "maternal"),
         ("breast", "maternal"),
         ("ጡት", "maternal"),
-        ("sti", "sti"),
+        ("ከወሊድ", "maternal"),
+        ("kegel", "maternal"),
+        ("ኬገል", "maternal"),
+        ("ultrasound", "maternal"),
+        ("አልትራሳውንድ", "maternal"),
+        ("pcos", "maternal"),
+        ("ፖሊሲስቲክ", "maternal"),
         ("contraindicat", "safety"),
         ("ተቃራኒ", "safety"),
         ("side effect", "safety"),
@@ -37,6 +54,14 @@ def _subject(text: str) -> str:
         if needle in low:
             return cat
     return "general"
+
+
+def _terms(text: str) -> list[str]:
+    terms: list[str] = []
+    for token in ("IUCD", "IUD", "HIV", "DMPA", "PMTCT", "VIA", "FP", "IVF", "PCOS", "STI", "Kegel"):
+        if token.lower() in text.lower() or token in text:
+            terms.append(token)
+    return terms
 
 
 def ingest_alignment(
@@ -49,13 +74,22 @@ def ingest_alignment(
     doc_name = payload.get("document_name") or "unknown.pdf"
     doc_id = document_id or Path(str(doc_name)).stem
     title = payload.get("title") or doc_id
+    doc_url = str(payload.get("source_url") or "").strip()
     chunks: list[ChunkRecord] = []
     seen: set[str] = set()
     current_heading = ""
     for row in payload.get("segments") or []:
         kind = row.get("kind") or "paragraph"
-        en = (row.get("source_text") or "").strip()
-        am = (row.get("translated_text") or "").strip()
+        flags = str(row.get("flags") or "")
+        is_article = "wecare_article" in flags or "source_amharic" in flags
+        en = (row.get("source_text") or row.get("english_text") or "").strip()
+        am = (row.get("translated_text") or row.get("amharic_text") or "").strip()
+        if is_article:
+            # Amharic is primary; tolerate Amharic accidentally placed in source_text.
+            if not am and en and _ETH.search(en):
+                am, en = en, ""
+            elif am and en and _ETH.search(en) and not _ETH.search(am):
+                am, en = en, am
         if kind == "heading":
             current_heading = am or en
         if row.get("section"):
@@ -68,11 +102,10 @@ def ingest_alignment(
         if key in seen:
             continue
         seen.add(key)
-        flags = str(row.get("flags") or "")
         status = default_review_status
         if "human_reviewed" in flags:
             status = "reviewed"
-        if "source_english" in flags:
+        if "source_english" in flags or "source_amharic" in flags or is_article:
             status = "source"
         page = row.get("page_number")
         try:
@@ -80,10 +113,13 @@ def ingest_alignment(
         except (TypeError, ValueError):
             page_i = None
         text_for_terms = f"{en} {am}"
-        terms = []
-        for token in ("IUCD", "HIV", "DMPA", "PMTCT", "VIA", "FP"):
-            if token in text_for_terms:
-                terms.append(token)
+        if is_article:
+            source_kind = "wecare_article"
+        elif "source_english" in flags:
+            source_kind = "english_guideline"
+        else:
+            source_kind = "phase1_alignment"
+        source_url = str(row.get("source_url") or doc_url or "").strip()
         rec = ChunkRecord(
             evidence_id=row.get("segment_id") or f"{doc_id}:{key}",
             document_id=doc_id,
@@ -96,9 +132,10 @@ def ingest_alignment(
             review_status=status,
             medical_subject=_subject(text_for_terms),
             document_version=document_version,
-            source_kind="english_guideline" if "source_english" in flags else "phase1_alignment",
-            terms=terms,
+            source_kind=source_kind,
+            terms=_terms(text_for_terms),
             content_hash=key,
+            source_url=source_url,
         )
         chunks.append(rec)
     return chunks

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import re
 
-_SENT_END = re.compile(r"([.!?])([\"')\]]*)(\s+|$)")
+# Include Ethiopic full stop (።) used in Amharic articles.
+_SENT_END = re.compile(r"([.!?።])([\"')\]]*)(\s+|$)")
 _SPACE = re.compile(r"[ \t]+")
 _ABBREV = {
     "dr", "mr", "mrs", "ms", "prof", "fig", "no", "vol", "pp", "ed",
@@ -38,7 +39,7 @@ def split_sentences(text: str) -> list[str]:
     text = clean_text(text)
     if not text:
         return []
-    if len(text) < 40 or not any(mark in text for mark in ".!?"):
+    if len(text) < 40 or not any(mark in text for mark in ".!?።"):
         return [text]
     sentences: list[str] = []
     start = 0

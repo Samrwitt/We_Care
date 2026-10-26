@@ -11,9 +11,12 @@ FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_kb.json"
 
 def client():
     # Reset singleton toward hash engine with empty KB, then ingest via API.
-    import we_care_nlu.api.app as mod
+    import sys
 
+    mod = sys.modules["we_care_nlu.api.app"]
     mod._ENGINE = NLUEngine(load_config(), model_key="hash")
+    mod._LOAD_ERROR = None
+    mod._READY.set()
     return TestClient(app)
 
 

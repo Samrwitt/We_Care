@@ -163,6 +163,8 @@ class HybridRetriever:
                     fused_score=max(0.0, score),
                     rerank_score=max(0.0, score),
                     polarity_conflict=polarity_conflict,
+                    source_kind=getattr(chunk, "source_kind", "") or "document_evidence",
+                    source_url=getattr(chunk, "source_url", "") or "",
                 )
             )
         hits.sort(key=lambda h: h.fused_score, reverse=True)

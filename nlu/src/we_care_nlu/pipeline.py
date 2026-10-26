@@ -22,7 +22,7 @@ from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import covered_question, map_to_english
 from we_care_nlu.translation.advice import intent_advice
 from we_care_nlu.translation.compose import compose_amharic_reply, shape_english_answer
-from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span
+from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span, with_article_cite
 
 _ETHIOPIC = re.compile(r"[\u1200-\u137F]")
 
@@ -127,32 +127,20 @@ class NLUEngine:
         original = req.text or ""
         translator_loading = False
         ask_amharic = detect_language(original) != "en"
-        if not ask_amharic:
-            english_query = original
-            search_text = original
-            search_lang = "en"
-        else:
+        if ask_amharic:
+            # Native Amharic KB: search as written. Phrase-map only labels english_query (no Am→En MT).
             covered = covered_question(original)
             if covered is not None:
                 english_query = covered
-                # Known phrase-mapped questions keep English retrieval polarity words.
-                search_text = covered
-                search_lang = "en"
             else:
-                try:
-                    mapped = self.translator.to_english(original)
-                except TranslatorNotReady:
-                    mapped = map_to_english(original)
-                    translator_loading = True
-                if mapped and not _ETHIOPIC.search(mapped):
-                    english_query = mapped
-                    search_text = mapped
-                    search_lang = "en"
-                else:
-                    # Incomplete Am→En map: retrieve against bilingual Amharic KB text.
-                    english_query = mapped or original
-                    search_text = original
-                    search_lang = "am"
+                mapped = map_to_english(original)
+                english_query = mapped if mapped and not _ETHIOPIC.search(mapped) else original
+            search_text = original
+            search_lang = "am"
+        else:
+            english_query = original
+            search_text = original
+            search_lang = "en"
         analysis = self.analyze(
             AnalyzeRequest(
                 text=search_text,
@@ -173,11 +161,9 @@ class NLUEngine:
         if analysis.requires_clarification:
             return self._reply_template("clarify", "template", original, english_query, analysis)
 
-        # Match span language to how we searched: Amharic KB text for uncovered Amharic asks.
         span_query = original if search_lang == "am" else english_query
         span, hit = select_span(span_query, analysis.retrieval_results, analysis.intent)
         if not span:
-            # Fallback only when the hit actually shares a content term with the question.
             from we_care_nlu.translation.reply import _content_tokens
 
             need = _content_tokens(span_query)
@@ -185,14 +171,18 @@ class NLUEngine:
                 if candidate.polarity_conflict:
                     continue
                 stored = (candidate.amharic_text or "").strip()
-                if not (stored and _ETHIOPIC.search(stored)):
-                    continue
-                blob = f"{candidate.amharic_text} {candidate.english_text}".lower()
+                english = (candidate.english_text or "").strip()
+                blob = f"{stored} {english}".lower()
                 if need and not any(tok.lower() in blob for tok in need):
                     continue
-                hit = candidate
-                span = (candidate.english_text or stored)[:700]
-                break
+                if stored and _ETHIOPIC.search(stored):
+                    hit = candidate
+                    span = stored[:700]
+                    break
+                if english:
+                    hit = candidate
+                    span = english[:700]
+                    break
         if (analysis.safety.get("unsupported_question") and not hit) or not span:
             advice = intent_advice(analysis.intent)
             if advice:
@@ -208,13 +198,75 @@ class NLUEngine:
             return self._reply_template("abstain", "abstained", original, english_query, analysis)
 
         cited = citation(hit)
-        # Compose a short spoken Amharic answer from the grounded span (not a raw PDF paste).
+        source_url = str(cited.get("source_url") or "")
+        article_hit = (cited.get("source_kind") or getattr(hit, "source_kind", "") or "") == "wecare_article"
+        span_is_amharic = bool(_ETHIOPIC.search(span or ""))
+
+        # WeCare Amharic articles: return the span as-is for Amharic asks; MT only for English asks.
+        if article_hit and span_is_amharic:
+            amharic = with_article_cite(span[:700], source_url, amharic=True)
+            if ask_amharic:
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=amharic,
+                    english_query=english_query,
+                    english_reply="",
+                    status="translated",
+                    cited=cited,
+                    translation_backend="article",
+                )
+            if translator_loading:
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=amharic,
+                    english_query=english_query,
+                    english_reply=TEMPLATES["loading"]["am"],
+                    status="source_only",
+                    cited=cited,
+                    translation_backend="article",
+                )
+            try:
+                english = self.translator.to_english(span)
+            except TranslatorNotReady:
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=amharic,
+                    english_query=english_query,
+                    english_reply=TEMPLATES["loading"]["en"] or span[:700],
+                    status="source_only",
+                    cited=cited,
+                    translation_backend="article",
+                )
+            except Exception as exc:
+                failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
+                failed.qa_ok = False
+                failed.qa_notes = [f"translation_error:{exc.__class__.__name__}"]
+                failed.amharic_reply = amharic
+                return failed
+            if not english or _ETHIOPIC.search(english):
+                english = span
+            english = with_article_cite(english[:700], source_url, amharic=False)
+            return self._reply_from_analysis(
+                analysis,
+                amharic_reply=amharic,
+                english_query=english_query,
+                english_reply=english,
+                status="translated",
+                cited=cited,
+                translation_backend="mt",
+            )
+
+        # Legacy English-guideline path: compose Amharic from an English span.
         stored_am = (hit.amharic_text or "").strip() if hit else ""
         amharic, compose_backend, compose_notes = compose_amharic_reply(
-            english_span=span,
-            document_amharic=stored_am,
+            english_span=span if not span_is_amharic else (hit.english_text if hit else ""),
+            document_amharic=stored_am if not article_hit else span,
             translator=None if translator_loading else self.translator,
         )
+        if span_is_amharic and not amharic:
+            amharic = span
+            compose_backend = "article"
+            compose_notes = ["native_amharic_span"]
         if amharic and _ETHIOPIC.search(amharic):
             notes = list(compose_notes)
             qa_flags: list[str] = []
@@ -230,14 +282,16 @@ class NLUEngine:
                 failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
                 failed.qa_ok = False
                 failed.qa_notes = qa_flags
-                failed.english_reply = span
+                failed.english_reply = span if not span_is_amharic else ""
                 return failed
-            english_shown = shape_english_answer(span) or span
+            english_shown = shape_english_answer(span) if not span_is_amharic else ""
+            if not english_shown and not span_is_amharic:
+                english_shown = span
             shown = self._reply_from_analysis(
                 analysis,
                 amharic_reply=amharic[:700],
                 english_query=english_query,
-                english_reply=english_shown[:700],
+                english_reply=(english_shown or "")[:700],
                 status="translated",
                 cited=cited,
                 translation_backend=compose_backend,
@@ -313,6 +367,7 @@ class NLUEngine:
             page=cited.get("page"),
             section=cited.get("section") or "",
             review_status=cited.get("review_status") or "",
+            source_url=cited.get("source_url") or "",
             intent=analysis.intent,
             intent_labels=analysis.intent_labels,
             entities=analysis.entities,

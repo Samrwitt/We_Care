@@ -9,20 +9,14 @@ Two packages sit side by side:
 | [`nlu/`](nlu/README.md) | Understand an Amharic question, search the English guidelines, return one reply | `cd nlu && we-care-nlu serve` |
 | [`mt/`](mt/README.md) | Translate a whole English PDF into Amharic for review | `cd mt && we-care-mt --help` |
 
-The knowledge base is the original English text. Source PDFs live in [`data/guidelines/`](data/guidelines). They are not translated ahead of time. `nlu` reads them, and `mt` is the separate document translator for when a full Amharic PDF is needed.
+Default chat KB is Amharic WeCare articles (`nlu/data/kb/wecare_articles_am.json`). `mt` translates one retrieved span for English asks (and remains available for full PDF jobs).
 
 ```bash
-docker compose up nlu
-docker compose run --rm we-care-mt --help
+# Chat stack (slim MT span image + NLU/LaBSE)
+docker compose up --build
+
+# Full PDF MT image (PyMuPDF/fonts) when you need document translation:
+docker compose build --build-arg WE_CARE_MT_PROFILE=full we-care-mt
 ```
-
-Build the English index from the guidelines:
-
-```bash
-cd nlu
-PYTHONPATH=src python scripts/ingest_guidelines.py --pdf-dir ../data/guidelines
-```
-
-`POST /nlp/reply` is the user-facing route. Set `WE_CARE_TRANSLATION=nllb` to translate the retrieved sentence into Amharic. Without that model, the reply shows the English guideline sentence and the page it came from.
 
 This is not a clinically validated medical device. A passing check does not make a translation safe for patients.

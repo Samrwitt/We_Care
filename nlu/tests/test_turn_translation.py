@@ -140,8 +140,9 @@ def test_reply_uses_english_span_without_neural_translation():
             ],
         }
     )
-    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
-    assert "contraceptive" in out.english_query
+    # English ask against English-only guideline text (Amharic asks use the Amharic article KB).
+    out = eng.reply(AnalyzeRequest(text="What contraceptive method options are available?"))
+    assert "contraceptive" in out.english_query.lower()
     assert out.translation_status == "source_only"
     assert out.evidence_id == "en-methods"
     assert out.page == 4
@@ -286,7 +287,7 @@ def test_known_question_skips_the_model_until_the_sentence():
             ],
         }
     )
-    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
+    out = eng.reply(AnalyzeRequest(text="What contraceptive method options are available?"))
     assert counter.english_calls == 0
     assert counter.amharic_calls == 1
     assert out.translation_status == "translated"
@@ -313,7 +314,7 @@ def test_loading_translator_still_returns_the_english_sentence():
             ],
         }
     )
-    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
+    out = eng.reply(AnalyzeRequest(text="What contraceptive method options are available?"))
     assert out.translation_status == "source_only"
     assert "እየተጫነ" in out.amharic_reply
     assert "Contraceptive method options" in out.english_reply
@@ -339,7 +340,7 @@ def test_bad_reply_translation_is_not_shown():
             ],
         }
     )
-    out = eng.reply(AnalyzeRequest(text="መርፌ ጡት ማጥባት"))
+    out = eng.reply(AnalyzeRequest(text="Can injectable be used while breastfeeding?"))
     assert out.translation_status == "qa_failed"
     assert out.qa_ok is False
     assert any(note.startswith("numbers_missing") or note.startswith("polarity") for note in out.qa_notes)
@@ -368,3 +369,72 @@ def test_chunk_record_marks_source_english():
     )
     assert record.review_status == "source"
     assert record.amharic_text == ""
+
+
+def test_ingest_wecare_article_kb():
+    from pathlib import Path
+
+    from we_care_nlu.kb.ingest import ingest_path
+
+    path = Path(__file__).resolve().parents[1] / "data" / "kb" / "wecare_articles_am.json"
+    chunks = ingest_path(str(path), document_version="wecare-articles", default_review_status="source")
+    assert len(chunks) >= 50
+    assert all(c.source_kind == "wecare_article" for c in chunks)
+    assert all(c.amharic_text and not c.english_text for c in chunks)
+    assert any(c.source_url.startswith("https://wecare.et/") for c in chunks)
+    assert any("IUD" in c.amharic_text or "አይ.ዩ.ዲ" in c.amharic_text for c in chunks)
+
+
+def test_amharic_ask_returns_article_span_without_mt():
+    from pathlib import Path
+
+    eng = NLUEngine(model_key="hash")
+
+    class Boom:
+        can_translate_reply = True
+        backend = "mt"
+
+        def to_english(self, text: str) -> str:
+            raise AssertionError("Amharic article replies must not call MT")
+
+        def to_amharic(self, text: str) -> str:
+            raise AssertionError("Amharic article replies must not call MT")
+
+    eng.translator = Boom()
+    path = Path(__file__).resolve().parents[1] / "data" / "kb" / "wecare_articles_am.json"
+    eng.ingest_file(str(path), document_version="wecare-articles", default_review_status="source")
+    out = eng.reply(AnalyzeRequest(text="አይ.ዩ.ዲ ምንድን ነው?"))
+    assert out.translation_status == "translated"
+    assert out.translation_backend == "article"
+    assert "አይ.ዩ.ዲ" in out.amharic_reply or "IUD" in out.amharic_reply
+    assert "wecare.et" in out.amharic_reply or out.source_url.startswith("https://wecare.et/")
+    assert out.english_reply == ""
+    assert out.evidence_id
+
+
+def test_english_ask_translates_article_span():
+    from pathlib import Path
+
+    eng = NLUEngine(model_key="hash")
+
+    class FakeMT:
+        can_translate_reply = True
+        backend = "mt"
+        last_qa_notes: list[str] = []
+
+        def to_english(self, text: str) -> str:
+            assert any("\u1200" <= ch <= "\u137F" for ch in text)
+            return "An IUD is a small T-shaped contraceptive device placed in the uterus."
+
+        def to_amharic(self, text: str) -> str:
+            raise AssertionError("English ask should translate Am→En, not En→Am")
+
+    eng.translator = FakeMT()
+    path = Path(__file__).resolve().parents[1] / "data" / "kb" / "wecare_articles_am.json"
+    eng.ingest_file(str(path), document_version="wecare-articles", default_review_status="source")
+    out = eng.reply(AnalyzeRequest(text="What is an IUD?"))
+    assert out.translation_status == "translated"
+    assert out.translation_backend == "mt"
+    assert "IUD" in out.english_reply
+    assert "wecare.et" in out.english_reply or out.source_url.startswith("https://wecare.et/")
+    assert any("\u1200" <= ch <= "\u137F" for ch in out.amharic_reply)

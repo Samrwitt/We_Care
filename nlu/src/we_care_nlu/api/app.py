@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -13,54 +15,100 @@ from we_care_nlu.config import load_config
 from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, ReplyResponse, SearchRequest
 from we_care_nlu.pipeline import NLUEngine
 
+logger = logging.getLogger("we_care_nlu")
+
 _UI = Path(__file__).resolve().parent / "static" / "index.html"
 _KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
-# Prefer bilingual Phase-1 alignment (document-first Amharic) when present.
+# Primary KB: scraped WeCare Amharic articles (no EN→AM for these).
+_ARTICLES_KB = _KB_DIR / "wecare_articles_am.json"
+# Optional fallbacks when articles are missing (kept off the default path).
 _BILINGUAL_KB = _KB_DIR / "fp_guideline_bilingual.json"
 _GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
 _DEFAULT_KB = _KB_DIR / "fp_user_kb.json"
 
 _ENGINE: NLUEngine | None = None
+_READY = threading.Event()
+_LOAD_ERROR: str | None = None
+_LOAD_LOCK = threading.Lock()
 
 
-def _ensure_kb() -> None:
+def _ingest_default_kb(eng: NLUEngine) -> None:
+    if len(eng.retriever.index.chunks) > 0:
+        return
+    if _ARTICLES_KB.exists():
+        eng.ingest_file(
+            str(_ARTICLES_KB),
+            document_version="wecare-articles",
+            default_review_status="source",
+        )
+        return
+    if _BILINGUAL_KB.exists():
+        eng.ingest_file(
+            str(_BILINGUAL_KB),
+            document_version="2021-06",
+            default_review_status="unreviewed",
+        )
+    elif _DEFAULT_KB.exists():
+        eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
+    elif _GUIDELINES_KB.exists():
+        eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
+
+
+def _warm() -> None:
+    """Load embedder + KB off the request path so uvicorn can bind immediately."""
+    global _ENGINE, _LOAD_ERROR
     import os
 
     if os.environ.get("PYTEST_CURRENT_TEST"):
+        _READY.set()
         return
-    eng = get_engine()
-    if len(eng.retriever.index.chunks) == 0:
-        loaded = False
-        if _BILINGUAL_KB.exists():
-            eng.ingest_file(
-                str(_BILINGUAL_KB),
-                document_version="2021-06",
-                default_review_status="unreviewed",
-            )
-            loaded = True
-        # Short curated Amharic answers fill gaps while the PDF translation is partial.
-        if _DEFAULT_KB.exists():
-            eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
-            loaded = True
-        if not loaded and _GUIDELINES_KB.exists():
-            eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
+    try:
+        cfg = load_config()
+        key = os.environ.get("WE_CARE_NLU_MODEL") or cfg.get("embeddings", {}).get("test_model") or "hash"
+        print(f"we-care-nlu: loading embedder={key} (this can take several minutes on first boot)", flush=True)
+        eng = NLUEngine(cfg, model_key=key)
+        print(f"we-care-nlu: embedder ready ({eng.model_key}); ingesting KB", flush=True)
+        _ingest_default_kb(eng)
+        with _LOAD_LOCK:
+            _ENGINE = eng
+            _LOAD_ERROR = None
+        print(
+            f"we-care-nlu: ready embedder={eng.model_key} chunks={len(eng.retriever.index.chunks)}",
+            flush=True,
+        )
+    except Exception as exc:
+        logger.exception("NLU failed to warm up")
+        print(f"we-care-nlu: warm-up failed: {exc.__class__.__name__}: {exc}", flush=True)
+        with _LOAD_LOCK:
+            _LOAD_ERROR = f"{exc.__class__.__name__}: {exc}"
+    finally:
+        _READY.set()
 
 
 def get_engine() -> NLUEngine:
-    global _ENGINE
-    if _ENGINE is None:
-        cfg = load_config()
-        # API default: hash unless WE_CARE_NLU_MODEL is set, so the service starts without weights.
-        import os
-
-        key = os.environ.get("WE_CARE_NLU_MODEL") or cfg.get("embeddings", {}).get("test_model") or "hash"
-        _ENGINE = NLUEngine(cfg, model_key=key)
-    return _ENGINE
+    if not _READY.is_set():
+        raise HTTPException(503, "NLU is still loading the embedding model and knowledge base.")
+    with _LOAD_LOCK:
+        if _LOAD_ERROR:
+            raise HTTPException(503, f"NLU failed to start: {_LOAD_ERROR}")
+        if _ENGINE is None:
+            raise HTTPException(503, "NLU engine is not ready.")
+        return _ENGINE
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _ensure_kb()
+    import os
+
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        # Tests construct engines directly; keep sync path for local TestClient setups.
+        cfg = load_config()
+        key = os.environ.get("WE_CARE_NLU_MODEL") or cfg.get("embeddings", {}).get("test_model") or "hash"
+        global _ENGINE
+        _ENGINE = NLUEngine(cfg, model_key=key)
+        _READY.set()
+    else:
+        threading.Thread(target=_warm, name="nlu-warm", daemon=True).start()
     yield
 
 
@@ -114,7 +162,41 @@ def meta() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    eng = get_engine()
+    # Never block on model download — Docker and the UI need a live HTTP server.
+    if not _READY.is_set():
+        return {
+            "status": "loading",
+            "component": 2,
+            "generative_decoding": False,
+            "chunks": 0,
+            "embedder": "",
+            "translation_backend": "",
+            "version": __version__,
+        }
+    with _LOAD_LOCK:
+        if _LOAD_ERROR:
+            return {
+                "status": "error",
+                "component": 2,
+                "error": _LOAD_ERROR,
+                "generative_decoding": False,
+                "chunks": 0,
+                "embedder": "",
+                "translation_backend": "",
+                "version": __version__,
+            }
+        eng = _ENGINE
+    if eng is None:
+        return {
+            "status": "error",
+            "component": 2,
+            "error": "engine missing",
+            "generative_decoding": False,
+            "chunks": 0,
+            "embedder": "",
+            "translation_backend": "",
+            "version": __version__,
+        }
     return {
         "status": "ok",
         "component": 2,
@@ -129,9 +211,12 @@ def health() -> dict[str, Any]:
 @app.get("/models")
 def models() -> dict[str, Any]:
     cfg = load_config()
+    active = ""
+    if _READY.is_set() and _ENGINE is not None:
+        active = _ENGINE.model_key
     return {
         "embeddings": cfg.get("embeddings", {}).get("models", {}),
-        "active": get_engine().model_key,
+        "active": active,
         "intent_backend": "lexicon_prototype",
         "ner_backend": "gazetteer_regex",
         "reranker": (cfg.get("retrieval") or {}).get("reranker"),

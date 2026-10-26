@@ -28,17 +28,25 @@ ANSWER_CUES: dict[str, tuple[str, ...]] = {
     "duration": (
         "year", "years", "month", "months", "week", "weeks", "day", "days",
         "effective for", "lasts", "lasting", "remains effective", "every ",
+        "ዓመት", "ወር", "ሳምንት", "ቀን", "ያገለግላል", "ይቆያል",
     ),
     "family_planning_methods": (
-        "include", "options", "methods", "condom", "implant", "injectable", "pill",
+        "include", "options", "methods", "condom", "implant", "injectable", "pill", "iud",
+        "ዘዴ", "መከላከያ", "ኮንዶም", "ክኒን", "መርፌ", "ኢምፕላንት",
     ),
-    "definition": ("is a", "is an", "means", "refers to", "defined as"),
-    "side_effects": ("side effect", "bleeding", "nausea", "headache", "weight"),
-    "contraindications": ("must not", "should not", "contraindicat", "do not use"),
-    "eligibility": ("can be used", "may be used", "eligible", "suitable"),
-    "how_it_works": ("works by", "prevents", "stopping", "thickening"),
-    "missed_dose": ("missed", "as soon as", "remembered", "late"),
-    "access": ("available", "health facilit", "clinic", "pharmacy"),
+    "definition": (
+        "is a", "is an", "means", "refers to", "defined as",
+        "ነው", "ናቸው", "ማለት", "ይባላል",
+    ),
+    "side_effects": (
+        "side effect", "bleeding", "nausea", "headache", "weight",
+        "ጎንዮሽ", "ደም", "ራስ ምታት",
+    ),
+    "contraindications": ("must not", "should not", "contraindicat", "do not use", "አይመከር", "ተቃራኒ"),
+    "eligibility": ("can be used", "may be used", "eligible", "suitable", "መጠቀም ይቻላል", "ትችላለች"),
+    "how_it_works": ("works by", "prevents", "stopping", "thickening", "ይከላከላል", "ይሰራል", "ይሠራል"),
+    "missed_dose": ("missed", "as soon as", "remembered", "late", "ረሳ"),
+    "access": ("available", "health facilit", "clinic", "pharmacy", "የጤና ተቋም", "ይገኛል"),
 }
 
 TEMPLATES: dict[str, dict[str, str]] = {
@@ -132,15 +140,15 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
             continue
         english = (hit.english_text or "").strip()
         amharic = (hit.amharic_text or "").strip()
-        # Score against Amharic when the user asked in Amharic (document-first KB).
-        score_text = amharic if query_amharic and amharic else english
-        if not score_text:
-            score_text = english or amharic
+        # Prefer Amharic for article KB (no English) and for Amharic questions.
+        prefer_am = bool(amharic) and (query_amharic or not english)
+        score_text = amharic if prefer_am else (english or amharic)
         if not score_text:
             continue
         scoring_amharic = bool(_ETH.search(score_text[:80]))
         dense = float(hit.dense_score or 0.0)
         fused = float(hit.fused_score or hit.rerank_score or 0.0)
+        article = (getattr(hit, "source_kind", "") or "") == "wecare_article"
         for sentence in split_sentences(score_text):
             words = sentence.split()
             if not scoring_amharic:
@@ -161,10 +169,13 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
             semantic_ok = dense >= 0.55 and (cues > 0 or needle_hits > 0 or overlap > 0)
             if query_amharic and fused >= 0.45 and overlap > 0:
                 semantic_ok = True
+            # English ask against Amharic article: Latin terms / cues / fusion are enough.
+            if article and not query_amharic and (overlap > 0 or cues > 0 or fused >= 0.35):
+                semantic_ok = True
             if content and overlap < required and not semantic_ok and dense < 0.72:
                 continue
             # When the user named a concrete term, prefer chunks that actually contain it.
-            if query_amharic and content and overlap == 0 and fused < 0.85:
+            if query_amharic and content and overlap == 0 and fused < 0.85 and not article:
                 continue
             score = (
                 dense * 12.0
@@ -178,8 +189,7 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
                 score -= 1.5
             if score > best_score:
                 best_score = score
-                # english_reply stays English when available; Amharic comes from the hit.
-                best_span = (english or sentence)[:700]
+                best_span = sentence[:700]
                 best_hit = hit
     if best_hit is None:
         return "", None
@@ -195,6 +205,8 @@ def citation(hit: RetrievalHit | None) -> dict[str, Any]:
             "page": None,
             "section": "",
             "review_status": "",
+            "source_url": "",
+            "source_kind": "",
         }
     return {
         "evidence_id": hit.evidence_id,
@@ -203,4 +215,15 @@ def citation(hit: RetrievalHit | None) -> dict[str, Any]:
         "page": hit.page,
         "section": hit.section,
         "review_status": hit.review_status,
+        "source_url": getattr(hit, "source_url", "") or "",
+        "source_kind": getattr(hit, "source_kind", "") or "",
     }
+
+
+def with_article_cite(text: str, url: str, *, amharic: bool) -> str:
+    body = (text or "").strip()
+    link = (url or "").strip()
+    if not link or link in body:
+        return body
+    cite = f"ተጨማሪ፦ {link}" if amharic else f"More: {link}"
+    return f"{body}\n{cite}" if body else cite
