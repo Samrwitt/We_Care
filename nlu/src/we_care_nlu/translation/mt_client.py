@@ -21,6 +21,7 @@ class MTSpanClient:
     def __init__(self, base_url: str | None = None, client: httpx.Client | None = None):
         self.base_url = (base_url or os.environ.get("WE_CARE_MT_URL") or "http://127.0.0.1:8090").rstrip("/")
         self._client = client
+        self.last_qa_notes: list[str] = []
 
     def to_english(self, text: str) -> str:
         return self._call(text, "am-en")
@@ -41,4 +42,5 @@ class MTSpanClient:
             raise TranslatorNotReady("Facebook NLLB is still loading")
         response.raise_for_status()
         body: dict[str, Any] = response.json()
+        self.last_qa_notes = [str(note) for note in (body.get("qa_notes") or [])]
         return str(body.get("text") or "")

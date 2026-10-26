@@ -47,13 +47,13 @@ class SpanTranslator:
         if not source.strip():
             return {"text": "", "direction": direction, "qa_notes": []}
         src_lang, tgt_lang = pair
-        signature = f"span|{direction}|beams={self.num_beams}"
+        signature = f"span|v2|{direction}|beams={self.num_beams}"
         notes: list[str] = []
         with self._lock:
             if self.cache is not None:
                 cached = self.cache.get(self.model_id, source, signature)
                 if cached is not None:
-                    return {"text": cached, "direction": direction, "qa_notes": ["cache_hit"]}
+                    return self._finish(source, cached, direction, notes=["cache_hit"], mapping={})
             protected = source
             mapping: dict[str, str] = {}
             if direction == "en-am":
@@ -68,14 +68,46 @@ class SpanTranslator:
                 max_new_tokens=max_new,
                 num_beams=self.num_beams,
             )[0]
+        return self._finish(source, translated, direction, notes=[], mapping=mapping)
+
+    def _glossary_notes(self, source: str, translated: str) -> tuple[str, list[str]]:
+        notes: list[str] = []
+        if self.glossary is None:
+            return translated, notes
+        translated, enforced = self.glossary.enforce_target(source, translated)
+        notes.extend(enforced)
+        for entry in self.glossary.find_hits(source):
+            if entry.preserve_source or not entry.amharic:
+                continue
+            if entry.confidence not in {"verified", "standard"}:
+                continue
+            if entry.amharic not in translated:
+                notes.append(f"term_missing:{entry.english}")
+        return translated, notes
+
+    def _finish(
+        self,
+        source: str,
+        translated: str,
+        direction: str,
+        *,
+        notes: list[str],
+        mapping: dict[str, str],
+    ) -> dict[str, Any]:
         if direction == "en-am":
-            translated = restore_protection(translated, mapping)
-            if self.glossary is not None:
-                translated, enforced = self.glossary.enforce_target(source, translated)
-                notes.extend(enforced)
+            if mapping:
+                translated = restore_protection(translated, mapping)
+            translated, glossary_notes = self._glossary_notes(source, translated)
+            notes.extend(glossary_notes)
         if "WCMT" in translated:
             notes.append("placeholder_left")
         translated = translated.strip()
-        if self.cache is not None and "placeholder_left" not in notes:
+        if (
+            self.cache is not None
+            and "cache_hit" not in notes
+            and "placeholder_left" not in notes
+            and not any(note.startswith("term_missing") for note in notes)
+        ):
+            signature = f"span|v2|{direction}|beams={self.num_beams}"
             self.cache.put(self.model_id, source, signature, translated)
         return {"text": translated, "direction": direction, "qa_notes": notes}

@@ -1,5 +1,6 @@
 import threading
 
+from we_care_mt.glossary.manager import Glossary, GlossaryEntry
 from we_care_mt.span import SpanTranslator
 from we_care_mt.translation.cache import TranslationCache
 
@@ -44,6 +45,19 @@ def test_repeat_sentence_is_cached(tmp_path):
     worker.start()
     worker.join()
     assert err == []
+
+
+def test_missing_verified_term_is_flagged():
+    glossary = Glossary([
+        GlossaryEntry("contraceptive", "የእርግዝና መከላከያ", "family_planning", "verified"),
+    ])
+
+    class Invented:
+        def translate_langs(self, texts, *, src_lang, tgt_lang, **_kwargs):
+            return ["የፀረ-ጉሊፈ ዘዴዎች"]
+
+    out = SpanTranslator(Invented(), glossary).translate("contraceptive methods", "en-am")
+    assert any(note.startswith("term_missing:contraceptive") for note in out["qa_notes"])
 
 
 def test_question_goes_to_english_without_glossary_placeholders():

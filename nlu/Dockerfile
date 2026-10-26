@@ -14,6 +14,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip \
     && pip install -r requirements.txt
 
+# LaBSE retrieval. Install CPU torch last so sentence-transformers cannot swap in the CUDA wheel.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install "sentence-transformers>=3.0.0" \
+    && pip install torch --index-url https://download.pytorch.org/whl/cpu --upgrade
+
 COPY pyproject.toml README.md ./
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/pip \

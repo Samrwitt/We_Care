@@ -92,14 +92,21 @@ class HybridRetriever:
         cfg = self.cfg
         k = int(top_k or cfg.get("top_k") or 8)
         cand = int(cfg.get("candidate_k") or 40)
+        semantic = getattr(self.embedder, "model_key", "") != "hash" and self.index.embeddings is not None
         dw = float(cfg.get("dense_weight") or 0.55)
         sw = float(cfg.get("sparse_weight") or 0.45)
-        if getattr(self.embedder, "model_key", "") == "hash":
-            dw, sw = 0.2, 0.8
+        if not semantic:
+            dw, sw = 0.0, 1.0
+        else:
+            dw, sw = 0.75, 0.25
         query = expand_query(query)
         q_tokens = tokenize(query)
         bm25_raw = np.array(self.index.bm25.get_scores(q_tokens), dtype=np.float32)
-        if bm25_raw.max() > 0:
+        if semantic and bm25_raw.max() > 0:
+            # Do not stretch a weak keyword hit up to 1.0 when a meaning score exists.
+            scale = float(np.percentile(bm25_raw, 90) or bm25_raw.max())
+            bm25_n = np.clip(bm25_raw / (scale + 1e-9), 0.0, 1.0)
+        elif bm25_raw.max() > 0:
             bm25_n = bm25_raw / (bm25_raw.max() + 1e-9)
         else:
             bm25_n = bm25_raw

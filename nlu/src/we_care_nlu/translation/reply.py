@@ -14,7 +14,26 @@ _NUMBER = re.compile(r"\d+(?:\.\d+)?")
 _STOP = {
     "what", "are", "there", "this", "with", "from", "that", "have", "been",
     "does", "they", "them", "about", "while", "used", "must", "where", "when",
-    "which", "your", "into", "such", "also", "their", "than", "then",
+    "which", "your", "into", "such", "also", "their", "than", "then", "how",
+    "long", "many", "much", "some", "more", "most", "only", "just",
+}
+
+# Phrases that mark a sentence as answering a given intent, not merely sharing words.
+ANSWER_CUES: dict[str, tuple[str, ...]] = {
+    "duration": (
+        "year", "years", "month", "months", "week", "weeks", "day", "days",
+        "effective for", "lasts", "lasting", "remains effective", "every ",
+    ),
+    "family_planning_methods": (
+        "include", "options", "methods", "condom", "implant", "injectable", "pill",
+    ),
+    "definition": ("is a", "is an", "means", "refers to", "defined as"),
+    "side_effects": ("side effect", "bleeding", "nausea", "headache", "weight"),
+    "contraindications": ("must not", "should not", "contraindicat", "do not use"),
+    "eligibility": ("can be used", "may be used", "eligible", "suitable"),
+    "how_it_works": ("works by", "prevents", "stopping", "thickening"),
+    "missed_dose": ("missed", "as soon as", "remembered", "late"),
+    "access": ("available", "health facilit", "clinic", "pharmacy"),
 }
 
 TEMPLATES: dict[str, dict[str, str]] = {
@@ -49,7 +68,7 @@ def number_tokens(text: str) -> list[str]:
     return _NUMBER.findall(text or "")
 
 
-def reply_qa(english: str, amharic: str) -> list[str]:
+def reply_qa(english: str, amharic: str, extra_notes: list[str] | None = None) -> list[str]:
     notes: list[str] = []
     missing = [token for token in number_tokens(english) if token not in number_tokens(amharic)]
     if missing:
@@ -62,6 +81,11 @@ def reply_qa(english: str, amharic: str) -> list[str]:
         notes.append("polarity_flipped_to_allow")
     if source_polarity == "allow" and target_polarity == "contra":
         notes.append("polarity_flipped_to_contra")
+    for note in extra_notes or []:
+        text = str(note)
+        if text.startswith("term_missing") or text == "placeholder_left":
+            if text not in notes:
+                notes.append(text)
     return notes
 
 
@@ -73,23 +97,34 @@ def _contains(token: str, lowered: str) -> bool:
     return False
 
 
-def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tuple[str, RetrievalHit | None]:
-    needles = [item.lower() for item in (INTENT_NEEDLES.get(intent or "") or ())]
-    content = [
+def _content_tokens(query: str) -> list[str]:
+    return [
         token.strip("?.!,;:")
         for token in (query or "").lower().split()
         if len(token.strip("?.!,;:")) > 3 and token.strip("?.!,;:") not in _STOP
     ]
+
+
+def _answer_cue_hits(intent: str | None, lowered: str) -> int:
+    cues = ANSWER_CUES.get(intent or "") or ()
+    return sum(1 for cue in cues if cue in lowered)
+
+
+def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tuple[str, RetrievalHit | None]:
+    needles = [item.lower() for item in (INTENT_NEEDLES.get(intent or "") or ())]
+    content = _content_tokens(query)
     required = len(content) if len(content) <= 2 else max(2, len(content) - 1)
     best_span = ""
     best_hit: RetrievalHit | None = None
-    best_score = 0
+    best_score = -1.0
     for hit in hits:
         if hit.polarity_conflict:
             continue
         text = (hit.english_text or "").strip()
         if not text:
             continue
+        dense = float(hit.dense_score or 0.0)
+        fused = float(hit.fused_score or hit.rerank_score or 0.0)
         for sentence in split_sentences(text):
             words = sentence.split()
             if any(len(re.sub(r"[^A-Za-z]", "", word)) > 28 for word in words):
@@ -101,9 +136,22 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
                 continue
             lowered = sentence.lower()
             overlap = sum(1 for token in content if _contains(token, lowered))
-            if content and overlap < required:
+            cues = _answer_cue_hits(intent, lowered)
+            needle_hits = sum(1 for needle in needles if needle in lowered)
+            # Dense hit with the right answer shape can beat weak lexical overlap.
+            semantic_ok = dense >= 0.55 and (cues > 0 or needle_hits > 0 or overlap > 0)
+            if content and overlap < required and not semantic_ok and dense < 0.72:
                 continue
-            score = overlap * 2 + sum(3 for needle in needles if needle in lowered)
+            score = (
+                dense * 12.0
+                + fused * 2.0
+                + overlap * 2.0
+                + cues * 4.0
+                + needle_hits * 3.0
+            )
+            # Prefer a compact grounded sentence over a long paragraph dump.
+            if len(words) > 45:
+                score -= 1.5
             if score > best_score:
                 best_score = score
                 best_span = sentence

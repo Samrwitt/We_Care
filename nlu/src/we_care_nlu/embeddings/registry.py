@@ -47,20 +47,30 @@ class HashEmbedder:
 
 class SentenceTransformerEmbedder:
     def __init__(self, model_key: str, spec: dict[str, Any]):
+        import os
+
         from sentence_transformers import SentenceTransformer
 
         self.model_key = model_key
         self.hf_id = spec["hf_id"]
         self.dim = int(spec.get("dim") or 768)
         self.amharic_sentence_encoder = bool(spec.get("amharic_sentence_encoder", True))
-        self._model = SentenceTransformer(self.hf_id)
+        self._batch_size = int(spec.get("batch_size") or 32)
+        cache = os.environ.get("SENTENCE_TRANSFORMERS_HOME") or os.environ.get("HF_HOME")
+        kwargs: dict[str, Any] = {}
+        if cache:
+            kwargs["cache_folder"] = cache
+        self._model = SentenceTransformer(self.hf_id, **kwargs)
 
     def encode(self, texts: list[str]) -> np.ndarray:
+        if not texts:
+            return np.zeros((0, self.dim), dtype=np.float32)
         arr = self._model.encode(
             texts,
+            batch_size=self._batch_size,
             convert_to_numpy=True,
             normalize_embeddings=True,
-            show_progress_bar=False,
+            show_progress_bar=len(texts) > 200,
         )
         return np.asarray(arr, dtype=np.float32)
 

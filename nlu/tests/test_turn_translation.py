@@ -44,6 +44,60 @@ def test_emergency_contraception_is_not_an_emergency():
     assert emergency_flags("ከባድ መድማት አለብኝ")["is_emergency"] is True
 
 
+def test_semantic_hit_is_kept_when_words_do_not_overlap():
+    from we_care_nlu.contracts.schemas import RetrievalHit
+    from we_care_nlu.translation.reply import select_span
+
+    hit = RetrievalHit(
+        evidence_id="implant-years",
+        document_id="mec",
+        document_title="MEC",
+        english_text="The implant remains effective for three years after insertion.",
+        fused_score=0.8,
+        dense_score=0.82,
+        page=12,
+    )
+    span, picked = select_span("how long does the implant last", [hit], "duration")
+    assert picked is hit
+    assert "three years" in span
+
+
+def test_select_span_prefers_answer_cues_over_weak_keyword_overlap():
+    from we_care_nlu.contracts.schemas import RetrievalHit
+    from we_care_nlu.translation.reply import select_span
+
+    weak = RetrievalHit(
+        evidence_id="implant-mention",
+        document_id="mec",
+        document_title="MEC",
+        english_text="Women who want an implant should talk with a provider about insertion.",
+        fused_score=0.7,
+        dense_score=0.5,
+        page=3,
+    )
+    strong = RetrievalHit(
+        evidence_id="implant-years",
+        document_id="mec",
+        document_title="MEC",
+        english_text="The implant remains effective for three years after insertion.",
+        fused_score=0.75,
+        dense_score=0.8,
+        page=12,
+    )
+    span, picked = select_span("how long does the implant last", [weak, strong], "duration")
+    assert picked is strong
+    assert "three years" in span
+
+
+def test_reply_qa_flags_missing_glossary_term():
+    notes = reply_qa(
+        "Emergency contraception can prevent pregnancy.",
+        "ይህ እርግዝናን መከላከል ይችላል።",
+        ["term_missing:Emergency contraception"],
+    )
+    assert any(note.startswith("term_missing") for note in notes)
+
+
 def test_missing_guideline_uses_intent_advice_and_referral():
     eng = NLUEngine(model_key="hash")
     out = eng.reply(AnalyzeRequest(text="የብልት ቁስለት ምንድን ነው?"))

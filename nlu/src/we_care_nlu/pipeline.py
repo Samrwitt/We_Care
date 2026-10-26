@@ -74,6 +74,9 @@ class NLUEngine:
         abstain_thr = float((self.cfg.get("retrieval") or {}).get("abstain_below") or 0.22)
         top_score = hits[0].fused_score if hits else 0.0
         unsupported = not hits or top_score < abstain_thr
+        if hits and self.embedder.model_key != "hash" and (hits[0].dense_score or 0) < 0.70:
+            # dense_score is (cosine + 1) / 2. Below 0.70 the chunk is not about the question.
+            unsupported = True
         requires_clarification = bool(ctx_info.get("needs_clarification"))
         if unsupported and not emergency["is_emergency"]:
             conf_status = "abstain"
@@ -193,7 +196,7 @@ class NLUEngine:
                 failed.qa_notes = [f"translation_error:{exc.__class__.__name__}"]
                 failed.english_reply = span
                 return failed
-            notes = reply_qa(span, amharic)
+            notes = reply_qa(span, amharic, getattr(self.translator, "last_qa_notes", None))
             if notes:
                 failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
                 failed.qa_ok = False
