@@ -29,6 +29,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "pytest-cov>=5.0.0"]
 accel = ["accelerate>=0.30.0"]
+google = []  # uses urllib to Google Translate web endpoint for tests
 
 [project.scripts]
 we-care-mt = "we_care_mt.cli:app"

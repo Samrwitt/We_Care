@@ -47,7 +47,8 @@ class SpanTranslator:
         if not source.strip():
             return {"text": "", "direction": direction, "qa_notes": []}
         src_lang, tgt_lang = pair
-        signature = f"span|v2|{direction}|beams={self.num_beams}"
+        # v3: verified glossary terms are locked to Amharic before the MT call.
+        signature = f"span|v3|{direction}|beams={self.num_beams}"
         notes: list[str] = []
         with self._lock:
             if self.cache is not None:
@@ -108,6 +109,6 @@ class SpanTranslator:
             and "placeholder_left" not in notes
             and not any(note.startswith("term_missing") for note in notes)
         ):
-            signature = f"span|v2|{direction}|beams={self.num_beams}"
+            signature = f"span|v3|{direction}|beams={self.num_beams}"
             self.cache.put(self.model_id, source, signature, translated)
         return {"text": translated, "direction": direction, "qa_notes": notes}

@@ -28,6 +28,19 @@ def test_enforce_verified_term(glossary_csv):
     assert any(n.startswith("enforced:") for n in notes)
 
 
+def test_verified_terms_restore_as_amharic_not_google_synonyms(glossary_csv):
+    g = Glossary.load(glossary_csv)
+    src = "Contraceptive method options include condoms and injectables."
+    protected, mapping = apply_protection(src, g)
+    assert "Contraceptive" not in protected or "WCMT" in protected
+    assert "condoms" not in protected.lower() or "WCMT" in protected
+    # Simulate MT leaving placeholders alone, then restoring glossary Amharic.
+    restored = restore_protection(protected, mapping)
+    assert "የእርግዝና መከላከያ" in restored
+    assert "ኮንዶሞች" in restored or "ኮንዶም" in restored
+    assert "በመርፌ" in restored
+
+
 def test_provisional_terms_are_flagged(glossary_csv):
     g = Glossary.load(glossary_csv)
     unverified = g.unverified_in_text("The method mix at the facility is limited.")

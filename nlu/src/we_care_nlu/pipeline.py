@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from we_care_nlu.config import load_config
@@ -197,13 +198,19 @@ class NLUEngine:
                 failed.english_reply = span
                 return failed
             notes = reply_qa(span, amharic, getattr(self.translator, "last_qa_notes", None))
-            if notes:
+            # Temporary preview mode: show Google/NLLB Amharic even when QA flags fire.
+            skip_qa_block = os.environ.get("WE_CARE_SKIP_REPLY_QA", "").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+            }
+            if notes and not skip_qa_block:
                 failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
                 failed.qa_ok = False
                 failed.qa_notes = notes
                 failed.english_reply = span
                 return failed
-            return self._reply_from_analysis(
+            shown = self._reply_from_analysis(
                 analysis,
                 amharic_reply=amharic,
                 english_query=english_query,
@@ -211,6 +218,10 @@ class NLUEngine:
                 status="translated",
                 cited=cited,
             )
+            if notes:
+                shown.qa_ok = False
+                shown.qa_notes = notes
+            return shown
 
         notice = TEMPLATES["source_only"]["am"]
         return self._reply_from_analysis(

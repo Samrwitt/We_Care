@@ -48,9 +48,14 @@ def serve(
     ctx: typer.Context,
     host: str = typer.Option("0.0.0.0", "--host"),
     port: int = typer.Option(8090, "--port"),
-    model: str = typer.Option("nllb_baseline_600m", "--model", "-m"),
+    model: str = typer.Option(
+        "google",
+        "--model",
+        "-m",
+        help="google (preferred, no local weights) | nllb_baseline_600m | dsfsi_600m",
+    ),
 ) -> None:
-    """Keep Facebook NLLB loaded and translate one sentence per request."""
+    """Translate one retrieved sentence. Prefer Google + glossary; local NLLB is optional."""
     from we_care_mt.span_server import serve_span
 
     serve_span(ctx.obj["cfg"], model_key=model, host=host, port=port)

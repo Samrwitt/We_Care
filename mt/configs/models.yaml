@@ -60,6 +60,23 @@ models:
       domain text or certified translation. CC-BY-NC: do not use commercially.
       Use amh_Ethi as the forced BOS / target language code.
 
+  google:
+    hf_id: external:google-translate
+    display_name: Google Translate (web / test)
+    license: Google Terms of Service
+    base_model: Google Translate
+    domain: general web (not medical)
+    clinically_validated: false
+    params_b: null
+    recommended_vram_gb: 0
+    cpu_ok: true
+    max_input_tokens: 5000
+    tokenizer_compat: n/a
+    notes: >
+      Live Google Translate via deep-translator for quality comparison only.
+      Not clinically validated. Sends text to Google. Do not use for production
+      medical traffic without a reviewed Cloud Translation setup and DPA.
+
 backends:
   mock:
     display_name: Glossary-aware mock translator (tests / smoke)

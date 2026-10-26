@@ -37,10 +37,31 @@ def apply_protection(text: str, glossary: Glossary | None = None) -> tuple[str, 
 
     out = text
     if glossary:
+        # Lock verified medical phrasing so Google/NLLB cannot invent a different Amharic term.
+        # Placeholders restore to Amharic (or English when preserve_source / do_not_translate).
         for entry in glossary.find_hits(text):
-            if entry.preserve_source or entry.confidence == "do_not_translate":
-                pattern = re.compile(rf"(?i)(?<![A-Za-z]){re.escape(entry.english)}(?![A-Za-z])")
-                out = pattern.sub(_sub, out)
+            keep_english = entry.preserve_source or entry.confidence == "do_not_translate"
+            use_amharic = (
+                not keep_english
+                and entry.amharic
+                and entry.confidence in {"verified", "standard"}
+            )
+            if not keep_english and not use_amharic:
+                continue
+            pattern = re.compile(rf"(?i)(?<![A-Za-z]){re.escape(entry.english)}(?![A-Za-z])")
+
+            def _glossary_sub(match: re.Match[str], *, restore: str = entry.amharic if use_amharic else entry.english) -> str:
+                nonlocal counter
+                original_restore = restore
+                for key, val in mapping.items():
+                    if val == original_restore:
+                        return key
+                counter += 1
+                key = f"{PLACEHOLDER_PREFIX}{counter:04d}"
+                mapping[key] = original_restore
+                return key
+
+            out = pattern.sub(_glossary_sub, out)
         for rx in glossary.freeze_patterns:
             out = rx.sub(_sub, out)
     for rx in _PROTECT_RES:
