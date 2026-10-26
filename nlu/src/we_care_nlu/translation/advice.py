@@ -134,6 +134,46 @@ _ADVICE: dict[str, tuple[str, str]] = {
         "The dose and timing depend on the medicine. Follow what was prescribed, or ask a health worker. "
         f"More information: {_SITE}",
     ),
+    "vaginal_discharge": _pair(
+        "ከሴት ብልት የሚወጣ ፈሳሽ በተለምዶ የሚኖር እና አስፈላጊ ፈሳሽ ነው። በወር አበባ ዑደት ሊለዋወጥ ይችላል። "
+        "መጥፎ ሽታ፣ ማሳከክ፣ ወይም የቀለም ለውጥ ካለ ኢንፌክሽን ሊሆን ይችላል። ይህ ምርመራ አይደለም። "
+        "መደበኛ የብልት ፈሳሽ፦ https://wecare.et/articles/420\n"
+        "በወር አበባ ወቅት የሚኖር ለውጥ፦ https://wecare.et/articles/421",
+        "Vaginal discharge is a normal and necessary fluid. It can change across the menstrual cycle. "
+        "A bad smell, itching, or a change in colour can be a sign of infection. This is not a diagnosis. "
+        "Vaginal discharge: https://wecare.et/articles/420\n"
+        "Changes during menstruation: https://wecare.et/articles/421",
+    ),
+    "hiv": _pair(
+        "ኤች.አይ.ቪ ብዙ ጊዜ መጀመሪያ ላይ ምልክት አያሳይም። ምልክት ብቻ ሁኔታውን አያሳውቅም። "
+        "ምርመራ በጤና ተቋም ይደረጋል። ከተጋላጭነት በኋላ በ72 ሰዓት ውስጥ የሚወሰድ መድኃኒት (PEP) ካስፈለገ ወዲያውኑ ይጠይቁ። "
+        "የኤች.አይ.ቪ ምርመራ፦ https://wecare.et/articles/410",
+        "HIV often has no symptoms at first, so symptoms alone cannot show your status. "
+        "Testing is done at a health facility. If you may need PEP, the medicine taken within 72 hours of exposure, ask immediately. "
+        "HIV testing: https://wecare.et/articles/410",
+    ),
+    "menstruation": _pair(
+        "የወር አበባ ዑደት በሰው ይለያያል። ዘግይቶ መምጣት፣ በጣም ማሳመም፣ ወይም ከተለመደው በላይ መፍሰስ ምርመራ ሊፈልግ ይችላል። "
+        "ስለ ወር አበባ፦ https://wecare.et/articles/310",
+        "Menstrual cycles differ from person to person. A delayed period, severe pain, or bleeding that is heavier than usual may need an exam. "
+        "About menstruation: https://wecare.et/articles/310",
+    ),
+    "pregnancy": _pair(
+        "የእርግዝና ምልክት ካለ የእርግዝና ምርመራ ይመከራል። የቅድመ ወሊድ ክትትል የሽንት ምርመራ፣ የደም ምርመራ እና አልትራሳውንድ ሊያካትት ይችላል። ይህ ምርመራ አይደለም። "
+        "ስለ እርግዝና፦ https://wecare.et/articles/416\n"
+        "እርግዝና እና አባላዘር፦ https://wecare.et/articles/261",
+        "If you have pregnancy symptoms, a pregnancy test is advised. Antenatal care can include a urine test, blood tests, and ultrasound. This is not a diagnosis. "
+        "About pregnancy: https://wecare.et/articles/416\n"
+        "Pregnancy and STIs: https://wecare.et/articles/261",
+    ),
+    "sti": _pair(
+        "አባላዘር በሽታ ምልክት ላይኖረው ይችላል። ያልተለመደ ፈሳሽ፣ ሽንት ሲሸኑ ማቃጠል፣ ወይም የብልት ቁስለት ካለ በጤና ተቋም ይመረመሩ። ይህ ምርመራ አይደለም። "
+        "የብልት ፈሳሽ፦ https://wecare.et/articles/421\n"
+        "የብልት ቁስለት እና ሄርፒስ፦ https://wecare.et/articles/405",
+        "A sexually transmitted infection can have no symptoms. Go to a health facility for unusual discharge, burning when you urinate, or a genital sore. This is not a diagnosis. "
+        "Vaginal discharge: https://wecare.et/articles/421\n"
+        "Genital sores and herpes: https://wecare.et/articles/405",
+    ),
     "genital_ulcer": _pair(
         "የብልት ቁስለት በሴት ብልት፣ በወንድ ብልት፣ በፊንጢጣ ወይም አንዳንዴ በአፍ አካባቢ የሚታይ ቁስል ወይም ሕመም ነው። "
         "በብዛት የሚጠቀሱ ምክንያቶች የብልት ሄርፒስ፣ ቂጥኝ እና ቻንክሮይድ ናቸው። ይህ ምርመራ አይደለም። "

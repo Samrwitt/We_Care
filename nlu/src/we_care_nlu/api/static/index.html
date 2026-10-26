@@ -231,14 +231,10 @@
       const am = data.amharic_reply || "";
       const en = data.english_reply || "";
       const englishAsk = askedInEnglish(userText || "");
-      const first = englishAsk ? (en || am) : (am || en);
-      const second = first === am ? en : am;
-      let html = `<p class="am">${linkify(first)}</p>`;
-      if (second && second !== first) {
-        html += `<p class="src">${linkify(second)}</p>`;
-      }
+      const reply = englishAsk ? (en || am) : (am || en);
+      let html = `<p class="am">${linkify(reply)}</p>`;
       if (data.document_title) {
-        const page = data.page ? " · ገጽ " + data.page : "";
+        const page = data.page ? (englishAsk ? " · page " : " · ገጽ ") + data.page : "";
         html += `<p class="cite">${esc(data.document_title)}${page}</p>`;
       }
       return html;
@@ -310,7 +306,8 @@
       add(`<div class="user">${esc(text)}</div>`);
       if (welcome && welcome.remove) welcome.remove();
       go.disabled = true;
-      const wait = add(`<article class="card"><p class="wait">እባክዎ ይጠብቁ… / Please wait…</p></article>`);
+      const englishAsk = askedInEnglish(text);
+      const wait = add(`<article class="card"><p class="wait">${englishAsk ? "Please wait…" : "እባክዎ ይጠብቁ…"}</p></article>`);
       try {
         const res = await fetch("/nlp/reply", {
           method: "POST",
@@ -321,7 +318,7 @@
         wait.innerHTML = renderTurn(data, text);
         context = nextContext(data);
       } catch {
-        wait.innerHTML = `<p class="empty">አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ። Could not get an answer. Please try again.</p>`;
+        wait.innerHTML = `<p class="empty">${englishAsk ? "Could not get an answer. Please try again." : "አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"}</p>`;
       } finally {
         go.disabled = false;
         q.focus();

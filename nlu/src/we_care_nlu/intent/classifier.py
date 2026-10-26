@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,14 @@ import yaml
 
 from we_care_nlu.config import package_root
 from we_care_nlu.preprocess.normalize import preprocess
+
+
+def _pattern_in(pattern: str, text: str) -> bool:
+    pat = pattern.lower()
+    # Latin words must match a whole word, so "hi" does not match inside "hiv".
+    if re.fullmatch(r"[a-z]+", pat):
+        return re.search(rf"(?<![a-z]){re.escape(pat)}(?![a-z])", text) is not None
+    return pat in text
 
 
 def load_lexicon(path: Path | None = None) -> dict[str, Any]:
@@ -30,7 +39,7 @@ class IntentClassifier:
         for name, spec in (self.lexicon.get("intents") or {}).items():
             score = 0
             for pat in spec.get("patterns") or []:
-                if pat.lower() in low:
+                if _pattern_in(pat, low):
                     score += max(1, len(pat) // 4)
             if score:
                 hits.append((name, score))
@@ -62,6 +71,11 @@ class IntentClassifier:
             "eligibility",
             "family_planning_methods",
             "genital_ulcer",
+            "vaginal_discharge",
+            "hiv",
+            "sti",
+            "menstruation",
+            "pregnancy",
             "emergency",
         }
         if "definition" in {h[0] for h in hits} and not (aspect_override & set(labels)):

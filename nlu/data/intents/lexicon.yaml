@@ -52,6 +52,44 @@ intents:
     patterns: ["እርጉዝ", "ነፍሰ ጡር", "እርግዝና", "ጡት ማጥባት", "ከወሊድ በኋላ", "pregnan", "breastfeed", "lactat"]
   definition:
     patterns: ["ምንድን ነው", "ምንድን ናቸው", "ማለት", "what is", "define"]
+  vaginal_discharge:
+    patterns:
+      - "የብልት ፈሳሽ"
+      - "ያልተለመደ ፈሳሽ"
+      - "የዓሳ ሽታ"
+      - "vaginal discharge"
+      - "yeast infection"
+      - "bacterial vaginosis"
+  hiv:
+    patterns:
+      - "ኤች.አይ.ቪ"
+      - "ኤችአይቪ"
+      - "ኤድስ"
+      - "hiv"
+      - "aids"
+  menstruation:
+    patterns:
+      - "ወር አበባ"
+      - "የወር አበባ"
+      - "menstrual"
+      - "menstruation"
+      - "my period"
+      - "period pain"
+  pregnancy:
+    patterns:
+      - "ነፍሰ ጡር"
+      - "የእርግዝና ምርመራ"
+      - "pregnancy test"
+      - "am i pregnant"
+      - "ectopic"
+  sti:
+    patterns:
+      - "አባላዘር"
+      - "ጨብጥ"
+      - "gonorrhea"
+      - "chlamydia"
+      - "sexually transmitted"
+      - "sti"
   genital_ulcer:
     patterns:
       - "የብልት ቁስለት"
@@ -100,6 +138,11 @@ priority:
   - medication
   - treatment
   - genital_ulcer
+  - vaginal_discharge
+  - hiv
+  - sti
+  - menstruation
+  - pregnancy
   - symptoms
   - causes
   - prevention

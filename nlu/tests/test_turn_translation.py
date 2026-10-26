@@ -56,6 +56,12 @@ def test_missing_guideline_uses_intent_advice_and_referral():
     assert english.intent == "genital_ulcer"
     assert "9394" in english.english_reply
     assert "https://wecare.et/articles/135" in english.english_reply
+    discharge = eng.reply(AnalyzeRequest(text="I have unusual vaginal discharge"))
+    assert discharge.intent == "vaginal_discharge"
+    assert "https://wecare.et/articles/420" in discharge.english_reply
+    hiv = eng.reply(AnalyzeRequest(text="ስለ ኤች.አይ.ቪ ማወቅ እፈልጋለሁ"))
+    assert hiv.intent == "hiv"
+    assert "https://wecare.et/articles/410" in hiv.amharic_reply
 
 
 def test_reply_uses_english_span_without_neural_translation():
