@@ -147,6 +147,44 @@ def test_reply_uses_english_span_without_neural_translation():
     assert out.generative_answer is None
 
 
+def test_reply_prefers_document_amharic_over_live_mt():
+    eng = NLUEngine(model_key="hash")
+
+    class Counting:
+        can_translate_reply = True
+        backend = "mt"
+
+        def to_english(self, text: str) -> str:
+            return text
+
+        def to_amharic(self, text: str) -> str:
+            raise AssertionError("live En→Am should not run when KB has Amharic")
+
+    eng.translator = Counting()
+    eng.ingest_alignment_dict(
+        {
+            "document_name": "Guideline.pdf",
+            "title": "Family Planning",
+            "segments": [
+                {
+                    "segment_id": "bi-methods",
+                    "kind": "paragraph",
+                    "page_number": 4,
+                    "section": "Methods",
+                    "source_text": "Contraceptive method options include condoms, pills, injectables, and implants.",
+                    "translated_text": "የእርግዝና መከላከያ ዘዴዎች ኮንዶም፣ ክኒን፣ መርፌ እና ኢምፕላንትን ያካትታሉ።",
+                }
+            ],
+        }
+    )
+    out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
+    assert out.translation_status == "translated"
+    assert out.translation_backend == "document"
+    assert "ኮንዶም" in out.amharic_reply
+    assert out.evidence_id == "bi-methods"
+    assert "document_first_amharic" in out.qa_notes
+
+
 def test_known_question_skips_the_model_until_the_sentence():
     eng = NLUEngine(model_key="hash")
 

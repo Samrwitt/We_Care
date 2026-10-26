@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 from we_care_nlu.config import load_config
@@ -21,6 +22,8 @@ from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import covered_question, map_to_english
 from we_care_nlu.translation.advice import intent_advice
 from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span
+
+_ETHIOPIC = re.compile(r"[\u1200-\u137F]")
 
 
 class NLUEngine:
@@ -170,6 +173,20 @@ class NLUEngine:
             return self._reply_template("abstain", "abstained", original, english_query, analysis)
 
         cited = citation(hit)
+        # Document-first: prefer Phase-1 Amharic already stored on the chunk.
+        stored_am = (hit.amharic_text or "").strip() if hit else ""
+        if stored_am and _ETHIOPIC.search(stored_am):
+            shown = self._reply_from_analysis(
+                analysis,
+                amharic_reply=stored_am[:700],
+                english_query=english_query,
+                english_reply=span,
+                status="translated",
+                cited=cited,
+                translation_backend="document",
+            )
+            shown.qa_notes = ["document_first_amharic"]
+            return shown
         if translator_loading:
             return self._reply_from_analysis(
                 analysis,
@@ -262,12 +279,13 @@ class NLUEngine:
         english_reply: str,
         status: str,
         cited: dict,
+        translation_backend: str | None = None,
     ) -> ReplyResponse:
         return ReplyResponse(
             amharic_reply=amharic_reply,
             english_query=english_query,
             english_reply=english_reply,
-            translation_backend=getattr(self.translator, "backend", "map"),
+            translation_backend=translation_backend or getattr(self.translator, "backend", "map"),
             translation_status=status,  # type: ignore[arg-type]
             evidence_id=cited.get("evidence_id"),
             document_id=cited.get("document_id") or "",

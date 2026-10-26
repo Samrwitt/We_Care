@@ -92,3 +92,7 @@ class GoogleTranslator:
                 continue
             out.append(self._translate_once(raw, source, target))
         return out
+
+    def translate_batch(self, texts: list[str], **_kwargs: Any) -> list[str]:
+        """PDF pipeline entry point: English → Amharic one segment at a time."""
+        return self.translate_langs(texts, src_lang="eng_Latn", tgt_lang="amh_Ethi")

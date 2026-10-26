@@ -35,10 +35,11 @@ segmentation:
   protect_abbreviations: true
 
 inference:
-  default_model: dsfsi_600m
+  # google: no local weights (preferred while disk/RAM are tight). dsfsi_600m when available.
+  default_model: google
   device: auto          # auto | cuda | cpu
-  batch_size: 4
-  num_beams: 5
+  batch_size: 1         # Google is one-at-a-time
+  num_beams: 1
   max_new_tokens: 256
   max_input_tokens: 200
   length_penalty: 1.0
@@ -48,6 +49,7 @@ inference:
   cache_translations: true
   checkpoint_every: 20
   oom_retry: true
+  google_pause_s: 0.2
   min_batch_size: 1
 
 glossary:

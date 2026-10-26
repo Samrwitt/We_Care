@@ -29,7 +29,8 @@ def generation_signature(inference: dict[str, Any]) -> str:
         "repetition_penalty",
         "do_sample",
     )
-    return "|".join(f"{k}={inference.get(k)}" for k in keys)
+    # glossary_v3: verified terms restore as Amharic placeholders.
+    return "glossary_v3|" + "|".join(f"{k}={inference.get(k)}" for k in keys)
 
 
 class TranslationEngine:
@@ -48,9 +49,21 @@ class TranslationEngine:
         self.model_entry = model_entry
         self.inference = inference
         self.glossary = glossary
-        self.backend_name = backend or ("mock" if model_key == "mock" else "nllb")
+        if backend:
+            self.backend_name = backend
+        elif model_key == "mock":
+            self.backend_name = "mock"
+        elif model_key in {"google", "google_translate"}:
+            self.backend_name = "google"
+        else:
+            self.backend_name = "nllb"
         self.hf_id = str(model_entry.get("hf_id") or model_key)
-        self.model_id = self.hf_id if self.backend_name != "mock" else "mock"
+        if self.backend_name == "mock":
+            self.model_id = "mock"
+        elif self.backend_name == "google":
+            self.model_id = "external:google-translate"
+        else:
+            self.model_id = self.hf_id
         self.cache = (
             TranslationCache(cache_dir / "translations.sqlite")
             if cache_dir and inference.get("cache_translations", True)
@@ -73,6 +86,13 @@ class TranslationEngine:
             return self._translator
         if self.backend_name == "mock":
             self._translator = MockTranslator(self.glossary)
+            return self._translator
+        if self.backend_name == "google":
+            from we_care_mt.translation.google import GoogleTranslator
+
+            pause = float(self.inference.get("google_pause_s", 0.45))
+            self._translator = GoogleTranslator(pause_s=pause, retries=4)
+            self._translator.load()
             return self._translator
         self._translator = NLLBTranslator(
             hf_id=self.hf_id,

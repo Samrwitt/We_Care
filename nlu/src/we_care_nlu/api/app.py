@@ -15,6 +15,8 @@ from we_care_nlu.pipeline import NLUEngine
 
 _UI = Path(__file__).resolve().parent / "static" / "index.html"
 _KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
+# Prefer bilingual Phase-1 alignment (document-first Amharic) when present.
+_BILINGUAL_KB = _KB_DIR / "fp_guideline_bilingual.json"
 _GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
 _DEFAULT_KB = _KB_DIR / "fp_user_kb.json"
 
@@ -28,7 +30,13 @@ def _ensure_kb() -> None:
         return
     eng = get_engine()
     if len(eng.retriever.index.chunks) == 0:
-        if _GUIDELINES_KB.exists():
+        if _BILINGUAL_KB.exists():
+            eng.ingest_file(
+                str(_BILINGUAL_KB),
+                document_version="2021-06",
+                default_review_status="unreviewed",
+            )
+        elif _GUIDELINES_KB.exists():
             eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
         elif _DEFAULT_KB.exists():
             eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
