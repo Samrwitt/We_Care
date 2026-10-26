@@ -11,11 +11,16 @@ from we_care_nlu.retrieval.engine import _polarity
 from we_care_nlu.retrieval.expand import INTENT_NEEDLES
 
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
+_ETH = re.compile(r"[\u1200-\u137F]")
 _STOP = {
     "what", "are", "there", "this", "with", "from", "that", "have", "been",
     "does", "they", "them", "about", "while", "used", "must", "where", "when",
     "which", "your", "into", "such", "also", "their", "than", "then", "how",
     "long", "many", "much", "some", "more", "most", "only", "just",
+    # Frequent Amharic question filler — keep method/topic terms for matching.
+    "ለምን", "ምንድን", "ምንድር", "ነው", "ናቸው", "እንዴት", "መቼ", "የት", "ማን",
+    "እባክዎ", "ስለ", "ላይ", "ውስጥ", "ጋር", "ወይም", "እና", "ይህ", "ያ", "እንደ",
+    "ጠቃሚ", "አስፈላጊ", "መረጃ", "ጥያቄ",
 }
 
 # Phrases that mark a sentence as answering a given intent, not merely sharing words.
@@ -113,39 +118,58 @@ def _answer_cue_hits(intent: str | None, lowered: str) -> int:
 def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tuple[str, RetrievalHit | None]:
     needles = [item.lower() for item in (INTENT_NEEDLES.get(intent or "") or ())]
     content = _content_tokens(query)
-    required = len(content) if len(content) <= 2 else max(2, len(content) - 1)
+    query_amharic = bool(_ETH.search(query or ""))
+    # Amharic morphology makes exact token overlap sparse; one shared term + fusion is enough.
+    if query_amharic:
+        required = 1 if content else 0
+    else:
+        required = len(content) if len(content) <= 2 else max(2, len(content) - 1)
     best_span = ""
     best_hit: RetrievalHit | None = None
     best_score = -1.0
     for hit in hits:
         if hit.polarity_conflict:
             continue
-        text = (hit.english_text or "").strip()
-        if not text:
+        english = (hit.english_text or "").strip()
+        amharic = (hit.amharic_text or "").strip()
+        # Score against Amharic when the user asked in Amharic (document-first KB).
+        score_text = amharic if query_amharic and amharic else english
+        if not score_text:
+            score_text = english or amharic
+        if not score_text:
             continue
+        scoring_amharic = bool(_ETH.search(score_text[:80]))
         dense = float(hit.dense_score or 0.0)
         fused = float(hit.fused_score or hit.rerank_score or 0.0)
-        for sentence in split_sentences(text):
+        for sentence in split_sentences(score_text):
             words = sentence.split()
-            if any(len(re.sub(r"[^A-Za-z]", "", word)) > 28 for word in words):
-                continue
-            acronyms = sum(
-                1 for word in words if word.strip(".,;:()[]").isupper() and 2 <= len(word.strip(".,;:()[]")) <= 5
-            )
-            if acronyms >= 6:
-                continue
+            if not scoring_amharic:
+                if any(len(re.sub(r"[^A-Za-z]", "", word)) > 28 for word in words):
+                    continue
+                acronyms = sum(
+                    1
+                    for word in words
+                    if word.strip(".,;:()[]").isupper() and 2 <= len(word.strip(".,;:()[]")) <= 5
+                )
+                if acronyms >= 6:
+                    continue
             lowered = sentence.lower()
             overlap = sum(1 for token in content if _contains(token, lowered))
             cues = _answer_cue_hits(intent, lowered)
             needle_hits = sum(1 for needle in needles if needle in lowered)
             # Dense hit with the right answer shape can beat weak lexical overlap.
             semantic_ok = dense >= 0.55 and (cues > 0 or needle_hits > 0 or overlap > 0)
+            if query_amharic and fused >= 0.45 and overlap > 0:
+                semantic_ok = True
             if content and overlap < required and not semantic_ok and dense < 0.72:
+                continue
+            # When the user named a concrete term, prefer chunks that actually contain it.
+            if query_amharic and content and overlap == 0 and fused < 0.85:
                 continue
             score = (
                 dense * 12.0
                 + fused * 2.0
-                + overlap * 2.0
+                + overlap * 4.0
                 + cues * 4.0
                 + needle_hits * 3.0
             )
@@ -154,7 +178,8 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
                 score -= 1.5
             if score > best_score:
                 best_score = score
-                best_span = sentence
+                # english_reply stays English when available; Amharic comes from the hit.
+                best_span = (english or sentence)[:700]
                 best_hit = hit
     if best_hit is None:
         return "", None

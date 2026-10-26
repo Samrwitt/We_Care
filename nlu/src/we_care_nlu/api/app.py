@@ -30,16 +30,20 @@ def _ensure_kb() -> None:
         return
     eng = get_engine()
     if len(eng.retriever.index.chunks) == 0:
+        loaded = False
         if _BILINGUAL_KB.exists():
             eng.ingest_file(
                 str(_BILINGUAL_KB),
                 document_version="2021-06",
                 default_review_status="unreviewed",
             )
-        elif _GUIDELINES_KB.exists():
-            eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
-        elif _DEFAULT_KB.exists():
+            loaded = True
+        # Short curated Amharic answers fill gaps while the PDF translation is partial.
+        if _DEFAULT_KB.exists():
             eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
+            loaded = True
+        if not loaded and _GUIDELINES_KB.exists():
+            eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
 
 
 def get_engine() -> NLUEngine:

@@ -83,8 +83,9 @@ ner:
   min_confidence: 0.5
 
 translation:
-  # map: known Amharic questions become English phrases. Sentence translation is we-care-mt.
-  backend: map
+  # mt: compose short grounded answers via we-care-mt (Google on :8090). map = phrase list only.
+  backend: mt
+  mt_url: http://127.0.0.1:8090
 
 safety:
   emergency_always_rule_based: true

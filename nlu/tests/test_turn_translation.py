@@ -119,7 +119,10 @@ def test_missing_guideline_uses_intent_advice_and_referral():
 
 
 def test_reply_uses_english_span_without_neural_translation():
+    from we_care_nlu.translation.phrase_map import PhraseMapTranslator
+
     eng = NLUEngine(model_key="hash")
+    eng.translator = PhraseMapTranslator()
     eng.ingest_alignment_dict(
         {
             "document_name": "Guideline.pdf",
@@ -179,10 +182,70 @@ def test_reply_prefers_document_amharic_over_live_mt():
     )
     out = eng.reply(AnalyzeRequest(text="የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?"))
     assert out.translation_status == "translated"
-    assert out.translation_backend == "document"
+    assert out.translation_backend == "composed"
     assert "ኮንዶም" in out.amharic_reply
     assert out.evidence_id == "bi-methods"
-    assert "document_first_amharic" in out.qa_notes
+    assert "composed_reply" in out.qa_notes
+
+
+def test_amharic_question_returns_document_amharic_without_full_phrase_map():
+    """Uncovered Amharic asks should still retrieve bilingual chunks and answer in Amharic."""
+    eng = NLUEngine(model_key="hash")
+    eng.ingest_alignment_dict(
+        {
+            "document_name": "Guideline.pdf",
+            "title": "Family Planning",
+            "segments": [
+                {
+                    "segment_id": "bi-gov",
+                    "kind": "paragraph",
+                    "page_number": 4,
+                    "section": "Background",
+                    "source_text": (
+                        "The Government of Ethiopia believes that family planning is one of the "
+                        "key strategies to improving maternal health."
+                    ),
+                    "translated_text": (
+                        "የኢትዮጵያ መንግስት የቤተሰብ ምጣኔ የእናቶች ጤና ለማሻሻል አንዱ ቁልፍ ስትራቴጂ ነው ብሎ ያምናል።"
+                    ),
+                }
+            ],
+        }
+    )
+    out = eng.reply(AnalyzeRequest(text="ኢትዮጵያ የቤተሰብ ምጣኔን ለምን ትደግፋለች?"))
+    assert out.translation_status == "translated"
+    assert out.translation_backend == "composed"
+    assert "የቤተሰብ ምጣኔ" in out.amharic_reply
+    assert out.evidence_id == "bi-gov"
+
+
+def test_compose_shapes_short_answer_not_raw_pdf_dump():
+    from we_care_nlu.translation.compose import compose_amharic_reply, shape_english_answer
+
+    class FakeMT:
+        can_translate_reply = True
+        backend = "mt"
+
+        def to_amharic(self, text: str) -> str:
+            assert "……" not in text
+            assert not text.startswith("§")
+            return "ኮንዶም የወሲብ በሽታዎችን ለመከላከል ይረዳል።"
+
+    shaped = shape_english_answer(
+        "§ Promote the use of condoms (male and female) for clients who are at risk of "
+        "acquiring STIs, even if they are using other methods of FP …… 19"
+    )
+    assert "……" not in shaped
+    assert shaped.startswith("Promote") or shaped.startswith("promote") or "condom" in shaped.lower()
+    am, backend, notes = compose_amharic_reply(
+        english_span=shaped,
+        document_amharic="§ ኮንዶሞች … STIs … FP ……",
+        translator=FakeMT(),
+    )
+    assert backend == "composed"
+    assert "mt_rendered" in notes
+    assert "STIs" not in am
+    assert "ኮንዶም" in am
 
 
 def test_known_question_skips_the_model_until_the_sentence():
