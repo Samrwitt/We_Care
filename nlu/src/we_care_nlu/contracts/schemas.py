@@ -42,7 +42,7 @@ class Entity(BaseModel):
     start: int
     end: int
     confidence: float
-    source: Literal["gazetteer", "regex", "model", "context"] = "gazetteer"
+    source: Literal["gazetteer", "regex", "model", "context", "concept_index"] = "gazetteer"
 
 
 class RetrievalHit(BaseModel):
@@ -72,6 +72,11 @@ class AnalyzeResponse(BaseModel):
     intent_labels: list[str] = Field(default_factory=list)
     intent_confidence: float
     intent_backend: str
+    # Layer B — medical topic / concepts (independent of conversational intent).
+    topic: str | None = None
+    topics: list[str] = Field(default_factory=list)
+    medical_concepts: list[dict[str, Any]] = Field(default_factory=list)
+    interpretation: dict[str, Any] = Field(default_factory=dict)
     entities: list[Entity] = Field(default_factory=list)
     context_resolution: dict[str, Any] = Field(default_factory=dict)
     retrieval_results: list[RetrievalHit] = Field(default_factory=list)
@@ -113,6 +118,9 @@ class ReplyResponse(BaseModel):
     source_url: str = ""
     intent: str
     intent_labels: list[str] = Field(default_factory=list)
+    topic: str | None = None
+    topics: list[str] = Field(default_factory=list)
+    medical_concepts: list[dict[str, Any]] = Field(default_factory=list)
     entities: list[Entity] = Field(default_factory=list)
     requires_clarification: bool = False
     clarification_question_key: str | None = None

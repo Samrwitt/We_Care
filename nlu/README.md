@@ -73,3 +73,16 @@ WE_CARE_NLU_MODEL=amharic_medium we-care-nlu serve --port 8088
 Chunk vectors are cached under `data/cache/embeddings/` so restarts skip re-encoding. Fusion uses reciprocal rank fusion (RRF) of BM25 + dense, plus medical feature rerank.
 
 Intent/NER are lexicon/gazetteer prototypes unless you train with `scripts/train_*.py`.
+
+## Dynamic terminology (KB → concepts)
+
+Intent lexicon answers *what the user wants* (definition, symptoms, treatment).  
+Medical *topics* come from a concept index built from the KB + gazetteer seed — see [`docs/TERMINOLOGY.md`](docs/TERMINOLOGY.md).
+
+```bash
+PYTHONPATH=src we-care-nlu extract-terminology
+PYTHONPATH=src we-care-nlu kb-audit --out /tmp/kb_audit.json
+# API: GET /kb/coverage
+```
+
+`AnalyzeResponse` includes `topic`, `topics`, `medical_concepts`, and `interpretation` while keeping prior fields stable.

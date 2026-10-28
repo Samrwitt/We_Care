@@ -8,7 +8,7 @@ from typing import Any
 
 from we_care_nlu.config import load_config
 from we_care_nlu.context.resolve import resolve_context
-from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, ContextState, ReplyResponse
+from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, ContextState, Entity, ReplyResponse
 from we_care_nlu.embeddings.registry import load_embedder
 from we_care_nlu.intent.classifier import IntentClassifier
 from we_care_nlu.kb.ingest import ingest_alignment, ingest_path
@@ -17,6 +17,7 @@ from we_care_nlu.preprocess.normalize import detect_language, preprocess
 from we_care_nlu.retrieval.engine import HybridRetriever
 from we_care_nlu.retrieval.expand import expand_query, method_terms
 from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review_warnings
+from we_care_nlu.terminology.index import ConceptIndex
 from we_care_nlu.translation import build_translator
 from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import covered_question, map_to_english
@@ -54,23 +55,63 @@ class NLUEngine:
         self.retriever = HybridRetriever(self.cfg.get("retrieval") or {}, self.embedder)
         self.intents = IntentClassifier()
         self.ner = EntityExtractor()
+        self.concepts = ConceptIndex().load()
+        if not self.concepts.concepts:
+            self.concepts.ensure_seeded_from_gazetteer()
         self.model_key = self.embedder.model_key
         self.translator = build_translator(self.cfg)
 
     def ingest_alignment_dict(self, payload: dict[str, Any], *, rebuild: bool = True, **kwargs) -> int:
         chunks = ingest_alignment(payload, **kwargs)
-        return self.retriever.add_chunks(chunks, rebuild=rebuild)
+        n = self.retriever.add_chunks(chunks, rebuild=rebuild)
+        self._refresh_terminology_candidates()
+        return n
 
     def ingest_file(self, path: str, *, rebuild: bool = True, **kwargs) -> int:
-        return self.retriever.add_chunks(ingest_path(path, **kwargs), rebuild=rebuild)
+        n = self.retriever.add_chunks(ingest_path(path, **kwargs), rebuild=rebuild)
+        self._refresh_terminology_candidates()
+        return n
 
     def rebuild_index(self) -> None:
         self.retriever.rebuild_index()
+        self._refresh_terminology_candidates()
+
+    def _refresh_terminology_candidates(self) -> None:
+        """Extract pending candidates from the live index; never auto-approve."""
+        try:
+            chunks = self.retriever.index.chunks
+            if chunks:
+                self.concepts.rebuild_candidates_from_chunks(chunks)
+        except Exception as exc:  # noqa: BLE001
+            print(f"we-care-nlu: terminology extract skipped ({exc.__class__.__name__}: {exc})", flush=True)
 
     def analyze(self, req: AnalyzeRequest) -> AnalyzeResponse:
         pre = preprocess(req.text)
         intent_out = self.intents.predict(pre.normalized)
         entities = self.ner.extract(pre.normalized)
+
+        # Layer B: KB/gazetteer concepts (approved+seeded only).
+        matched_concepts = self.concepts.match(pre.normalized, limit=6)
+        concept_entities: list[Entity] = []
+        for c in matched_concepts:
+            surface = c.canonical_amharic or c.canonical_english or c.concept_id
+            concept_entities.append(
+                Entity(
+                    type="medical_concept",
+                    value=c.concept_id,
+                    surface=surface,
+                    start=-1,
+                    end=-1,
+                    confidence=0.75,
+                    source="concept_index",
+                )
+            )
+        # Prefer gazetteer spans; append concept hits that are not already covered.
+        existing_vals = {e.value for e in entities}
+        for ce in concept_entities:
+            if ce.value not in existing_vals:
+                entities.append(ce)
+
         ctx_info = {}
         entities, ctx_info = resolve_context(pre.normalized, entities, req.context, intent_out["intent"])
         inherited = ctx_info.get("inherited_intent")
@@ -85,6 +126,25 @@ class NLUEngine:
             if inherited not in labels:
                 labels.insert(0, str(inherited))
             intent_out["intent_labels"] = labels
+
+        # Topic: lexicon topics first, else primary concept, else prior context topic on follow-ups.
+        topic = intent_out.get("topic")
+        topics = list(intent_out.get("topics") or [])
+        if not topic and matched_concepts:
+            primary_c = matched_concepts[0]
+            topic = primary_c.canonical_english or primary_c.canonical_amharic or primary_c.concept_id
+            topics = [
+                (c.canonical_english or c.canonical_amharic or c.concept_id) for c in matched_concepts
+            ]
+        if (
+            not topic
+            and req.context
+            and req.context.last_topic
+            and ctx_info.get("resolved_from_previous_turn")
+        ):
+            topic = req.context.last_topic
+            ctx_info["inherited_topic"] = topic
+
         emergency = emergency_flags(pre.original + " " + pre.normalized)
         if emergency["is_emergency"]:
             intent_out["intent"] = "emergency"
@@ -93,6 +153,9 @@ class NLUEngine:
 
         filters = dict(req.filters or {})
         extra_terms = list(method_terms(entities))
+        concept_terms = self.concepts.expansion_terms(pre.normalized, limit=6)
+        if topic and topic not in concept_terms:
+            concept_terms = list(concept_terms) + [str(topic)]
         # Condition eligibility without explicit FP wording still needs FP retrieval cues.
         if any(getattr(e, "type", "") == "condition" and getattr(e, "value", "") == "hiv" for e in entities):
             extra_terms.extend(
@@ -105,6 +168,7 @@ class NLUEngine:
             intent=intent_out["intent"],
             entities=entities,
             extra_terms=extra_terms,
+            concept_terms=concept_terms,
         )
         conflicts = evidence_conflicts(hits, pre.normalized)
         review = review_warnings(hits)
@@ -124,6 +188,15 @@ class NLUEngine:
         if self.embedder_fallback:
             conf_status = "requires_calibration"
 
+        interpretation = {
+            "intent": intent_out["intent"],
+            "topic": topic,
+            "topics": topics,
+            "requires_context": bool(ctx_info.get("resolved_from_previous_turn")),
+            "context_resolved": bool(ctx_info.get("resolved_from_previous_turn")),
+            "query_expansion_terms": concept_terms[:16],
+            "concept_ids": [c.concept_id for c in matched_concepts],
+        }
         safety = {
             "emergency": emergency,
             "negation_detected": pre.has_negation,
@@ -138,6 +211,7 @@ class NLUEngine:
                 "amharic_sentence_encoder": getattr(self.embedder, "amharic_sentence_encoder", False),
                 "fallback_to_hash": self.embedder_fallback,
             },
+            "terminology": self.concepts.stats(),
         }
         return AnalyzeResponse(
             language=pre.language,
@@ -146,6 +220,10 @@ class NLUEngine:
             intent_labels=intent_out["intent_labels"],
             intent_confidence=intent_out["intent_confidence"],
             intent_backend=intent_out["intent_backend"],
+            topic=topic,
+            topics=topics,
+            medical_concepts=[c.to_public() for c in matched_concepts],
+            interpretation=interpretation,
             entities=entities,
             context_resolution=ctx_info,
             retrieval_results=hits,
@@ -500,6 +578,9 @@ class NLUEngine:
             source_url=cited.get("source_url") or "",
             intent=analysis.intent,
             intent_labels=analysis.intent_labels,
+            topic=analysis.topic,
+            topics=list(analysis.topics or []),
+            medical_concepts=list(analysis.medical_concepts or []),
             entities=analysis.entities,
             requires_clarification=analysis.requires_clarification,
             clarification_question_key=analysis.clarification_question_key,

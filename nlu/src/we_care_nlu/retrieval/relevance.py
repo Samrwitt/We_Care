@@ -115,7 +115,29 @@ def entity_condition_values(entities: Iterable[Any] | None) -> list[str]:
 
 
 CONDITION_CHUNK: dict[str, tuple[str, ...]] = {
+    # First id is the curated *FP eligibility* slice — only for FP-scoped intents.
     "hiv": ("chunk_hiv_fp", "ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "aids"),
+}
+
+# Intents where chunk_hiv_fp (contraception + HIV) is an appropriate answer.
+FP_SCOPED_INTENTS = {
+    "eligibility",
+    "family_planning_methods",
+    "contraindications",
+    "family_planning",
+    "pregnancy_breastfeeding",
+}
+
+# Clinical asks about the condition itself — not contraception eligibility.
+CLINICAL_CONDITION_INTENTS = {
+    "treatment",
+    "medication",
+    "symptoms",
+    "causes",
+    "prevention",
+    "screening",
+    "definition",
+    "diagnosis_info",
 }
 
 ACCESS_SERVICE_CUES = (
@@ -371,7 +393,11 @@ def relevance_boost(
             if q_bf and eid.startswith("chunk_bf"):
                 boost += 0.55 if (m_hit or not methods) else 0.25
             if conditions and eid.startswith("chunk_hiv") and "hiv" in conditions:
-                boost += 0.9
+                if intent in FP_SCOPED_INTENTS or intent is None:
+                    boost += 0.9
+                elif intent in CLINICAL_CONDITION_INTENTS:
+                    # FP+HIV eligibility text is the wrong answer for treatment/symptoms.
+                    boost -= 1.6
             if intent == "access" and not methods and eid == "chunk_where":
                 boost += 0.85
             if intent == "access" and not methods and eid.endswith("_access"):
@@ -381,12 +407,15 @@ def relevance_boost(
             boost -= 0.85
             if intent and any(h in eid for h in (INTENT_CHUNK_HINTS.get(intent) or ())):
                 boost -= 0.45
-    # Condition lexical hit (HIV in blob) for eligibility-style asks.
+    # Condition lexical hit (HIV cues in blob). Stronger when intent-aligned.
     for cond in conditions:
-        for cue in CONDITION_CHUNK.get(cond) or ():
-            if cue.lower() in blob:
-                boost += 0.55
-                break
+        hints = CONDITION_CHUNK.get(cond) or ()
+        cues = hints[1:] if intent in CLINICAL_CONDITION_INTENTS else hints
+        if any(cue.lower() in blob for cue in cues):
+            boost += 0.55 if intent not in CLINICAL_CONDITION_INTENTS else 0.75
+            break
+    if intent in CLINICAL_CONDITION_INTENTS and intent_needle_hit(blob, intent):
+        boost += 0.55
     if intent == "family_planning_methods" and not conditions:
         named = sum(1 for cue in METHOD_LIST_CUES if cue.lower() in blob)
         if named >= 5:
@@ -454,13 +483,18 @@ def should_force_include(
             elif m_ok and intent_needle_hit(blob, intent or "eligibility"):
                 pri = max(pri, 2.5)
 
-    # HIV / condition eligibility curated answers.
+    # HIV / condition: curated FP+HIV only for FP-scoped intents.
     for cond in conditions:
         hints = CONDITION_CHUNK.get(cond) or ()
         if demo and hints and eid == hints[0]:
-            pri = max(pri, 6.0)
+            if intent in FP_SCOPED_INTENTS or intent is None:
+                pri = max(pri, 6.0)
+            # else: do not force-include FP eligibility for treatment/symptoms
         elif any(cue.lower() in blob for cue in hints[1:]):
-            pri = max(pri, 2.8)
+            if intent in CLINICAL_CONDITION_INTENTS and intent_needle_hit(blob, intent):
+                pri = max(pri, 3.2)
+            elif intent not in CLINICAL_CONDITION_INTENTS:
+                pri = max(pri, 2.8)
 
     if intent == "access" and not methods and demo and eid == "chunk_where":
         pri = max(pri, 5.5)

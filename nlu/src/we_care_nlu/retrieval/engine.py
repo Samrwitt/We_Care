@@ -114,6 +114,7 @@ class HybridRetriever:
         intent: str | None = None,
         entities: list[Any] | None = None,
         extra_terms: list[str] | None = None,
+        concept_terms: list[str] | None = None,
     ) -> list[RetrievalHit]:
         if not self.index.chunks or self.index.bm25 is None:
             return []
@@ -127,7 +128,7 @@ class HybridRetriever:
             dw, sw = 0.0, 1.0
         # Keep the user ask for lexical alignment; expand only for BM25/dense.
         original_query = query
-        query = expand_query(query, extra_terms)
+        query = expand_query(query, extra_terms, concept_terms=concept_terms)
         # Broader candidate pool when entities/intent need curated recall.
         if entities or intent in {"family_planning_methods", "eligibility", "missed_dose"}:
             cand = max(cand, 80)

@@ -66,3 +66,48 @@ def list_models() -> None:
     cfg = load_config()
     for key, spec in (cfg.get("embeddings", {}).get("models") or {}).items():
         typer.echo(f"{key}: {spec.get('hf_id')} kind={spec.get('kind')} sts={spec.get('amharic_sentence_encoder')}")
+
+
+@app.command("kb-audit")
+def kb_audit(
+    kb_dir: Optional[Path] = typer.Option(None, "--kb-dir", help="Directory of KB JSON files"),
+    out: Optional[Path] = typer.Option(None, "--out", help="Write JSON report path"),
+) -> None:
+    """Report KB coverage, failed docs, and terminology candidate counts."""
+    from we_care_nlu.terminology.audit import audit_kb, write_audit_report
+
+    report = audit_kb(kb_dir=kb_dir)
+    if out:
+        write_audit_report(out, report)
+        typer.echo(f"wrote {out}")
+    typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+@app.command("extract-terminology")
+def extract_terminology(
+    kb: Optional[Path] = typer.Option(None, "--kb", help="Optional single KB JSON to scan"),
+    seed_gazetteer: bool = typer.Option(True, "--seed-gazetteer/--no-seed-gazetteer"),
+) -> None:
+    """Extract pending medical concept candidates from KB; seed approved from gazetteer."""
+    from we_care_nlu.terminology.index import ConceptIndex
+
+    eng = NLUEngine(load_config(), model_key="hash")
+    idx = ConceptIndex().load()
+    if seed_gazetteer:
+        n = idx.ensure_seeded_from_gazetteer()
+        typer.echo(json.dumps({"seeded": n, **idx.stats()}, ensure_ascii=False))
+    if kb:
+        eng.ingest_file(str(kb), default_review_status="source", rebuild=True)
+    else:
+        from we_care_nlu.terminology.audit import discover_kb_files
+
+        for path in discover_kb_files():
+            eng.ingest_file(str(path), default_review_status="unreviewed", rebuild=False)
+        eng.rebuild_index()
+    cands = idx.rebuild_candidates_from_chunks(eng.retriever.index.chunks)
+    typer.echo(
+        json.dumps(
+            {"candidates_written": len(cands), "candidates_path": str(idx.candidates_path), **idx.stats()},
+            ensure_ascii=False,
+        )
+    )

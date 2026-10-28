@@ -280,12 +280,13 @@
     function nextContext(data) {
       const ents = data.entities || [];
       const method = ents.find((e) => e.type === "contraceptive_method");
-      // Do not keep a stale method across unrelated topical turns (e.g. cryptic pregnancy).
+      // Medical topic (Layer B) is independent of conversational intent (Layer A).
+      const topic = data.topic || (data.topics && data.topics[0]) || null;
       return {
         turn_index: (context && context.turn_index || 0) + 1,
         last_intents: [data.intent].concat(data.intent_labels || []).slice(0, 6),
         last_entities: ents.map((e) => ({ type: e.type, value: e.value, surface: e.surface })),
-        last_topic: data.intent,
+        last_topic: topic || null,
         last_method: (method && method.value) || null,
       };
     }

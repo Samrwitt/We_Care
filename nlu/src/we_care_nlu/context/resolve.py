@@ -35,6 +35,13 @@ CARRY_INTENTS = {
     "side_effects",
     "pregnancy_breastfeeding",
     "follow_up",
+    "treatment",
+    "symptoms",
+    "prevention",
+    "causes",
+    "screening",
+    "medication",
+    "dosage",
 }
 
 
@@ -166,6 +173,12 @@ def resolve_context(
 
     # Do not ask "which method?" when the user already named a condition (HIV, BF, …).
     if follow and not prior_methods and not has_condition and not prior_conditions:
+        # Continue a prior medical *topic* (e.g. HIV symptoms → how is it treated?).
+        if context.last_topic:
+            info["resolved_from_previous_turn"] = True
+            info["inherited_topic"] = context.last_topic
+            info["reason"] = "Follow-up continues prior medical topic without requiring a method."
+            return entities, info
         info["needs_clarification"] = True
         info["reason"] = "Follow-up has no method/condition in this turn or in supplied state."
         return entities, info

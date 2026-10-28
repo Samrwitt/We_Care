@@ -101,6 +101,13 @@ ner:
   backend: gazetteer_regex
   min_confidence: 0.5
 
+terminology:
+  # Dynamic KB concept index (separate from conversational intent lexicon).
+  # pending_review candidates never expand queries until promoted/seeded.
+  auto_extract_on_ingest: true
+  approved_path: data/terminology/approved.json
+  candidates_path: data/terminology/candidates.jsonl
+
 translation:
   # mt: compose short grounded answers via we-care-mt (Google on :8090). map = phrase list only.
   backend: mt

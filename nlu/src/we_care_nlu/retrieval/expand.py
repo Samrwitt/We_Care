@@ -31,6 +31,21 @@ INTENT_NEEDLES = {
     "family_planning_methods": ("ዘዴዎች", "አማራጮች", "options", "include"),
     "how_it_works": ("ይሠራል", "works by", "stopping ovulation"),
     "missed_dose": ("ከተረሳ", "missed", "as soon as remembered"),
+    "treatment": ("ሕክምና", "ህክምና", "መድኃኒት", "መድሃኒት", "ይታከማል", "ART", "antiretroviral", "therapy", "treatment"),
+    "medication": ("መድኃኒት", "መድሃኒት", "ART", "antiretroviral", "medicine", "drug"),
+    "symptoms": ("ምልክት", "ምልክቶች", "symptom", "ሕመም"),
+    "prevention": ("መከላከል", "prevention", "prevent"),
+    "causes": ("ምክንያት", "cause", "caused"),
+}
+
+# Lexicon/topic labels → retrieval surfaces (for short follow-ups like "እንዴት ይታከማል?").
+TOPIC_SURFACES: dict[str, tuple[str, ...]] = {
+    "hiv": ("ኤች.አይ.ቪ", "ኤችአይቪ", "HIV", "ኤድስ", "AIDS"),
+    "sti": ("አባላዘር", "STI", "ኤስቲአይ"),
+    "pregnancy": ("እርግዝና", "pregnancy"),
+    "breastfeeding": ("ጡት ማጥባት", "breastfeeding"),
+    "condom": ("ኮንዶም", "condom"),
+    "family_planning": ("የቤተሰብ ምጣኔ", "የእርግዝና መከላከያ", "family planning"),
 }
 
 
@@ -84,7 +99,12 @@ def _normalize_am_acronyms(text: str) -> str:
     return text
 
 
-def expand_query(text: str, extra: Iterable[str] | None = None) -> str:
+def expand_query(
+    text: str,
+    extra: Iterable[str] | None = None,
+    *,
+    concept_terms: Iterable[str] | None = None,
+) -> str:
     text = _normalize_am_acronyms(text)
     # Drop bare question fillers so BM25 does not rank every FAQ title first.
     kept = [tok for tok in (text or "").split() if tok.strip("?.!፡።").lower() not in _QUERY_FILLER]
@@ -95,6 +115,9 @@ def expand_query(text: str, extra: Iterable[str] | None = None) -> str:
     for terms in synonym_groups():
         if any(term.lower() in low or _normalize_am_acronyms(term.lower()) in compact for term in terms):
             bits.extend(terms)
+    # Approved concept synonyms only (never pending_review candidates).
+    if concept_terms:
+        bits.extend(concept_terms)
     if extra:
         bits.extend(extra)
     return unique_join(bits)

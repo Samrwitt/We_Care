@@ -317,3 +317,23 @@ def resolve_ctx(body: ResolveBody) -> dict[str, Any]:
 
     ctx = ContextState.model_validate(body.context) if body.context else None
     return get_engine().resolve_only(body.text, ctx)
+
+
+@app.get("/kb/coverage")
+def kb_coverage() -> dict[str, Any]:
+    """Audit indexed KB files + terminology index (does not block on warm-up)."""
+    from we_care_nlu.terminology.audit import audit_kb
+    from we_care_nlu.terminology.index import ConceptIndex
+
+    idx = ConceptIndex().load()
+    if _READY.is_set() and _ENGINE is not None:
+        # Prefer live index terminology stats when the engine is up.
+        live = getattr(_ENGINE, "concepts", None)
+        if live is not None:
+            idx = live
+    report = audit_kb(concept_index=idx)
+    report["engine_ready"] = bool(_READY.is_set() and _ENGINE is not None)
+    if _ENGINE is not None:
+        report["live_chunks"] = len(_ENGINE.retriever.index.chunks)
+        report["live_embedder"] = _ENGINE.model_key
+    return report
