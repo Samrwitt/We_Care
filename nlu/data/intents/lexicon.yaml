@@ -137,11 +137,14 @@ intents:
     - እንዴት ይታከማል
     - ሕክምናው ምንድን ነው
     - ምን ሕክምና
+    - ምን ላድርግ
+    - ምን ላደርግ
     - ማከም ይቻላል
     - ሕክምና
     - treatment
     - how to treat
     - therapy
+    - what should i do
   medication:
     patterns:
     - የትኛው መድኃኒት
@@ -438,10 +441,15 @@ topics:
     - የወር አበባ
     - ወር አበባ
     - የወር አበባ መቋረጥ
+    - የወር አበባ ህመም
+    - ሲያመኝ
+    - ቁርጠት
     - menstruation
     - menstrual
     - my period
     - period pain
+    - dysmenorrhea
+    - ዲስሜኖሬያ
   menopause:
     patterns:
     - ማረጥ

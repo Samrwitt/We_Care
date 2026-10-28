@@ -238,7 +238,15 @@ def evidence_quality(text: str, *, intent: str | None = None, query: str = "", e
     )
 
 
-def citation(hit: RetrievalHit | None) -> dict[str, Any]:
+def _norm_title_cmp(text: str) -> str:
+    """Loose compare for FAQ-style titles that duplicate the user ask."""
+    t = (text or "").strip().lower()
+    t = re.sub(r"[\s?.!؟፡።]+$", "", t)
+    t = re.sub(r"\s+", " ", t)
+    return t
+
+
+def citation(hit: RetrievalHit | None, *, query: str = "") -> dict[str, Any]:
     if hit is None:
         return {
             "evidence_id": None,
@@ -263,6 +271,14 @@ def citation(hit: RetrievalHit | None) -> dict[str, Any]:
         title = hit.section if hit.section and not _title_is_date(hit.section) else ""
         if not title or _title_is_date(title):
             title = (hit.document_id or "").replace("_", " ")
+    # Blog posts often use the FAQ question as the document title — don't echo it under the answer.
+    qn = _norm_title_cmp(query)
+    tn = _norm_title_cmp(title)
+    sn = _norm_title_cmp(getattr(hit, "section", "") or "")
+    if qn and tn and (tn == qn or qn in tn or tn in qn):
+        title = ""
+    elif qn and sn and sn == qn and tn == sn:
+        title = ""
     return {
         "evidence_id": hit.evidence_id,
         "document_id": hit.document_id,
@@ -282,3 +298,37 @@ def with_article_cite(text: str, url: str, *, amharic: bool) -> str:
         return body
     cite = f"ተጨማሪ፦ {link}" if amharic else f"More: {link}"
     return f"{body}\n{cite}" if body else cite
+
+
+def focus_span_for_query(text: str, query: str) -> str:
+    """Lead with sentences that ground distinctive query tokens.
+
+    General shaping (not topic-specific): if evidence opens with supporting contrast
+    and buries the asked facet, bring grounded sentences forward.
+    """
+    from we_care_nlu.retrieval.relevance import distinctive_overlap, distinctive_query_tokens
+
+    body = (text or "").strip()
+    dist = distinctive_query_tokens(query or "")
+    if not body or not dist:
+        return body
+    sents = split_sentences(body)
+    if len(sents) < 2:
+        return body
+    focus = [s for s in sents if distinctive_overlap(s, dist) > 0]
+    support = [s for s in sents if s not in focus]
+    if not focus or focus == sents[: len(focus)]:
+        return body
+    ordered = [
+        s
+        for s in (focus + support)
+        if not (s.strip().endswith(("?", "؟")) and len(s) < 80)
+    ]
+    if ordered and ordered[0].startswith("ስለዚህ "):
+        ordered[0] = ordered[0][len("ስለዚህ ") :]
+    if ordered:
+        ordered[0] = ordered[0].replace(
+            "ከላይ ከተጠቀሰው የጤናማ የወር አበባ ዑደት",
+            "ጤናማ ከሚባለው የወር አበባ ዑደት",
+        ).replace("ከላይ ከተጠቀሰው", "ጤናማ ከሚባለው")
+    return " ".join(ordered).strip() or body

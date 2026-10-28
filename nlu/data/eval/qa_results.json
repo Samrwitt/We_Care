@@ -1,0 +1,1388 @@
+{
+  "generated_at": "2026-10-28T18:49:14.861418+00:00",
+  "model": "hash",
+  "with_docs": true,
+  "cases_path": "/home/lenovo/We_Care/nlu/data/eval/qa_cases.json",
+  "cases_version": 1,
+  "summary": {
+    "total": 20,
+    "passed": 19,
+    "failed": 1,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "fp_methods_list",
+      "topic": "family_planning",
+      "question": "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_methods",
+            "got": "chunk_methods"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "must_not_contain",
+          "ok": true,
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?",
+          "answer": {
+            "amharic_reply": "የእርግዝና መከላከያ ዘዴዎች በርካታ አማራጮች አሉ። የመከላከያ (ባሪየር) ዘዴዎች ኮንዶምን ያካትታሉ። የሆርሞን ዘዴዎች በአፍ የሚወሰድ ክኒን፣ መርፌ እና ኢምፕላንት ናቸው። በማሕፀን ውስጥ የሚገባ መከላከያ (አይዩሲዲ) ለረጅም ጊዜ ይቆያል። የአስቸኳይ መከላከያ ጥንቃቄ የጎደለው ግንኙነት ከተደረገ በኋላ ይወሰዳል። ቋሚ ዘዴዎች የቧንቧ መቆረጥ እና የወንድ የዘር ቱቦ መቆረጥ ናቸው። የሚስማማው ዘዴ በጤና ሁኔታ ይለያያል፤ ከጤና ባለሙያ ጋር ይመከራል።",
+            "english_reply": "",
+            "evidence_id": "chunk_methods",
+            "document_title": "Family Planning user knowledge base",
+            "page": 8,
+            "intent": "family_planning_methods",
+            "topic": "family_planning",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የእርግዝና መከላከያ ዘዴዎች በርካታ አማራጮች አሉ። የመከላከያ (ባሪየር) ዘዴዎች ኮንዶምን ያካትታሉ። የሆርሞን ዘዴዎች በአፍ የሚወሰድ ክኒን፣ መርፌ እና ኢምፕላንት ናቸው። በማሕፀን ውስጥ የሚገባ መከላከያ (አይዩሲዲ) ለረጅም ጊዜ ይቆያል። የአስቸኳይ መከላከያ ጥንቃቄ የጎደለው ግንኙነት ከተደረገ በኋላ ይወሰዳል። ቋሚ ዘዴዎች የቧንቧ መቆረጥ እና የወንድ የዘር ቱቦ መቆረጥ ናቸው። የሚስማማው ዘዴ በጤና ሁኔታ ይለያያል፤ ከጤና ባለሙያ ጋር ይመከራል።",
+        "english_reply": "",
+        "evidence_id": "chunk_methods",
+        "document_title": "Family Planning user knowledge base",
+        "page": 8,
+        "intent": "family_planning_methods",
+        "topic": "family_planning",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "bf_injectable_ok",
+      "topic": "breastfeeding",
+      "question": "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_bf_allowed",
+            "got": "chunk_bf_allowed"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
+          "answer": {
+            "amharic_reply": "ፕሮጄስቲን ብቻ ያለው መርፌ ከወሊድ በኋላ ከስድስት ሳምንታት በኋላ ጡት በማጥባት ጊዜ መጠቀም ይቻላል።",
+            "english_reply": "",
+            "evidence_id": "chunk_bf_allowed",
+            "document_title": "Family Planning user knowledge base",
+            "page": 12,
+            "intent": "eligibility",
+            "topic": "breastfeeding",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ፕሮጄስቲን ብቻ ያለው መርፌ ከወሊድ በኋላ ከስድስት ሳምንታት በኋላ ጡት በማጥባት ጊዜ መጠቀም ይቻላል።",
+        "english_reply": "",
+        "evidence_id": "chunk_bf_allowed",
+        "document_title": "Family Planning user knowledge base",
+        "page": 12,
+        "intent": "eligibility",
+        "topic": "breastfeeding",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "condom_definition",
+      "topic": "condom",
+      "question": "ኮንዶም ምንድን ነው?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_condom_def",
+            "got": "chunk_condom_def"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኮንዶም ምንድን ነው?",
+          "answer": {
+            "amharic_reply": "ኮንዶም በግብረ ሥጋ ግንኙነት ጊዜ የሚያገለግል መከላከያ ነው። እርግዝናን ለመከላከል ይረዳል እንዲሁም ኤች.አይ.ቪን ጨምሮ በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን አደጋ ይቀንሳል።",
+            "english_reply": "",
+            "evidence_id": "chunk_condom_def",
+            "document_title": "Family Planning user knowledge base",
+            "page": 9,
+            "intent": "definition",
+            "topic": "condom",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ኮንዶም በግብረ ሥጋ ግንኙነት ጊዜ የሚያገለግል መከላከያ ነው። እርግዝናን ለመከላከል ይረዳል እንዲሁም ኤች.አይ.ቪን ጨምሮ በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን አደጋ ይቀንሳል።",
+        "english_reply": "",
+        "evidence_id": "chunk_condom_def",
+        "document_title": "Family Planning user knowledge base",
+        "page": 9,
+        "intent": "definition",
+        "topic": "condom",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "pill_missed",
+      "topic": "pill",
+      "question": "ክኒን ከተረሳ ምን ላድርግ?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_pill_missed",
+            "got": "chunk_pill_missed"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ክኒን ከተረሳ ምን ላድርግ?",
+          "answer": {
+            "amharic_reply": "አንድ ክኒን ከተረሳ በተቻለ ፍጥነት ይውሰዱና ጥቅሉን ይቀጥሉ። ሁለት ወይም ከዚያ በላይ ከተረሳ በጤና ባለሙያ ይጠይቁ እና እስከዚያው ኮንዶም ይጠቀሙ።",
+            "english_reply": "",
+            "evidence_id": "chunk_pill_missed",
+            "document_title": "Family Planning user knowledge base",
+            "page": 10,
+            "intent": "missed_dose",
+            "topic": "OCP",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "አንድ ክኒን ከተረሳ በተቻለ ፍጥነት ይውሰዱና ጥቅሉን ይቀጥሉ። ሁለት ወይም ከዚያ በላይ ከተረሳ በጤና ባለሙያ ይጠይቁ እና እስከዚያው ኮንዶም ይጠቀሙ።",
+        "english_reply": "",
+        "evidence_id": "chunk_pill_missed",
+        "document_title": "Family Planning user knowledge base",
+        "page": 10,
+        "intent": "missed_dose",
+        "topic": "OCP",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "implant_duration",
+      "topic": "implant",
+      "question": "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_implant_def",
+            "got": "chunk_implant_def"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
+          "answer": {
+            "amharic_reply": "ኢምፕላንት ከላይኛው ክንድ ቆዳ ሥር የሚገባ ትንሽ ዘንግ ነው። እንደ ዓይነቱ ለሦስት እስከ አምስት ዓመት እርግዝናን ይከላከላል። ከተወገደ በኋላ መውለድ ችሎታ ብዙ ጊዜ በፍጥነት ይመለሳል።",
+            "english_reply": "",
+            "evidence_id": "chunk_implant_def",
+            "document_title": "Family Planning user knowledge base",
+            "page": 11,
+            "intent": "duration",
+            "topic": "contraceptive_implant",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ኢምፕላንት ከላይኛው ክንድ ቆዳ ሥር የሚገባ ትንሽ ዘንግ ነው። እንደ ዓይነቱ ለሦስት እስከ አምስት ዓመት እርግዝናን ይከላከላል። ከተወገደ በኋላ መውለድ ችሎታ ብዙ ጊዜ በፍጥነት ይመለሳል።",
+        "english_reply": "",
+        "evidence_id": "chunk_implant_def",
+        "document_title": "Family Planning user knowledge base",
+        "page": 11,
+        "intent": "duration",
+        "topic": "contraceptive_implant",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "ec_when",
+      "topic": "emergency_contraception",
+      "question": "የአስቸኳይ መከላከያ መቼ ይወሰዳል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_ec_when",
+            "got": "chunk_ec_when"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የአስቸኳይ መከላከያ መቼ ይወሰዳል?",
+          "answer": {
+            "amharic_reply": "የአስቸኳይ መከላከያ ክኒን በተቻለ ፍጥነት ከተወሰደ ይሻላል፣ ያለ መከላከያ ግንኙነት ከተደረገ እስከ አምስት ቀን ድረስ ሊውል ይችላል። የትኛው ዓይነት እንዳለ የጤና ተቋም ያስረዳል።",
+            "english_reply": "",
+            "evidence_id": "chunk_ec_when",
+            "document_title": "Family Planning user knowledge base",
+            "page": 12,
+            "intent": "general_medical_info",
+            "topic": "emergency contracept",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የአስቸኳይ መከላከያ ክኒን በተቻለ ፍጥነት ከተወሰደ ይሻላል፣ ያለ መከላከያ ግንኙነት ከተደረገ እስከ አምስት ቀን ድረስ ሊውል ይችላል። የትኛው ዓይነት እንዳለ የጤና ተቋም ያስረዳል።",
+        "english_reply": "",
+        "evidence_id": "chunk_ec_when",
+        "document_title": "Family Planning user knowledge base",
+        "page": 12,
+        "intent": "general_medical_info",
+        "topic": "emergency contracept",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "condom_access",
+      "topic": "access",
+      "question": "ኮንዶም የት ይገኛል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_condom_access",
+            "got": "chunk_condom_access"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኮንዶም የት ይገኛል?",
+          "answer": {
+            "amharic_reply": "ኮንዶም በጤና ተቋማት፣ በጤና ኤክስቴንሽን ሠራተኞች እና በብዙ መድኃኒት ቤቶች ይገኛል።",
+            "english_reply": "",
+            "evidence_id": "chunk_condom_access",
+            "document_title": "Family Planning user knowledge base",
+            "page": 9,
+            "intent": "access",
+            "topic": "condom",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ኮንዶም በጤና ተቋማት፣ በጤና ኤክስቴንሽን ሠራተኞች እና በብዙ መድኃኒት ቤቶች ይገኛል።",
+        "english_reply": "",
+        "evidence_id": "chunk_condom_access",
+        "document_title": "Family Planning user knowledge base",
+        "page": 9,
+        "intent": "access",
+        "topic": "condom",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "injectable_side_effects",
+      "topic": "injectable",
+      "question": "የመርፌ የጎንዮሽ ጉዳት ምንድን ነው?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_injectable_se",
+            "got": "chunk_injectable_se"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የመርፌ የጎንዮሽ ጉዳት ምንድን ነው?",
+          "answer": {
+            "amharic_reply": "የመርፌ የጎንዮሽ ጉዳት መደበኛ ያልሆነ የደም መፍሰስ እና ወደ መውለድ ችሎታ መዘግየትን ሊያካትት ይችላል። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።",
+            "english_reply": "",
+            "evidence_id": "chunk_injectable_se",
+            "document_title": "Family Planning user knowledge base",
+            "page": 11,
+            "intent": "side_effects",
+            "topic": "injectable",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የመርፌ የጎንዮሽ ጉዳት መደበኛ ያልሆነ የደም መፍሰስ እና ወደ መውለድ ችሎታ መዘግየትን ሊያካትት ይችላል። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።",
+        "english_reply": "",
+        "evidence_id": "chunk_injectable_se",
+        "document_title": "Family Planning user knowledge base",
+        "page": 11,
+        "intent": "side_effects",
+        "topic": "injectable",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "injectable_how",
+      "topic": "injectable",
+      "question": "መርፌ እንዴት ይሠራል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_injectable_how",
+            "got": "chunk_injectable_how"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "መርፌ እንዴት ይሠራል?",
+          "answer": {
+            "amharic_reply": "መርፌ በዋናነት እንቁላል መውጣትን በማቆም ይሠራል። ከመጨረሻው መርፌ በኋላ ወደ መውለድ ችሎታ መመለስ ሊዘገይ ይችላል።",
+            "english_reply": "",
+            "evidence_id": "chunk_injectable_how",
+            "document_title": "Family Planning user knowledge base",
+            "page": 10,
+            "intent": "how_it_works",
+            "topic": "injectable",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "መርፌ በዋናነት እንቁላል መውጣትን በማቆም ይሠራል። ከመጨረሻው መርፌ በኋላ ወደ መውለድ ችሎታ መመለስ ሊዘገይ ይችላል።",
+        "english_reply": "",
+        "evidence_id": "chunk_injectable_how",
+        "document_title": "Family Planning user knowledge base",
+        "page": 10,
+        "intent": "how_it_works",
+        "topic": "injectable",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "fp_service_where",
+      "topic": "access",
+      "question": "የቤተሰብ ምጣኔ አገልግሎት የት ይገኛል?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_where",
+            "got": "chunk_where"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የቤተሰብ ምጣኔ አገልግሎት የት ይገኛል?",
+          "answer": {
+            "amharic_reply": "የቤተሰብ ምጣኔ አገልግሎት በጤና ኬላ፣ በጤና ጣቢያ እና በሆስፒታል ይሰጣል። የጤና ኤክስቴንሽን ሠራተኛም ምክር ሰጥቶ ሊልክ ይችላል።",
+            "english_reply": "",
+            "evidence_id": "chunk_where",
+            "document_title": "Family Planning user knowledge base",
+            "page": 15,
+            "intent": "access",
+            "topic": "family_planning",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የቤተሰብ ምጣኔ አገልግሎት በጤና ኬላ፣ በጤና ጣቢያ እና በሆስፒታል ይሰጣል። የጤና ኤክስቴንሽን ሠራተኛም ምክር ሰጥቶ ሊልክ ይችላል።",
+        "english_reply": "",
+        "evidence_id": "chunk_where",
+        "document_title": "Family Planning user knowledge base",
+        "page": 15,
+        "intent": "access",
+        "topic": "family_planning",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "hiv_fp_eligibility",
+      "topic": "hiv",
+      "question": "ኤች.አይ.ቪ ያለብኝ የእርግዝና መከላከያ መጠቀም እችላለሁ?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_hiv_fp",
+            "got": "chunk_hiv_fp"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "must_not_contain",
+          "ok": true,
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኤች.አይ.ቪ ያለብኝ የእርግዝና መከላከያ መጠቀም እችላለሁ?",
+          "answer": {
+            "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+            "english_reply": "",
+            "evidence_id": "chunk_hiv_fp",
+            "document_title": "Family Planning user knowledge base",
+            "page": 14,
+            "intent": "eligibility",
+            "topic": "family_planning",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+        "english_reply": "",
+        "evidence_id": "chunk_hiv_fp",
+        "document_title": "Family Planning user knowledge base",
+        "page": 14,
+        "intent": "eligibility",
+        "topic": "family_planning",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "hiv_eligibility_short",
+      "topic": "hiv",
+      "question": "ኤች.አይ.ቪ ያለብኝ መጠቀም እችላለሁ?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_hiv_fp",
+            "got": "chunk_hiv_fp"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኤች.አይ.ቪ ያለብኝ መጠቀም እችላለሁ?",
+          "answer": {
+            "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+            "english_reply": "",
+            "evidence_id": "chunk_hiv_fp",
+            "document_title": "Family Planning user knowledge base",
+            "page": 14,
+            "intent": "eligibility",
+            "topic": "hiv",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+        "english_reply": "",
+        "evidence_id": "chunk_hiv_fp",
+        "document_title": "Family Planning user knowledge base",
+        "page": 14,
+        "intent": "eligibility",
+        "topic": "hiv",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "hiv_then_injectable_followup",
+      "topic": "hiv",
+      "question": "መርፌ",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id",
+          "ok": true,
+          "detail": {
+            "expected": "chunk_hiv_fp",
+            "got": "chunk_hiv_fp"
+          }
+        },
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "intent_in",
+          "ok": true,
+          "detail": {
+            "allowed": [
+              "eligibility"
+            ],
+            "got": "eligibility"
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "መርፌ",
+          "answer": {
+            "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+            "english_reply": "",
+            "evidence_id": "chunk_hiv_fp",
+            "document_title": "Family Planning user knowledge base",
+            "page": 14,
+            "intent": "eligibility",
+            "topic": "injectable",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "አብዛኞቹ የእርግዝና መከላከያ ዘዴዎች ኤች.አይ.ቪ ያለባቸው ሰዎች ሊጠቀሙባቸው ይችላሉ። ኮንዶም ኤች.አይ.ቪን እና ሌሎች በግብረ ሥጋ ግንኙነት የሚተላለፉ በሽታዎችን ስለሚከላከልም አስፈላጊ ነው።",
+        "english_reply": "",
+        "evidence_id": "chunk_hiv_fp",
+        "document_title": "Family Planning user knowledge base",
+        "page": 14,
+        "intent": "eligibility",
+        "topic": "injectable",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "hiv_symptoms_then_treatment",
+      "topic": "hiv",
+      "question": "እንዴት ይታከማል?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id_not",
+          "ok": true,
+          "detail": {
+            "banned": [
+              "chunk_hiv_fp"
+            ],
+            "got": "CDC Sexually Transmitted Infections Treatment-s0123"
+          }
+        },
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "ሕክምና",
+              "መድኃኒት",
+              "መድሃኒት",
+              "ኤ.አር.ቲ",
+              "ART",
+              "ቫይረስ",
+              "antiretroviral"
+            ]
+          }
+        },
+        {
+          "name": "must_not_contain",
+          "ok": true,
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "name": "intent_in",
+          "ok": true,
+          "detail": {
+            "allowed": [
+              "treatment",
+              "medication",
+              "how_it_works",
+              "general_medical_info",
+              "follow_up"
+            ],
+            "got": "treatment"
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ኤች.አይ.ቪ ምልክቶች",
+          "answer": {
+            "amharic_reply": "የኤችአይቪ ኢንፌክሽን በግምት 28 ቀናት የመታቀፊያ ጊዜ አለው (ከ15-50 ቀናት)1296) በጉበት ውስጥ ይባዛል እና ከ2-3 ሳምንታት በፊት እስከ ክሊኒካዊ ህመም ከተከሰተ በኋላ ባሉት 1 ሳምንታት ውስጥ በሰገራ ውስጥ በከፍተኛ ክምችት ውስጥ ይወድቃል።",
+            "english_reply": "",
+            "evidence_id": "CDC Sexually Transmitted Infections Treatment-s1591",
+            "document_title": "የሄፐታይተስ ኤ ቫይረስ ኢንፌክሽን",
+            "page": null,
+            "intent": "symptoms",
+            "topic": "hiv",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          },
+          "analysis_intent": "symptoms",
+          "analysis_topic": "hiv"
+        },
+        {
+          "turn": 1,
+          "question": "እንዴት ይታከማል?",
+          "answer": {
+            "amharic_reply": "እ.ኤ.አ. በ2011፣ በዘፈቀደ የተገኘ ቁጥጥር የተደረገበት 052 ሙከራ እንዳመለከተው፣ በኤችአይቪ ድብልቅ ሁኔታ ውስጥ ባሉ ሄትሮሴክሹዋል ጥንዶች መካከል፣ በበሽታው ለተያዘው አጋር የኤችአይቪ ፀረ-ሬትሮቫይረስ ሕክምና () ወደ ላልተበከለው አጋር የመተላለፍ አደጋን በ96% ቀንሷል።94) ስለዚህ፣ ለኤችአይቪ ኢንፌክሽን ላለባቸው ሰዎች ጤና ጠቃሚ ብቻ ሳይሆን የመተላለፍ አደጋንም ይቀንሳል።",
+            "english_reply": "",
+            "evidence_id": "CDC Sexually Transmitted Infections Treatment-s0123",
+            "document_title": "ለጾታዊ ግንኙነት የሚተላለፉ በሽታዎች ቅድመ-መጋለጥ መከላከል",
+            "page": null,
+            "intent": "treatment",
+            "topic": "hiv",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          },
+          "analysis_intent": "treatment",
+          "analysis_topic": "hiv"
+        }
+      ],
+      "answer": {
+        "amharic_reply": "እ.ኤ.አ. በ2011፣ በዘፈቀደ የተገኘ ቁጥጥር የተደረገበት 052 ሙከራ እንዳመለከተው፣ በኤችአይቪ ድብልቅ ሁኔታ ውስጥ ባሉ ሄትሮሴክሹዋል ጥንዶች መካከል፣ በበሽታው ለተያዘው አጋር የኤችአይቪ ፀረ-ሬትሮቫይረስ ሕክምና () ወደ ላልተበከለው አጋር የመተላለፍ አደጋን በ96% ቀንሷል።94) ስለዚህ፣ ለኤችአይቪ ኢንፌክሽን ላለባቸው ሰዎች ጤና ጠቃሚ ብቻ ሳይሆን የመተላለፍ አደጋንም ይቀንሳል።",
+        "english_reply": "",
+        "evidence_id": "CDC Sexually Transmitted Infections Treatment-s0123",
+        "document_title": "ለጾታዊ ግንኙነት የሚተላለፉ በሽታዎች ቅድመ-መጋለጥ መከላከል",
+        "page": null,
+        "intent": "treatment",
+        "topic": "hiv",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "cryptic_pregnancy",
+      "topic": "pregnancy",
+      "question": "ክሪፕቲክ እርግዝና ምንድን ነው?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id_not",
+          "ok": true,
+          "detail": {
+            "banned": [
+              "chunk_implant_def"
+            ],
+            "got": "ክሪፕቲክ እርግዝና -s0001"
+          }
+        },
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "ክሪፕቲክ",
+              "ስውር"
+            ]
+          }
+        },
+        {
+          "name": "must_not_contain",
+          "ok": true,
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ክሪፕቲክ እርግዝና ምንድን ነው?",
+          "answer": {
+            "amharic_reply": "ክሪፕቲክ እርግዝና በሌላ ስሙ ስውር እርግዝና፣ሚስጥራዊ እርግዝና ወይም ያልታመነ እርግዝና በመባል የሚታወቅ ሲሆን፣ አንዲት ሴት በእርግዝና ወቅት አንዳንዴም ወደ ምጥ እስክትገባ ድረስ መፀነሷን የማታውቅበት ሁኔታ ነው። በእርግዝና ወቅት የተለመዱና ሴቶች የሚጠብቋቸው እንደ የወር አበባ መቆም፣ የማለዳ ማቅለሽለሽ እና የሆድ እብጠት ያሉ አስጠንቃቂ የእርግዝና ምልክቶች ስለማይኖሩ ወይም በጣም ቀላል ከመሆናቸው የተነሳ ሳይስተዋሉ ይቀራሉ። ክሪፕቲክ እርግዝና አልፎ አልፎ የሚከሰት ሁኔታ ቢሆንም በሁሉም እድሜ እና የአካል አቋም ላይ ባሉ ሴቶች ላይ ሊከሰት ይችላል።",
+            "english_reply": "",
+            "evidence_id": "ክሪፕቲክ እርግዝና -s0001",
+            "document_title": "",
+            "page": null,
+            "intent": "definition",
+            "topic": "pregnancy",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ክሪፕቲክ እርግዝና በሌላ ስሙ ስውር እርግዝና፣ሚስጥራዊ እርግዝና ወይም ያልታመነ እርግዝና በመባል የሚታወቅ ሲሆን፣ አንዲት ሴት በእርግዝና ወቅት አንዳንዴም ወደ ምጥ እስክትገባ ድረስ መፀነሷን የማታውቅበት ሁኔታ ነው። በእርግዝና ወቅት የተለመዱና ሴቶች የሚጠብቋቸው እንደ የወር አበባ መቆም፣ የማለዳ ማቅለሽለሽ እና የሆድ እብጠት ያሉ አስጠንቃቂ የእርግዝና ምልክቶች ስለማይኖሩ ወይም በጣም ቀላል ከመሆናቸው የተነሳ ሳይስተዋሉ ይቀራሉ። ክሪፕቲክ እርግዝና አልፎ አልፎ የሚከሰት ሁኔታ ቢሆንም በሁሉም እድሜ እና የአካል አቋም ላይ ባሉ ሴቶች ላይ ሊከሰት ይችላል።",
+        "english_reply": "",
+        "evidence_id": "ክሪፕቲክ እርግዝና -s0001",
+        "document_title": "",
+        "page": null,
+        "intent": "definition",
+        "topic": "pregnancy",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "irregular_menses_when",
+      "topic": "menses",
+      "question": "የወር አበባ ዑደት ተዛባ የሚባለው መቼ ነው?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "must_contain",
+          "ok": true,
+          "detail": {
+            "missing": []
+          }
+        },
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "ጤናማ",
+              "21",
+              "ቀናት"
+            ]
+          }
+        },
+        {
+          "name": "must_not_contain",
+          "ok": true,
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        },
+        {
+          "name": "reply_starts_with_any",
+          "ok": true,
+          "detail": {
+            "prefixes": [
+              "የጤና ባለሙያዎች",
+              "ስለዚህ የጤና"
+            ],
+            "head": "የጤና ባለሙያዎች ጤናማ ከሚባለው የወር አበባ ዑደት ውጪ የሚከሠተውን ዑደት “የወር አበባ ዑደት"
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የወር አበባ ዑደት ተዛባ የሚባለው መቼ ነው?",
+          "answer": {
+            "amharic_reply": "የጤና ባለሙያዎች ጤናማ ከሚባለው የወር አበባ ዑደት ውጪ የሚከሠተውን ዑደት “የወር አበባ ዑደት መዛባት” ይሉታል። ጤናማ የወር አበባ ዑደት የሚባለው በአማካኝ የሚከተሉትን መስፈርቶች ሲያሟላ ነው። የሚመጣው በ21-35 ቀናት የሚቆየው ከ 2 – 7 ቀናት መጠኑ ከ 80 ሚ.ሊ. ያልበለጠ የረጋ ደም መኖር የለበትም፤ ከአለም ከ 2.5 ሴ.ሜ. መብለጥ የለበትም፡፡ የወር አበባ ሲመጣ ብዙ ጊዜ ሌሊት ሌሊት ሞዴስ መቀየር የማያስፈልግ ከሆነ፤ እነዚህ የጤናማ የወር አበባ ዑደት መገለጫዎች ናቸው።",
+            "english_reply": "",
+            "evidence_id": "_የወር አበባ ዑደት ተዛባ የሚባለው መቼ ነው_-s0001",
+            "document_title": "",
+            "page": null,
+            "intent": "general_medical_info",
+            "topic": "menstruation",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የጤና ባለሙያዎች ጤናማ ከሚባለው የወር አበባ ዑደት ውጪ የሚከሠተውን ዑደት “የወር አበባ ዑደት መዛባት” ይሉታል። ጤናማ የወር አበባ ዑደት የሚባለው በአማካኝ የሚከተሉትን መስፈርቶች ሲያሟላ ነው። የሚመጣው በ21-35 ቀናት የሚቆየው ከ 2 – 7 ቀናት መጠኑ ከ 80 ሚ.ሊ. ያልበለጠ የረጋ ደም መኖር የለበትም፤ ከአለም ከ 2.5 ሴ.ሜ. መብለጥ የለበትም፡፡ የወር አበባ ሲመጣ ብዙ ጊዜ ሌሊት ሌሊት ሞዴስ መቀየር የማያስፈልግ ከሆነ፤ እነዚህ የጤናማ የወር አበባ ዑደት መገለጫዎች ናቸው።",
+        "english_reply": "",
+        "evidence_id": "_የወር አበባ ዑደት ተዛባ የሚባለው መቼ ነው_-s0001",
+        "document_title": "",
+        "page": null,
+        "intent": "general_medical_info",
+        "topic": "menstruation",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "sti_discharge_treatment_shape",
+      "topic": "sti",
+      "question": "ከብልት የሚወጣ ፈሳሽ እንዴት ይታከማል?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "ሕክምና",
+              "መድኃኒት",
+              "አንቲባዮቲክ",
+              "ፈሳሽ"
+            ]
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "ከብልት የሚወጣ ፈሳሽ እንዴት ይታከማል?",
+          "answer": {
+            "amharic_reply": "በፊዚዮሎጂያዊ መልኩ ሴቶች ከሴት ብልት የሚወጣው ፈሳሽ ነጭ፣ ሽታው አነስተኛ እና ብስጭት የሌለው፣ ቀጭን ወይም ወፍራም የሆነ፣ በወር አበባ ዑደት ላይ በመመስረት ቀጭን ወይም ወፍራም ነው። በተለመደው የሴት ብልት የሚወጣው ፈሳሽ መጠን ላይ የግለሰብ ልዩነት አለ። ከ በወሲብ የሚተላለፉ በሽታዎች ጋር የተያያዘ ያልተለመደ የሴት ብልት ፈሳሽ በቀለም፣ ሽታ እና መጠን ያልተለመደ ነው። በሌላ አነጋገር ያልተለመደ የሴት ብልት ፈሳሽ አንዲት ሴት በቀለም፣ በሽታ እና በመጠን ላይ ለውጥ ከማሳከክ ጋር ሲያያዝ ይታያል።",
+            "english_reply": "",
+            "evidence_id": "NATIONAL_GUIDELINES_FOR_THE_MANAGEMENT_OF_SEXUALLY_TRANSMITTED_INFECTIONS2-s0168",
+            "document_title": "የኢትዮጵያ ፌዴራላዊ ዲሞክራሲያዊ ሪፐብሊክ የጤና ጥበቃ ሚኒስቴር",
+            "page": null,
+            "intent": "treatment",
+            "topic": null,
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "በፊዚዮሎጂያዊ መልኩ ሴቶች ከሴት ብልት የሚወጣው ፈሳሽ ነጭ፣ ሽታው አነስተኛ እና ብስጭት የሌለው፣ ቀጭን ወይም ወፍራም የሆነ፣ በወር አበባ ዑደት ላይ በመመስረት ቀጭን ወይም ወፍራም ነው። በተለመደው የሴት ብልት የሚወጣው ፈሳሽ መጠን ላይ የግለሰብ ልዩነት አለ። ከ በወሲብ የሚተላለፉ በሽታዎች ጋር የተያያዘ ያልተለመደ የሴት ብልት ፈሳሽ በቀለም፣ ሽታ እና መጠን ያልተለመደ ነው። በሌላ አነጋገር ያልተለመደ የሴት ብልት ፈሳሽ አንዲት ሴት በቀለም፣ በሽታ እና በመጠን ላይ ለውጥ ከማሳከክ ጋር ሲያያዝ ይታያል።",
+        "english_reply": "",
+        "evidence_id": "NATIONAL_GUIDELINES_FOR_THE_MANAGEMENT_OF_SEXUALLY_TRANSMITTED_INFECTIONS2-s0168",
+        "document_title": "የኢትዮጵያ ፌዴራላዊ ዲሞክራሲያዊ ሪፐብሊክ የጤና ጥበቃ ሚኒስቴር",
+        "page": null,
+        "intent": "treatment",
+        "topic": null,
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "ivf_what_is",
+      "topic": "fertility",
+      "question": "IVF ምንድን ነው?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "IVF",
+              "እንቁላል",
+              "ፅንስ",
+              "ላቦራቶሪ"
+            ]
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "IVF ምንድን ነው?",
+          "answer": {
+            "amharic_reply": "የ IVF ስኬታማነት መጠን እና የሚያጋጥሙ ተደራሽ ፈተናዎች",
+            "english_reply": "",
+            "evidence_id": "IVF -s0038",
+            "document_title": "በቤተ-ሙከራ የሚደረግ የፅንስ ማዳቀል (IVF) ምንድነው?",
+            "page": null,
+            "intent": "definition",
+            "topic": null,
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የ IVF ስኬታማነት መጠን እና የሚያጋጥሙ ተደራሽ ፈተናዎች",
+        "english_reply": "",
+        "evidence_id": "IVF -s0038",
+        "document_title": "በቤተ-ሙከራ የሚደረግ የፅንስ ማዳቀል (IVF) ምንድነው?",
+        "page": null,
+        "intent": "definition",
+        "topic": null,
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "serodiscordant_couples",
+      "topic": "hiv",
+      "question": "የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው ጥንዶች ምን ማለት ነው?",
+      "needs_docs": true,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": true,
+      "checks": [
+        {
+          "name": "evidence_id_not",
+          "ok": true,
+          "detail": {
+            "banned": [
+              "chunk_hiv_fp"
+            ],
+            "got": "✓ የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው   ጥንዶች-s0003"
+          }
+        },
+        {
+          "name": "must_contain_any",
+          "ok": true,
+          "detail": {
+            "options": [
+              "ኤች.አይ.ቪ",
+              "አጋር",
+              "ሴሮ"
+            ]
+          }
+        },
+        {
+          "name": "clarify",
+          "ok": true,
+          "detail": {
+            "expected": false,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው ጥንዶች ምን ማለት ነው?",
+          "answer": {
+            "amharic_reply": "የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው ጥንዶች ማለት አብረው ካሉ ሁለት የፍቅር አጋሮች መካከል አንደኛው ኤች.አይ.ቪ ፖዘቲቭ (ቫይረሱ ያለበት) ሲሆን እና ሁለተኛው ደግሞ ኤች.አይ.ቪ ኔጌቲቭ (ቫይረሱ የሌለበት) ሲሆን የሚፈጠር ሁኔታ ነው። ይህ ክስተት በሚከተሉት ላይ ሊገኝ ይችላል፡-",
+            "english_reply": "",
+            "evidence_id": "✓ የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው   ጥንዶች-s0003",
+            "document_title": "",
+            "page": null,
+            "intent": "definition",
+            "topic": "hiv",
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው ጥንዶች ማለት አብረው ካሉ ሁለት የፍቅር አጋሮች መካከል አንደኛው ኤች.አይ.ቪ ፖዘቲቭ (ቫይረሱ ያለበት) ሲሆን እና ሁለተኛው ደግሞ ኤች.አይ.ቪ ኔጌቲቭ (ቫይረሱ የሌለበት) ሲሆን የሚፈጠር ሁኔታ ነው። ይህ ክስተት በሚከተሉት ላይ ሊገኝ ይችላል፡-",
+        "english_reply": "",
+        "evidence_id": "✓ የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው   ጥንዶች-s0003",
+        "document_title": "",
+        "page": null,
+        "intent": "definition",
+        "topic": "hiv",
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    },
+    {
+      "id": "which_method_clarify",
+      "topic": "clarify",
+      "question": "የትኛውን ዘዴ ልጠቀም?",
+      "needs_docs": false,
+      "skipped": false,
+      "skip_reason": null,
+      "passed": false,
+      "checks": [
+        {
+          "name": "clarify",
+          "ok": false,
+          "detail": {
+            "expected": true,
+            "got": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "turn": 0,
+          "question": "የትኛውን ዘዴ ልጠቀም?",
+          "answer": {
+            "amharic_reply": "ዝቅተኛ ≥2 WBCs/ መቆረጥን መጠቀም 13% የሚሆነውን ያጣልሲ. ትራኮማቲስእናየብልት ጡንቻእና 45% የሚሆኑት አሉታዊ ምርመራ ካላቸው ሰዎች በላይ ማከም (ምንጭ፡ሌይፐርትዝ ጂ፣ ቻምበርስ ኤል፣ ሎወንስ ኤስ፣ እና ሌሎችም።",
+            "english_reply": "",
+            "evidence_id": "CDC Sexually Transmitted Infections Treatment-s0820",
+            "document_title": "የምርመራ ግምት",
+            "page": null,
+            "intent": "general_medical_info",
+            "topic": null,
+            "requires_clarification": false,
+            "clarification_question_key": null,
+            "confidence_status": "requires_calibration"
+          }
+        }
+      ],
+      "answer": {
+        "amharic_reply": "ዝቅተኛ ≥2 WBCs/ መቆረጥን መጠቀም 13% የሚሆነውን ያጣልሲ. ትራኮማቲስእናየብልት ጡንቻእና 45% የሚሆኑት አሉታዊ ምርመራ ካላቸው ሰዎች በላይ ማከም (ምንጭ፡ሌይፐርትዝ ጂ፣ ቻምበርስ ኤል፣ ሎወንስ ኤስ፣ እና ሌሎችም።",
+        "english_reply": "",
+        "evidence_id": "CDC Sexually Transmitted Infections Treatment-s0820",
+        "document_title": "የምርመራ ግምት",
+        "page": null,
+        "intent": "general_medical_info",
+        "topic": null,
+        "requires_clarification": false,
+        "clarification_question_key": null,
+        "confidence_status": "requires_calibration"
+      }
+    }
+  ]
+}

@@ -83,6 +83,40 @@ def kb_audit(
     typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
 
 
+@app.command("eval-qa")
+def eval_qa(
+    cases: Optional[Path] = typer.Option(None, "--cases", help="qa_cases.json path"),
+    out: Optional[Path] = typer.Option(None, "--out", help="Write Q&A results JSON"),
+    model: str = typer.Option("hash", "--model"),
+    docs: bool = typer.Option(True, "--docs/--no-docs", help="Include docs_amharic_kb.json"),
+    fail_fast: bool = typer.Option(False, "--fail-fast"),
+) -> None:
+    """Run multi-topic Q&A cases and save question/answer results as JSON."""
+    from we_care_nlu.eval.qa_suite import run_suite
+
+    report = run_suite(
+        cases_path=cases,
+        out_path=out,
+        model=model,
+        with_docs=docs,
+        fail_fast=fail_fast,
+    )
+    summary = report.get("summary") or {}
+    typer.echo(
+        json.dumps(
+            {
+                "out_path": report.get("out_path"),
+                "summary": summary,
+                "failed_ids": [r["id"] for r in report.get("results") or [] if not r.get("passed")],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    if int(summary.get("failed") or 0) > 0:
+        raise typer.Exit(code=1)
+
+
 @app.command("extract-terminology")
 def extract_terminology(
     kb: Optional[Path] = typer.Option(None, "--kb", help="Optional single KB JSON to scan"),

@@ -51,9 +51,42 @@ def docx_paragraphs(path: str | Path) -> list[str]:
     return out
 
 
+_LIST_INTRO = re.compile(
+    r"የሚከተሉት|እንደሚከተለው|እንደሚከተሉት|ከሚከተሉት|as follows|the following",
+    re.I,
+)
+_CRITERION_UNIT = re.compile(
+    r"ቀናት|ቀን|ሚ\.?\s*ሊ|ሴ\.?\s*ሜ|ዓመት|ሳምንት|ሰዓት|%|ፐርሰንት|"
+    r"ያልበለጠ|መብለጥ|የለበትም|አለበት|ከ\s*\d|\d\s*[-–]\s*\d",
+    re.I,
+)
+
+
+def _is_criterion_or_list_item(text: str) -> bool:
+    """Bullet / numeric clinical criteria — content, not section titles."""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if re.match(r"^[·•\-–\*]\s*\S", t):
+        return True
+    if re.search(r"\d", t) and _CRITERION_UNIT.search(t) and len(t) <= 160:
+        return True
+    # Short clinical constraints without a leading digit.
+    if len(t) <= 120 and any(x in t for x in ("የለበትም", "ያልበለጠ", "መብለጥ የለበትም")):
+        return True
+    return False
+
+
+def _is_list_intro(text: str) -> bool:
+    return bool(_LIST_INTRO.search(text or ""))
+
+
 def _is_heading(text: str, *, index: int) -> bool:
     """Conservative heading detector — avoid treating short answers as titles."""
     if len(text) > 100:
+        return False
+    # Clinical list criteria look short but are answers, not headings.
+    if _is_criterion_or_list_item(text):
         return False
     words = text.split()
     if index == 0 and len(words) <= 16:
@@ -66,6 +99,49 @@ def _is_heading(text: str, *, index: int) -> bool:
     if len(words) <= 6 and not text.endswith((".", "።", "?", "!", "፤", "፣")):
         return True
     return False
+
+
+def _coalesce_list_blocks(paras: list[str]) -> list[str]:
+    """Merge 'the following criteria…' with the bullet lines that follow."""
+    out: list[str] = []
+    i = 0
+    while i < len(paras):
+        p = paras[i]
+        if _is_list_intro(p):
+            parts = [p]
+            j = i + 1
+            while j < len(paras):
+                nxt = paras[j]
+                if _is_criterion_or_list_item(nxt):
+                    parts.append(nxt)
+                    j += 1
+                    continue
+                # Closing “these are the signs of a healthy cycle…” belongs with the list.
+                if (
+                    "እነዚህ" in nxt
+                    and any(x in nxt for x in ("ናቸው", "ን", "መገለጫ", "መስፈርት"))
+                    and len(nxt) < 220
+                ):
+                    parts.append(nxt)
+                    j += 1
+                    # Definition punchline that refers back to the list ("therefore … is called X").
+                    if j < len(paras):
+                        follow = paras[j]
+                        if (
+                            follow.startswith(("ስለዚህ", "ስለዚህም", "Therefore", "thus"))
+                            and len(follow) < 280
+                            and any(x in follow for x in ("ይሉታል", "ይባላል", "መዛባት", "called", "irregular"))
+                        ):
+                            parts.append(follow)
+                            j += 1
+                    break
+                break
+            out.append(" ".join(parts))
+            i = j
+            continue
+        out.append(p)
+        i += 1
+    return out
 
 
 def _is_date_line(text: str) -> bool:
@@ -86,17 +162,19 @@ def _is_toc_teaser(text: str) -> bool:
 
 
 def _usable(text: str) -> bool:
-    if len(text) < 25:
+    t = (text or "").strip()
+    min_len = 12 if _is_criterion_or_list_item(t) else 25
+    if len(t) < min_len:
         return False
-    if _SKIP.match(text) or _is_date_line(text):
+    if _SKIP.match(t) or _is_date_line(t):
         return False
-    if _is_toc_teaser(text):
+    if _is_toc_teaser(t):
         return False
     # Keep Amharic-heavy or mixed clinical text; drop pure tiny Latin crumbs.
-    if not _ETH.search(text) and len(text) < 60:
+    if not _ETH.search(t) and len(t) < 60:
         return False
     # Fragments that trail off mid-list.
-    if text.rstrip().endswith(("፣", ",", "እና", "and", "or", "ወይም")):
+    if t.rstrip().endswith(("፣", ",", "እና", "and", "or", "ወይም")):
         return False
     return True
 
@@ -109,7 +187,7 @@ def docx_to_alignment(
     kb_kind: str = "amharic_docx",
 ) -> dict:
     path = Path(path)
-    paras = docx_paragraphs(path)
+    paras = _coalesce_list_blocks(docx_paragraphs(path))
     # Prefer a real title over cover dates like "ታህሳስ፣ 2024".
     title = path.stem.replace("_", " ").strip()
     for para in paras[:8]:

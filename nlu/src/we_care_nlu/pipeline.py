@@ -15,7 +15,14 @@ from we_care_nlu.kb.ingest import ingest_alignment, ingest_path
 from we_care_nlu.ner.extract import EntityExtractor
 from we_care_nlu.preprocess.normalize import detect_language, preprocess
 from we_care_nlu.retrieval.engine import HybridRetriever
-from we_care_nlu.retrieval.expand import expand_query, method_terms
+from we_care_nlu.retrieval.expand import INTENT_NEEDLES, TOPIC_SURFACES, expand_query, method_terms
+from we_care_nlu.retrieval.relevance import (
+    CLINICAL_CONDITION_INTENTS,
+    FP_SCOPED_INTENTS,
+    _distinctive_aliases,
+    distinctive_query_tokens,
+    soft_topic_groups,
+)
 from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review_warnings
 from we_care_nlu.terminology.index import ConceptIndex
 from we_care_nlu.translation import build_translator
@@ -27,6 +34,7 @@ from we_care_nlu.translation.reply import (
     TEMPLATES,
     citation,
     reply_qa,
+    focus_span_for_query,
     select_span,
     with_article_cite,
 )
@@ -152,20 +160,43 @@ class NLUEngine:
                 intent_out["intent_labels"].insert(0, "emergency")
 
         filters = dict(req.filters or {})
+        intent_label = str(intent_out["intent"] or "")
         extra_terms = list(method_terms(entities))
         concept_terms = self.concepts.expansion_terms(pre.normalized, limit=6)
         if topic and topic not in concept_terms:
             concept_terms = list(concept_terms) + [str(topic)]
-        # Condition eligibility without explicit FP wording still needs FP retrieval cues.
-        if any(getattr(e, "type", "") == "condition" and getattr(e, "value", "") == "hiv" for e in entities):
-            extra_terms.extend(
-                ["የእርግዝና መከላከያ", "family planning", "contraceptive", "ኤች.አይ.ቪ", "HIV"]
-            )
+        topic_key = str(topic or "").strip().lower()
+        for surf in TOPIC_SURFACES.get(topic_key, ()):
+            if surf and surf not in concept_terms:
+                concept_terms.append(surf)
+        conditions = [
+            str(getattr(e, "value", "") or "")
+            for e in entities
+            if getattr(e, "type", "") == "condition"
+        ]
+        for cond in conditions:
+            for surf in TOPIC_SURFACES.get(cond, ()):
+                if surf and surf not in concept_terms:
+                    concept_terms.append(surf)
+        # HIV: FP cues only for eligibility/methods; clinical asks need disease + intent surfaces.
+        if "hiv" in conditions or topic_key == "hiv":
+            extra_terms.extend(["ኤች.አይ.ቪ", "ኤችአይቪ", "HIV", "ኤድስ"])
+            if intent_label in FP_SCOPED_INTENTS:
+                extra_terms.extend(["የእርግዝና መከላከያ", "family planning", "contraceptive"])
+            elif intent_label in CLINICAL_CONDITION_INTENTS:
+                extra_terms.extend(list(INTENT_NEEDLES.get(intent_label) or ()))
+        elif intent_label in CLINICAL_CONDITION_INTENTS:
+            extra_terms.extend(list(INTENT_NEEDLES.get(intent_label) or ()))
+        # Ground distinctive ask facets + soft domain into BM25 (general, not per-article rules).
+        for tok in distinctive_query_tokens(pre.normalized):
+            extra_terms.extend(_distinctive_aliases(tok)[:8])
+        for group in soft_topic_groups(pre.normalized):
+            extra_terms.extend(list(group[:6]))
         hits = self.retriever.search(
             pre.normalized,
             top_k=req.top_k,
             filters=filters,
-            intent=intent_out["intent"],
+            intent=intent_label,
             entities=entities,
             extra_terms=extra_terms,
             concept_terms=concept_terms,
@@ -313,14 +344,21 @@ class NLUEngine:
             if quality < 0:
                 continue
             ranked.append((quality, float(candidate.fused_score or 0), len(text), candidate, text))
-        ranked.sort(reverse=True)
+        # Avoid comparing RetrievalHit when scores tie.
+        ranked.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
         # General answer shaping (any topic):
         # - definition → keep definition-shaped spans only (not FAQ titles / treatment dumps)
         # - no method entity → prefer docs that share distinctive terms over curated fillers
         _DEF_SHAPE = ("ነው።", "ነው፡", "is a", "is an", "ማለት", "ይባላል", "የሚታወቅ", "refers to", "means", "የሚከሠተው")
-        from we_care_nlu.retrieval.relevance import entity_method_values
+        from we_care_nlu.retrieval.relevance import (
+            CLINICAL_CONDITION_INTENTS,
+            FP_SCOPED_INTENTS,
+            entity_condition_values,
+            entity_method_values,
+        )
 
         methods = entity_method_values(analysis.entities)
+        conditions = entity_condition_values(analysis.entities)
         if analysis.intent == "definition" and ranked:
             shaped = [
                 row
@@ -330,7 +368,20 @@ class NLUEngine:
             ]
             if shaped:
                 ranked = shaped
-        if dist and ranked and not methods:
+        # Prefer docs-grounded spans for open distinctive topics (e.g. cryptic pregnancy).
+        # Do not drop curated condition answers (HIV eligibility) or clinical condition hits.
+        if (
+            dist
+            and ranked
+            and not methods
+            and not (
+                conditions
+                and (
+                    analysis.intent in FP_SCOPED_INTENTS
+                    or analysis.intent in CLINICAL_CONDITION_INTENTS
+                )
+            )
+        ):
             grounded = [
                 row
                 for row in ranked
@@ -361,6 +412,8 @@ class NLUEngine:
             ):
                 hit = best_hit
                 span = best_text[:900]
+        if span:
+            span = focus_span_for_query(span, span_query)[:900]
         # Methods-*list* asks with TOC/category teasers → curated overview advice.
         list_ask = any(
             cue in (original or "").lower()
@@ -405,7 +458,7 @@ class NLUEngine:
                 )
             return self._reply_template("abstain", "abstained", original, english_query, analysis)
 
-        cited = citation(hit)
+        cited = citation(hit, query=original)
         source_url = str(cited.get("source_url") or "")
         article_hit = (cited.get("source_kind") or getattr(hit, "source_kind", "") or "") == "wecare_article"
         span_is_amharic = bool(_ETHIOPIC.search(span or ""))

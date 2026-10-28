@@ -20,14 +20,52 @@ _QUERY_STOP = {
     "ለምን", "ምንድን", "ምንድር", "ምንድ", "ምን", "ነው", "ናቸው", "እንዴት", "መቼ", "የት", "ማን",
     "እባክዎ", "ስለ", "ላይ", "ውስጥ", "ጋር", "ወይም", "እና", "ይህ", "ያ", "እንደ",
     "ጠቃሚ", "አስፈላጊ", "መረጃ", "ጥያቄ", "አለብኝ", "እችላለሁ", "ይቻላል", "ይገኛል",
+    "የሚባለው", "ሚባለው", "የሚባል", "ሚባል",
 }
 _GENERIC_TOPIC = {
     "እርግዝና", "እርግዝ", "መከላከያ", "መከላከል", "ዘዴ", "ዘዴዎች", "ሴት", "ሴቶች", "ቤተሰብ", "ምጣኔ",
     "አገልግሎት", "ጤና", "አማራጭ", "አማራጮች", "አሉ", "ይቻላል",
+    # Broad body/topic words — not enough alone to pick an article (need ሲያመኝ / ተዛባ / …).
+    "ወር", "አበባ", "ዑደት", "የወር", "ጤናማ", "ሰው", "ሰዎች", "ሕመምተኛ",
     "pregnancy", "contraception", "contraceptive", "method",
     "methods", "family", "planning", "woman", "women", "health", "service",
-    "options", "option",
+    "options", "option", "period", "menstrual", "menstruation", "cycle",
 }
+
+# Light synonym / stem families so distinctive tokens can match paraphrase evidence.
+_DISTINCTIVE_ALIASES: tuple[tuple[str, ...], ...] = (
+    ("ሲያመኝ", "ያመኛል", "ያመማል", "አመመ", "አመም", "ህመም", "ሕመም", "ቁርጠት", "pain", "cramp", "ache"),
+    ("ላድርግ", "ማድረግ", "ማስታገስ", "ያስታግሳል", "መድኃኒት", "መድሃኒት", "ibuprofen", "paracetamol"),
+    ("ተዛባ", "መዛባት", "ተዛቡ", "irregular"),
+    ("ክሪፕቲክ", "ስውር", "ሚስጥራዊ", "cryptic"),
+)
+
+# Soft domain anchors in the ask → answer must share the same domain (not just ሕመም/መድኃኒት).
+_SOFT_TOPIC_CUES: tuple[tuple[str, ...], ...] = (
+    # Keep cues specific — short "ኢንዶሜትሪ" also matches unrelated "ኢንዶሜትሪተስ" (endometritis).
+    (
+        "ወር አበባ",
+        "የወር አበባ",
+        "menstrual",
+        "dysmenorrhea",
+        "ዲስሜኖሬያ",
+        "endometriosis",
+        "ኢንዶሜትሪዮሲስ",
+    ),
+    ("ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "ኤድስ", "aids"),
+    ("እርግዝና", "pregnant", "pregnancy", "እርጉዝ"),
+)
+
+# Specific symptoms/conditions that must not hijack a vaguer ask in the same domain.
+_UNSPECIFIED_DISTRACTORS: tuple[tuple[str, ...], ...] = (
+    ("ራስ ምታት", "migraine", "headache"),
+    ("ቂጥኝ", "syphilis"),
+    ("ጨብጥ", "gonorrhea", "gonorrh"),
+    ("ክላሚዲያ", "chlamydia"),
+    ("ኤችኤስቪ", "hsv", "herpes"),
+    ("ፒአይዲ", "pid", "pelvic inflammatory", "ኢንዶሜትሪተስ", "endometritis"),
+    ("ከማኅፀን ውጪ", "ectopic", "ሜቶትሪክሴት", "methotrexate"),
+)
 _AM_SUFFIXES = ("ዎች", "ዎት", "ዋ", "ው", "ን", "ም")
 
 BF_CUES = (
@@ -116,7 +154,7 @@ def entity_condition_values(entities: Iterable[Any] | None) -> list[str]:
 
 CONDITION_CHUNK: dict[str, tuple[str, ...]] = {
     # First id is the curated *FP eligibility* slice — only for FP-scoped intents.
-    "hiv": ("chunk_hiv_fp", "ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "aids"),
+    "hiv": ("chunk_hiv_fp", "ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "aids", "ኤድስ"),
 }
 
 # Intents where chunk_hiv_fp (contraception + HIV) is an appropriate answer.
@@ -139,6 +177,55 @@ CLINICAL_CONDITION_INTENTS = {
     "definition",
     "diagnosis_info",
 }
+
+# Therapy wording that marks true HIV treatment content (vs FP eligibility / co-infection asides).
+HIV_THERAPY_CUES = (
+    "ኤ.አር.ቲ",
+    "ኤአርቲ",
+    "ኤ.አር.ቲ.",
+    "antiretroviral",
+    "ፀረ-ሬትሮቫይረስ",
+    "ፀረ ሬትሮቫይረስ",
+    "የኤች.አይ.ቪ ሕክምና",
+    "የኤችአይቪ ሕክምና",
+    "የኤች.አይ.ቪ መድኃኒት",
+    "የኤች.አይ.ቪ መድሃኒት",
+    "የኤችአይቪ መድኃኒት",
+    "ፀረ ኤች",
+    "ፀረ-ኤች",
+    "viral load",
+    "የቫይረስ መጠን",
+    "ኤች.አይ.ቪ መድኃኒት",
+    "ኤች.አይ.ቪ መድሃኒት",
+)
+_HIV_ART_TOKEN = re.compile(r"(?<![A-Za-z])ART(?![A-Za-z])")
+_OFF_TOPIC_COINFECTION = (
+    "ቂጥኝ",
+    "syphilis",
+    "ጨብጥ",
+    "gonorrh",
+    "ክላሚዲያ",
+    "chlamydia",
+    "ኤችኤስቪ",
+    "hsv",
+    "herpes",
+    "ጂኤንኤስ",
+)
+
+
+def _condition_lexical_hit(blob: str, cond: str) -> bool:
+    hints = CONDITION_CHUNK.get(cond) or ()
+    # Skip curated evidence-id token at index 0.
+    return any(cue.lower() in blob for cue in hints[1:] if cue)
+
+
+def _hiv_therapy_hit(blob: str) -> bool:
+    text = blob or ""
+    low = text.lower()
+    if any(c.lower() in low for c in HIV_THERAPY_CUES):
+        return True
+    # Whole-token ART only — avoid matching inside "FP የሚጠቀሙ…" / random Latin.
+    return bool(_HIV_ART_TOKEN.search(text))
 
 ACCESS_SERVICE_CUES = (
     "አገልግሎት",
@@ -184,7 +271,11 @@ def _normalize_am_token(tok: str) -> str:
     for suf in _AM_SUFFIXES:
         if tok.endswith(suf) and len(tok) - len(suf) >= 3:
             stem = tok[: -len(suf)]
-            if stem in _GENERIC_TOPIC or stem in _QUERY_STOP or len(suf) == 1:
+            # Only collapse when the stem is already a known filler/topic — never
+            # invent short stems like የሚባለው → ሚባለ (matches every "የሚባለው" sentence).
+            if stem in _GENERIC_TOPIC or stem in _QUERY_STOP:
+                return stem
+            if len(suf) >= 2:
                 return stem
     return tok
 
@@ -192,8 +283,8 @@ def _normalize_am_token(tok: str) -> str:
 def distinctive_query_tokens(query: str) -> list[str]:
     """Topic tokens that must appear in a grounded answer when present in the ask.
 
-    Filters question fillers and broad words like እርግዝና/መከላከያ so a cryptic-pregnancy
-    ask cannot be answered by a generic implant definition that only shares 'እርግዝና'.
+    Filters question fillers and broad words like እርግዝና/መከላከያ/አበባ so a period-pain
+    ask cannot be answered by an irregular-cycle article that only shares 'ወር አበባ'.
     """
     seen: set[str] = set()
     out: list[str] = []
@@ -211,11 +302,89 @@ def distinctive_query_tokens(query: str) -> list[str]:
     return out
 
 
+def _distinctive_aliases(tok: str) -> list[str]:
+    """Return tok plus stems/synonyms for soft Amharic paraphrase matching."""
+    t = (tok or "").strip().lower()
+    if not t:
+        return []
+    aliases = [t]
+    for pref in ("ሲ", "ያ", "የ", "ት", "እንዲ", "በ"):
+        if t.startswith(pref) and len(t) - len(pref) >= 3:
+            aliases.append(t[len(pref) :])
+    for group in _DISTINCTIVE_ALIASES:
+        gl = tuple(x.lower() for x in group)
+        if any(a in gl for a in aliases):
+            aliases.extend(gl)
+            break
+    # unique, stable
+    seen: set[str] = set()
+    out: list[str] = []
+    for a in aliases:
+        if a and a not in seen:
+            seen.add(a)
+            out.append(a)
+    return out
+
+
 def distinctive_overlap(blob: str, tokens: list[str] | None) -> int:
     if not tokens:
         return 0
     low = (blob or "").lower()
-    return sum(1 for t in tokens if t and t.lower() in low)
+    n = 0
+    for t in tokens:
+        if any(a and a in low for a in _distinctive_aliases(t)):
+            n += 1
+    return n
+
+
+def distinctive_coverage(blob: str, tokens: list[str] | None) -> float:
+    """Fraction of distinctive query tokens grounded in the candidate (0–1)."""
+    if not tokens:
+        return 1.0
+    return distinctive_overlap(blob, tokens) / float(len(tokens))
+
+
+def soft_topic_groups(query: str) -> list[tuple[str, ...]]:
+    """Domain cue groups mentioned in the query (period, HIV, pregnancy, …)."""
+    q = (query or "").lower()
+    groups: list[tuple[str, ...]] = []
+    for cues in _SOFT_TOPIC_CUES:
+        if any(c.lower() in q for c in cues):
+            groups.append(cues)
+    return groups
+
+
+def soft_topic_hit(
+    blob: str,
+    groups: list[tuple[str, ...]] | None,
+    *,
+    query: str = "",
+) -> bool:
+    """Require the domain the user actually named (e.g. ወር አበባ), not a cousin disease."""
+    if not groups:
+        return True
+    low = (blob or "").lower()
+    q = (query or "").lower()
+    for group in groups:
+        # Cues the user uttered are required in the answer when present.
+        primaries = [c for c in group if c.lower() in q]
+        if primaries:
+            if any(p.lower() in low for p in primaries):
+                return True
+            continue
+        if any(c.lower() in low for c in group):
+            return True
+    return False
+
+
+def unspecified_distractor(query: str, blob: str) -> bool:
+    """True when blob focuses on a specific illness the user did not name."""
+    q = (query or "").lower()
+    b = (blob or "").lower()
+    for cues in _UNSPECIFIED_DISTRACTORS:
+        if any(c.lower() in b for c in cues) and not any(c.lower() in q for c in cues):
+            return True
+    return False
 
 
 def curated_aligned_with_query(
@@ -342,6 +511,14 @@ def low_quality_penalty(text: str) -> float:
         pen -= 1.5
     if "፦" in body and named < 3 and len(body) < 220:
         pen -= 1.0
+    # Dangling list intros ("the following criteria…") with no criteria attached.
+    if any(x in body for x in ("የሚከተሉት", "እንደሚከተለው", "እንደሚከተሉት")) and not re.search(
+        r"\d", body
+    ):
+        pen -= 2.2
+    # Click-through / teaser only ("click the link…") — not an answer.
+    if any(x in body for x in ("ማስፈንጠሪያ", "ይጫኑ", "click here", "read more")) and len(body) < 160:
+        pen -= 2.5
     return pen
 
 
@@ -409,13 +586,22 @@ def relevance_boost(
                 boost -= 0.45
     # Condition lexical hit (HIV cues in blob). Stronger when intent-aligned.
     for cond in conditions:
-        hints = CONDITION_CHUNK.get(cond) or ()
-        cues = hints[1:] if intent in CLINICAL_CONDITION_INTENTS else hints
-        if any(cue.lower() in blob for cue in cues):
-            boost += 0.55 if intent not in CLINICAL_CONDITION_INTENTS else 0.75
+        if _condition_lexical_hit(blob, cond):
+            boost += 0.55 if intent not in CLINICAL_CONDITION_INTENTS else 0.9
             break
+        elif intent in CLINICAL_CONDITION_INTENTS:
+            # "እንዴት ይታከማል?" FAQs about unrelated conditions.
+            boost -= 1.1
     if intent in CLINICAL_CONDITION_INTENTS and intent_needle_hit(blob, intent):
         boost += 0.55
+    if "hiv" in conditions and intent in {"treatment", "medication"}:
+        if _hiv_therapy_hit(blob):
+            boost += 1.35
+        q_low = (query or "").lower()
+        if any(x in blob for x in _OFF_TOPIC_COINFECTION) and not any(
+            x in q_low for x in _OFF_TOPIC_COINFECTION
+        ):
+            boost -= 1.0
     if intent == "family_planning_methods" and not conditions:
         named = sum(1 for cue in METHOD_LIST_CUES if cue.lower() in blob)
         if named >= 5:
@@ -490,9 +676,11 @@ def should_force_include(
             if intent in FP_SCOPED_INTENTS or intent is None:
                 pri = max(pri, 6.0)
             # else: do not force-include FP eligibility for treatment/symptoms
-        elif any(cue.lower() in blob for cue in hints[1:]):
-            if intent in CLINICAL_CONDITION_INTENTS and intent_needle_hit(blob, intent):
-                pri = max(pri, 3.2)
+        elif _condition_lexical_hit(blob, cond):
+            if intent in CLINICAL_CONDITION_INTENTS and (
+                intent_needle_hit(blob, intent) or (cond == "hiv" and _hiv_therapy_hit(blob))
+            ):
+                pri = max(pri, 5.5 if (cond == "hiv" and _hiv_therapy_hit(blob)) else 3.2)
             elif intent not in CLINICAL_CONDITION_INTENTS:
                 pri = max(pri, 2.8)
 
@@ -507,6 +695,18 @@ def should_force_include(
     ):
         if curated_aligned_with_query(query=query, blob=blob, entities=entities):
             pri = max(pri, 3.5)
+
+    # Docs that fully ground distinctive + soft-domain tokens (e.g. period pain → NSAIDs).
+    dist = distinctive_query_tokens(query)
+    soft = soft_topic_groups(query)
+    if (
+        dist
+        and soft
+        and soft_topic_hit(blob, soft, query=query)
+        and not unspecified_distractor(query, blob)
+        and distinctive_coverage(blob, dist) >= 0.99
+    ):
+        pri = max(pri, 4.5)
 
     return pri
 
@@ -539,8 +739,10 @@ def answer_quality(
     conditions = entity_condition_values(entities)
     if methods:
         # HIV curated answer covers methods generally (does not list every method name).
-        if evidence_id == "chunk_hiv_fp" and "hiv" in conditions:
+        if evidence_id == "chunk_hiv_fp" and "hiv" in conditions and intent in FP_SCOPED_INTENTS:
             score += 3.0
+        elif evidence_id == "chunk_hiv_fp" and intent in CLINICAL_CONDITION_INTENTS:
+            score -= 10.0
         else:
             score += 5.0 if m_hit else -6.0
     if q_bf:
@@ -554,13 +756,43 @@ def answer_quality(
             score -= 8.0
     for cond in conditions:
         hints = CONDITION_CHUNK.get(cond) or ()
-        if hints and (evidence_id == hints[0] or any(c.lower() in blob for c in hints)):
+        if not hints:
+            continue
+        curated_fp = evidence_id == hints[0]
+        lexical = _condition_lexical_hit(blob, cond)
+        if intent in CLINICAL_CONDITION_INTENTS:
+            if curated_fp:
+                score -= 10.0
+            elif lexical:
+                score += 4.0
+            else:
+                score -= 8.0
+        elif curated_fp or lexical:
             score += 6.0
         else:
             score -= 3.0
 
     if intent_needle_hit(blob, intent):
         score += 2.5
+    # Treatment/medication asks: prefer clinical therapy wording over FP catalogues.
+    if intent in {"treatment", "medication"}:
+        fp_named = sum(1 for cue in METHOD_LIST_CUES if cue.lower() in blob)
+        if fp_named >= 2 and not intent_needle_hit(blob, intent):
+            score -= 5.0
+        if evidence_id == "chunk_hiv_fp":
+            score -= 8.0
+        # Bare FAQ titles ("…እንዴት ይታከማል?") are not answers.
+        stripped = body.strip()
+        if stripped.endswith(("?", "؟")) and len(stripped) < 80:
+            score -= 6.0
+        if "hiv" in conditions:
+            if _hiv_therapy_hit(blob):
+                score += 6.0
+            q_low = (query or "").lower()
+            if any(x in blob for x in _OFF_TOPIC_COINFECTION) and not any(
+                x in q_low for x in _OFF_TOPIC_COINFECTION
+            ):
+                score -= 7.0
     named = sum(1 for cue in METHOD_LIST_CUES if cue.lower() in blob)
     if intent == "family_planning_methods" and not conditions:
         score += named * 1.35
@@ -571,14 +803,23 @@ def answer_quality(
 
     dist = distinctive_query_tokens(query)
     overlap = distinctive_overlap(blob, dist)
+    coverage = distinctive_coverage(blob, dist)
+    soft_groups = soft_topic_groups(query)
+    soft_ok = soft_topic_hit(blob, soft_groups, query=query)
+    if soft_groups and not soft_ok:
+        score -= 8.0
+    if unspecified_distractor(query, blob):
+        score -= 10.0
     # When a method/condition entity scopes the ask, entity alignment dominates;
-    # distinctive lexical is only a mild bonus (avoids verb tokens flipping the winner).
+    # otherwise require most distinctive tokens (not just shared broad topic words).
     if dist and not methods and not conditions:
-        if overlap:
+        if soft_ok and coverage >= 0.99:
             score += 5.0 * overlap
+        elif soft_ok and coverage >= 0.5:
+            score += 2.5 * overlap
         else:
             score -= 9.0
-    elif dist and overlap:
+    elif dist and overlap and soft_ok:
         score += 1.2 * overlap
 
     eid = evidence_id or ""
@@ -632,18 +873,19 @@ def relevant_enough(
     if q_bf and methods:
         return m_hit and b_hit
     if conditions:
-        cond_ok = False
-        for cond in conditions:
-            hints = CONDITION_CHUNK.get(cond) or ()
-            if any(c.lower() in blob for c in hints):
-                cond_ok = True
-                break
-        if cond_ok:
-            # Condition-curated spans may omit the specific method name.
-            return True
-        if methods:
-            return m_hit
-        return False
+        cond_ok = any(_condition_lexical_hit(blob, cond) for cond in conditions)
+        if not cond_ok:
+            if methods:
+                return m_hit
+            # Allow curated FP+HIV id match via evidence path handled elsewhere; blob must name condition.
+            return False
+        if intent in CLINICAL_CONDITION_INTENTS:
+            if intent in {"treatment", "medication"} and "hiv" in conditions:
+                # Require ART / HIV-therapy wording — not HSV antivirals or FP eligibility.
+                return _hiv_therapy_hit(blob)
+            return intent_needle_hit(blob, intent) or intent == "definition"
+        # Condition-curated / FP eligibility spans may omit the specific method name.
+        return True
     if methods:
         return m_hit
     if intent == "access" and not methods:
@@ -655,10 +897,16 @@ def relevant_enough(
         stripped = blob.strip()
         if stripped.endswith(("?", "؟")) or stripped.endswith("ይቻላል?"):
             return False
-    # Distinctive topic terms (ክሪፕቲክ, …) must appear — ignore weak need_tokens like እርግዝና alone.
+    # Distinctive topic terms (ክሪፕቲክ, ሲያመኝ, …) must be mostly grounded — not just ወር አበባ.
     dist = distinctive_query_tokens(query)
+    soft_groups = soft_topic_groups(query)
+    if soft_groups and not soft_topic_hit(blob, soft_groups, query=query):
+        return False
+    if unspecified_distractor(query, blob):
+        return False
     if dist:
-        return distinctive_overlap(blob, dist) > 0
+        need_frac = 1.0 if len(dist) <= 2 else 0.5
+        return distinctive_coverage(blob, dist) >= need_frac
     need = need_tokens or []
     if need and any(tok.lower() in blob for tok in need):
         return True

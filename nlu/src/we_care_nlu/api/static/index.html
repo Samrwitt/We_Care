@@ -240,7 +240,13 @@
         || /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)[^\n]{0,12}\d{4}\s*$/i.test(title)
         || /^\d{4}$/.test(title)
         || title.length < 28 && /\d{4}/.test(title) && /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)/i.test(title);
-      if (title && !looksLikeDate) {
+      const norm = (s) => String(s || "").trim().toLowerCase().replace(/[\s?.!؟፡።]+$/g, "").replace(/\s+/g, " ");
+      const echoesAsk = norm(title) && norm(userText) && (
+        norm(title) === norm(userText)
+        || norm(userText).includes(norm(title))
+        || norm(title).includes(norm(userText))
+      );
+      if (title && !looksLikeDate && !echoesAsk) {
         const page = data.page ? (englishAsk ? " · page " : " · ገጽ ") + data.page : "";
         html += `<p class="cite">${esc(title)}${page}</p>`;
       }

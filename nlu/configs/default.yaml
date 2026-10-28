@@ -4,9 +4,8 @@ service:
   generative_decoding: false
 
 embeddings:
-  # Serve uses default_model: multilingual MiniLM (BERT-family sentence encoder) on CPU.
-  # Hash is tests-only. Amharic RoBERTa embedders are optional upgrades when cached.
-  default_model: st_multilingual_minilm
+  # Dedicated Amharic passage retriever. Benchmark against MiniLM before production rollout.
+  default_model: amharic_base
   test_model: hash
   models:
     hash:
@@ -14,7 +13,7 @@ embeddings:
       hf_id: null
       dim: 256
       amharic_sentence_encoder: false
-      notes: Deterministic test backend. Not semantic.
+      notes: "Tests only; not a semantic model. Never use as production fallback."
     st_multilingual_minilm:
       kind: sentence_transformer
       hf_id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
@@ -23,10 +22,8 @@ embeddings:
       pooling: mean
       normalize: true
       amharic_sentence_encoder: true
-      batch_size: 64
-      notes: >-
-        Multilingual MiniLM (12-layer BERT student). Designed for CPU paraphrase/retrieval.
-        Primary dense encoder; pair with BM25 via RRF. Loads from local HF cache offline.
+      batch_size: 32
+      notes: "CPU-friendly multilingual baseline; benchmark on Amharic medical retrieval."
     amharic_base:
       kind: sentence_transformer
       hf_id: rasyosef/roberta-amharic-text-embedding-base
@@ -35,7 +32,8 @@ embeddings:
       pooling: mean
       normalize: true
       amharic_sentence_encoder: true
-      domain: general Amharic passage retrieval (ACL 2025 Findings), not clinical
+      batch_size: 16
+      domain: "General Amharic passage retrieval; not clinically validated."
     amharic_medium:
       kind: sentence_transformer
       hf_id: rasyosef/roberta-amharic-text-embedding-medium
@@ -44,7 +42,8 @@ embeddings:
       pooling: mean
       normalize: true
       amharic_sentence_encoder: true
-      domain: lighter Amharic retriever from the same paper
+      batch_size: 16
+      domain: "General Amharic passage retrieval; not clinically validated."
     labse:
       kind: sentence_transformer
       hf_id: sentence-transformers/LaBSE
@@ -54,7 +53,7 @@ embeddings:
       normalize: true
       amharic_sentence_encoder: true
       languages_include_amharic: true
-      notes: Strong for translation-pair / cross-lingual retrieval; weaker for non-translation paraphrase.
+      notes: "Cross-lingual alternative; benchmark before adoption."
     afro_xlmr:
       kind: encoder_mean_pool
       hf_id: Davlan/afro-xlmr-base
@@ -63,7 +62,7 @@ embeddings:
       pooling: mean
       normalize: true
       amharic_sentence_encoder: false
-      notes: MLM encoder. Mean-pooled features are a baseline, not STS-trained embeddings.
+      notes: "Masked-language-model encoder; mean pooling is a baseline, not retrieval fine-tuning."
     st_multilingual_mpnet:
       kind: sentence_transformer
       hf_id: sentence-transformers/paraphrase-multilingual-mpnet-base-v2
@@ -72,28 +71,32 @@ embeddings:
       pooling: mean
       normalize: true
       amharic_sentence_encoder: true
-      notes: XLM-R family sentence-transformer. Evaluate on Amharic medical pairs before preferring it.
+      notes: "Multilingual comparison candidate."
 
 retrieval:
-  # Sparse-leaning: multilingual MiniLM helps, but Amharic medical BM25 is still the safer anchor.
+  # Starting weights, not measured optima. Check implementation of weighted RRF.
   dense_weight: 0.40
   sparse_weight: 0.60
   candidate_k: 80
   top_k: 12
+  # Existing score thresholds retained for compatibility; calibrate with actual
+  # score distributions and labeled positive/negative Amharic questions.
   min_fused_score: 0.10
   abstain_below: 0.18
-  fusion: rrf                 # rrf | weighted
+  fusion: rrf
   rrf_k: 60
-  dual_query_encode: true     # score max(original, expanded) dense similarities
+  dual_query_encode: true
   embed_cache: true
-  reranker: medical_features     # medical_features | cross_encoder | none
+  # This is a rule/feature reranker, not a neural cross-encoder.
+  reranker: medical_features
   cross_encoder_id: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
   cross_encoder_amharic_validated: false
   polarity_penalty: 0.55
   unreviewed_penalty: 0.08
 
 intent:
-  backend: lexicon_prototype     # lexicon_prototype | encoder_trained
+  # Swap to encoder_trained only after training and validating a classifier.
+  backend: lexicon_prototype
   min_confidence: 0.35
   multi_label_threshold: 0.5
 
@@ -102,14 +105,11 @@ ner:
   min_confidence: 0.5
 
 terminology:
-  # Dynamic KB concept index (separate from conversational intent lexicon).
-  # pending_review candidates never expand queries until promoted/seeded.
   auto_extract_on_ingest: true
   approved_path: data/terminology/approved.json
   candidates_path: data/terminology/candidates.jsonl
 
 translation:
-  # mt: compose short grounded answers via we-care-mt (Google on :8090). map = phrase list only.
   backend: mt
   mt_url: http://127.0.0.1:8090
 

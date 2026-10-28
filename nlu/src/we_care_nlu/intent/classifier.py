@@ -71,6 +71,9 @@ class IntentClassifier:
         if 'definition' in intents and len(intents) > 1:
             # Very generic "what is" should not defeat explicit clinical aspects.
             intents['definition'] *= 0.55
+        if 'missed_dose' in intents and 'treatment' in intents:
+            # "ክኒን ከተረሳ ምን ላድርግ?" is missed-dose, not general treatment.
+            intents['treatment'] *= 0.35
         if 'family_planning_methods' in intents and len(intents) > 1:
             # A methods catalogue query is specific; but not a global override.
             pass
