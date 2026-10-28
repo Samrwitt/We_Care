@@ -19,12 +19,12 @@ logger = logging.getLogger("we_care_nlu")
 
 _UI = Path(__file__).resolve().parent / "static" / "index.html"
 _KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
-# Primary KB: scraped WeCare Amharic articles (no EN→AM for these).
-_ARTICLES_KB = _KB_DIR / "wecare_articles_am.json"
-# Optional fallbacks when articles are missing (kept off the default path).
+# Document-first Amharic stack (Docs/ blogs + guideline DOCX, then curated fillers).
+_DOCS_KB = _KB_DIR / "docs_amharic_kb.json"
 _BILINGUAL_KB = _KB_DIR / "fp_guideline_bilingual.json"
-_GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
 _DEFAULT_KB = _KB_DIR / "fp_user_kb.json"
+_ARTICLES_KB = _KB_DIR / "wecare_articles_am.json"
+_GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
 
 _ENGINE: NLUEngine | None = None
 _READY = threading.Event()
@@ -33,25 +33,53 @@ _LOAD_LOCK = threading.Lock()
 
 
 def _ingest_default_kb(eng: NLUEngine) -> None:
+    """Load Docs Amharic KB + optional fillers. Skip if already populated."""
     if len(eng.retriever.index.chunks) > 0:
         return
-    if _ARTICLES_KB.exists():
+    loaded = False
+    # Defer dense rebuild until all sources are loaded (encode once).
+    if _DOCS_KB.exists():
         eng.ingest_file(
-            str(_ARTICLES_KB),
-            document_version="wecare-articles",
+            str(_DOCS_KB),
+            document_version="docs-am",
             default_review_status="source",
+            rebuild=False,
         )
-        return
+        loaded = True
     if _BILINGUAL_KB.exists():
         eng.ingest_file(
             str(_BILINGUAL_KB),
             document_version="2021-06",
             default_review_status="unreviewed",
+            rebuild=False,
         )
-    elif _DEFAULT_KB.exists():
-        eng.ingest_file(str(_DEFAULT_KB), document_version="demo", default_review_status="unreviewed")
-    elif _GUIDELINES_KB.exists():
-        eng.ingest_file(str(_GUIDELINES_KB), document_version="source", default_review_status="source")
+        loaded = True
+    if _DEFAULT_KB.exists():
+        eng.ingest_file(
+            str(_DEFAULT_KB),
+            document_version="demo",
+            default_review_status="unreviewed",
+            rebuild=False,
+        )
+        loaded = True
+    if _ARTICLES_KB.exists():
+        eng.ingest_file(
+            str(_ARTICLES_KB),
+            document_version="wecare-articles",
+            default_review_status="source",
+            rebuild=False,
+        )
+        loaded = True
+    if not loaded and _GUIDELINES_KB.exists():
+        eng.ingest_file(
+            str(_GUIDELINES_KB),
+            document_version="source",
+            default_review_status="source",
+            rebuild=False,
+        )
+        loaded = True
+    if loaded:
+        eng.rebuild_index()
 
 
 def _warm() -> None:
@@ -64,9 +92,24 @@ def _warm() -> None:
         return
     try:
         cfg = load_config()
-        key = os.environ.get("WE_CARE_NLU_MODEL") or cfg.get("embeddings", {}).get("test_model") or "hash"
+        emb = cfg.get("embeddings") or {}
+        key = (
+            os.environ.get("WE_CARE_NLU_MODEL")
+            or emb.get("default_model")
+            or emb.get("test_model")
+            or "hash"
+        )
         print(f"we-care-nlu: loading embedder={key} (this can take several minutes on first boot)", flush=True)
-        eng = NLUEngine(cfg, model_key=key)
+        try:
+            eng = NLUEngine(cfg, model_key=key)
+        except Exception as load_exc:
+            fallback = emb.get("test_model") or "hash"
+            print(
+                f"we-care-nlu: embedder={key} failed ({load_exc.__class__.__name__}: {load_exc}); "
+                f"falling back to {fallback}",
+                flush=True,
+            )
+            eng = NLUEngine(cfg, model_key=fallback)
         print(f"we-care-nlu: embedder ready ({eng.model_key}); ingesting KB", flush=True)
         _ingest_default_kb(eng)
         with _LOAD_LOCK:

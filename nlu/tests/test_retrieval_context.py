@@ -98,6 +98,16 @@ def test_user_questions_retrieve_matching_method():
         assert expected in ids, (question, ids)
 
 
+def test_breastfeeding_injectable_replies_with_allow_chunk():
+    eng = user_engine()
+    out = eng.reply(AnalyzeRequest(text="ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?"))
+    assert out.evidence_id == "chunk_bf_allowed"
+    assert "መርፌ" in (out.amharic_reply or "")
+    assert "ጡት" in (out.amharic_reply or "")
+    assert "ሊሊ" not in (out.amharic_reply or "")
+    assert "BEMONC" not in (out.document_title or "").upper().replace(" ", "")
+
+
 def test_followup_query_uses_prior_method_for_retrieval():
     eng = user_engine()
     ctx = ContextState(

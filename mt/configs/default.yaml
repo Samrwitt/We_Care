@@ -1,5 +1,6 @@
-# We Care English→Amharic medical translation pipeline
-# Paths are relative to the project root unless absolute.
+# We Care English→Amharic PDF translation pipeline.
+# Default inference model is Google (+ glossary). NLLB/DSFSI optional.
+# Paths are relative to the mt/ package root unless absolute.
 
 project_root: .
 

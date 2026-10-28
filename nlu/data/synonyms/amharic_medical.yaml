@@ -21,10 +21,13 @@ groups:
     - implant
   iud:
     - አይዩዲ
+    - አይ.ዩ.ዲ
     - አይዩሲዲ
+    - አይ.ዩ.ሲ.ዲ
     - IUCD
     - IUD
     - ማህፀን ውስጥ መከላከያ
+    - በማህፀን ውስጥ የሚቀመጥ
   condom:
     - ኮንዶም
     - ኮንዶሞች
@@ -54,5 +57,6 @@ groups:
   breastfeeding:
     - ጡት ማጥባት
     - ጡት እያጠባሁ
+    - ጡት በማጥባት
     - breastfeeding
-    - lactation
+    # Do not add bare "lactation" — it pulls LAM (ሊሊ) distractors for method+BF asks.

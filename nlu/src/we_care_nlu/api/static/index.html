@@ -151,7 +151,7 @@
   <div class="shell">
     <header>
       <div class="wordmark">ዌ ኬር</div>
-      <div class="tag">የሥርዓተ-ተዋልዶ ጤና መረጃ · Reproductive health information</div>
+      <div class="tag" id="statusTag">የሥርዓተ-ተዋልዶ ጤና መረጃ · Reproductive health information</div>
     </header>
     <div id="log"></div>
     <div class="composer">
@@ -183,8 +183,10 @@
     const log = document.getElementById("log");
     const q = document.getElementById("q");
     const go = document.getElementById("go");
+    const statusTag = document.getElementById("statusTag");
     const conversationId = crypto.randomUUID();
     let context = null;
+    let engineReady = false;
 
     function el(html) {
       const d = document.createElement("div");
@@ -233,9 +235,14 @@
       const englishAsk = askedInEnglish(userText || "");
       const reply = englishAsk ? (en || am) : (am || en);
       let html = `<p class="am">${linkify(reply)}</p>`;
-      if (data.document_title) {
+      const title = (data.document_title || "").trim();
+      const looksLikeDate = /^(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ).*\d{4}$/i.test(title)
+        || /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)[^\n]{0,12}\d{4}\s*$/i.test(title)
+        || /^\d{4}$/.test(title)
+        || title.length < 28 && /\d{4}/.test(title) && /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)/i.test(title);
+      if (title && !looksLikeDate) {
         const page = data.page ? (englishAsk ? " · page " : " · ገጽ ") + data.page : "";
-        html += `<p class="cite">${esc(data.document_title)}${page}</p>`;
+        html += `<p class="cite">${esc(title)}${page}</p>`;
       }
       return html;
     }
@@ -273,35 +280,66 @@
     function nextContext(data) {
       const ents = data.entities || [];
       const method = ents.find((e) => e.type === "contraceptive_method");
+      // Do not keep a stale method across unrelated topical turns (e.g. cryptic pregnancy).
       return {
         turn_index: (context && context.turn_index || 0) + 1,
         last_intents: [data.intent].concat(data.intent_labels || []).slice(0, 6),
         last_entities: ents.map((e) => ({ type: e.type, value: e.value, surface: e.surface })),
         last_topic: data.intent,
-        last_method: (method && method.value) || (context && context.last_method) || null,
+        last_method: (method && method.value) || null,
       };
     }
+    function setStatus(msg) {
+      if (statusTag) statusTag.textContent = msg;
+    }
+    async function sleep(ms) {
+      return new Promise((r) => setTimeout(r, ms));
+    }
     async function ready() {
-      try {
-        const h = await (await fetch("/health")).json();
-        if ((h.chunks || 0) === 0) {
-          await fetch("/documents/ingest", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              path: "data/kb/fp_user_kb.json",
-              document_version: "demo",
-              review_status: "unreviewed",
-            }),
-          });
+      go.disabled = true;
+      setStatus("ሞዴሉ እየተጫነ ነው… / Loading model…");
+      // Poll until MiniLM + KB finish; early /nlp/reply and /documents/ingest return 503.
+      for (let i = 0; i < 120; i++) {
+        try {
+          const h = await (await fetch("/health")).json();
+          if (h.status === "ok") {
+            if ((h.chunks || 0) === 0) {
+              await fetch("/documents/ingest", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  path: "data/kb/fp_user_kb.json",
+                  document_version: "demo",
+                  review_status: "unreviewed",
+                }),
+              });
+            }
+            engineReady = true;
+            go.disabled = false;
+            setStatus(
+              `ዝግጁ · ${h.embedder || "embedder"} · ${h.chunks || 0} chunks · Reproductive health information`
+            );
+            return;
+          }
+          if (h.status === "error") {
+            setStatus(`ስህተት / Error: ${h.error || "load failed"}`);
+            return;
+          }
+          setStatus("ሞዴሉ እየተጫነ ነው… / Loading model and knowledge base…");
+        } catch {
+          setStatus("ሰርቨሩ አልተገኘም… / Waiting for server…");
         }
-      } catch {
-        /* shown only if a question later fails */
+        await sleep(2000);
       }
+      setStatus("ጭነት አልተጠናቀቀም — ገጹን ያድሱ / Still loading — refresh the page");
     }
     async function send() {
       const text = q.value.trim();
       if (!text) return;
+      if (!engineReady) {
+        setStatus("እባክዎ ሞዴሉ እስኪጠናቀቅ ይጠብቁ… / Please wait until the model is ready…");
+        return;
+      }
       q.value = "";
       add(`<div class="user">${esc(text)}</div>`);
       if (welcome && welcome.remove) welcome.remove();
@@ -314,13 +352,19 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, conversation_id: conversationId, context }),
         });
+        if (res.status === 503) {
+          engineReady = false;
+          wait.innerHTML = `<p class="empty">${englishAsk ? "Server is still loading. Wait a moment and try again." : "ሰርቨሩ እየተጫነ ነው። ትንሽ ጠብቀው እንደገና ይሞክሩ።"}</p>`;
+          ready();
+          return;
+        }
         const data = await res.json();
         wait.innerHTML = renderTurn(data, text);
         context = nextContext(data);
       } catch {
         wait.innerHTML = `<p class="empty">${englishAsk ? "Could not get an answer. Please try again." : "አሁን መልስ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"}</p>`;
       } finally {
-        go.disabled = false;
+        if (engineReady) go.disabled = false;
         q.focus();
         log.scrollTop = log.scrollHeight;
       }

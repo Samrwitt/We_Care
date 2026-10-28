@@ -70,7 +70,18 @@ class SentenceTransformerEmbedder:
         st_home = os.environ.get("SENTENCE_TRANSFORMERS_HOME")
         if st_home:
             kwargs["cache_folder"] = st_home
-        self._model = SentenceTransformer(self.hf_id, **kwargs)
+        # MiniLM/BERT weights are CPU sentence-transformers. Prefer local cache so a broken
+        # HTTP proxy cannot force a silent fallback to the non-semantic hash embedder.
+        offline = os.environ.get("WE_CARE_EMBED_OFFLINE", "1").strip() not in {"0", "false", "False"}
+        if offline or os.environ.get("HF_HUB_OFFLINE") == "1":
+            kwargs["local_files_only"] = True
+        try:
+            self._model = SentenceTransformer(self.hf_id, **kwargs)
+        except Exception:
+            if kwargs.pop("local_files_only", None) is None:
+                raise
+            # Cache miss: one online attempt (may still fail behind a 403 proxy).
+            self._model = SentenceTransformer(self.hf_id, **kwargs)
 
     def encode(self, texts: list[str]) -> np.ndarray:
         if not texts:

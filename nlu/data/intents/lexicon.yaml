@@ -26,11 +26,28 @@ intents:
   contraindications:
     patterns: ["ተቃራኒ", "የተከለከለ", "አይመከርም", "መጠቀም አይቻልም", "contraindicat", "must not"]
   eligibility:
-    patterns: ["መጠቀም ይቻላል", "ብቁ", "ማን ሊጠቀም", "can i use", "eligible", "allowed"]
+    patterns:
+      - "መጠቀም ይቻላል"
+      - "መጠቀም እችላለሁ"
+      - "መጠቀም ትችላለህ"
+      - "መጠቀም ትችያለሽ"
+      - "እችላለሁ"
+      - "ብቁ"
+      - "ማን ሊጠቀም"
+      - "can i use"
+      - "eligible"
+      - "allowed"
   missed_dose:
     patterns: ["ረሳ", "ከተረሳ", "ረሳሁ", "missed pill", "forgot"]
   access:
-    patterns: ["የት ይገኛል", "የት እገኛለሁ", "የት ልውሰድ", "where can i get", "where to get"]
+    patterns:
+      - "የት ይገኛል"
+      - "የት እገኛለሁ"
+      - "የት ልውሰድ"
+      - "አገልግሎት የት"
+      - "where can i get"
+      - "where to get"
+      - "where available"
   duration:
     patterns: ["ለምን ያህል", "ምን ያህል ጊዜ", "ለምን ጊዜ", "how long", "how many years"]
   how_it_works:

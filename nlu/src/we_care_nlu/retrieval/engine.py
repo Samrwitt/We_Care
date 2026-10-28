@@ -9,14 +9,21 @@ import numpy as np
 from we_care_nlu.retrieval.bm25 import BM25Okapi
 
 from we_care_nlu.contracts.schemas import ChunkRecord, RetrievalHit
+from we_care_nlu.embeddings.cache import embed_texts
 from we_care_nlu.embeddings.registry import Embedder, cosine
 from we_care_nlu.kb.ingest import tokenize
 from we_care_nlu.preprocess.normalize import has_negation, preprocess
-from we_care_nlu.retrieval.expand import INTENT_NEEDLES, expand_query, method_terms
+from we_care_nlu.retrieval.expand import expand_query, method_terms
+from we_care_nlu.retrieval.relevance import (
+    BF_CUES,
+    blob_of,
+    is_demo_chunk,
+    relevance_boost,
+    should_force_include,
+)
 
 CONTRA_CUES = ("ተቃራኒ", "የተከለከለ", "አይመከርም", "contraindicat", "must not", "do not use")
 ALLOW_CUES = ("ይቻላል", "ይመከራል", "can be used", "is indicated", "may be used")
-BF_CUES = ("ጡት ማጥባት", "breastfeed", "lactat")
 
 
 def _polarity(text: str) -> str:
@@ -40,20 +47,34 @@ class KnowledgeIndex:
     tokens: list[list[str]] = field(default_factory=list)
     model_key: str = "hash"
 
-    def rebuild(self, embedder: Embedder | None) -> None:
+    def rebuild(self, embedder: Embedder | None, *, embed_cache: bool = True) -> None:
         corpus = []
+        dense_corpus = []
         self.tokens = []
         for c in self.chunks:
+            # Sparse index keeps bilingual + section text.
             blob = f"{c.amharic_text} {c.english_text} {c.section}"
             corpus.append(blob)
             self.tokens.append(tokenize(blob))
+            # Dense index prefers native Amharic passage text (fallback English).
+            am = (c.amharic_text or "").strip()
+            en = (c.english_text or "").strip()
+            dense_corpus.append(am if am else en)
         self.bm25 = BM25Okapi(self.tokens) if self.tokens else None
-        # The hash embedder is a test stand-in. Scoring it over every sentence
-        # only slows search, so hash mode stays on BM25.
-        use_dense = embedder is not None and corpus and getattr(embedder, "model_key", "") != "hash"
+        # Hash is a test stand-in — skip dense encode (not semantic).
+        use_dense = embedder is not None and dense_corpus and getattr(embedder, "model_key", "") != "hash"
         if use_dense:
-            self.embeddings = embedder.encode(corpus)
+            print(
+                f"we-care-nlu: encoding {len(dense_corpus)} chunks with {embedder.model_key} "
+                f"(cache={'on' if embed_cache else 'off'})",
+                flush=True,
+            )
+            self.embeddings = embed_texts(embedder, dense_corpus, use_cache=embed_cache)
             self.model_key = embedder.model_key
+            print(
+                f"we-care-nlu: dense index ready shape={self.embeddings.shape}",
+                flush=True,
+            )
         else:
             self.embeddings = None
             if embedder is not None:
@@ -66,7 +87,7 @@ class HybridRetriever:
         self.embedder = embedder
         self.index = KnowledgeIndex()
 
-    def add_chunks(self, chunks: Iterable[ChunkRecord]) -> int:
+    def add_chunks(self, chunks: Iterable[ChunkRecord], *, rebuild: bool = True) -> int:
         existing = {c.content_hash for c in self.index.chunks}
         added = 0
         for c in chunks:
@@ -75,9 +96,15 @@ class HybridRetriever:
             self.index.chunks.append(c)
             existing.add(c.content_hash)
             added += 1
-        if added:
-            self.index.rebuild(self.embedder)
+        if added and rebuild:
+            self.rebuild_index()
         return added
+
+    def rebuild_index(self) -> None:
+        self.index.rebuild(
+            self.embedder,
+            embed_cache=bool((self.cfg or {}).get("embed_cache", True)),
+        )
 
     def search(
         self,
@@ -86,6 +113,7 @@ class HybridRetriever:
         filters: dict[str, Any] | None = None,
         intent: str | None = None,
         entities: list[Any] | None = None,
+        extra_terms: list[str] | None = None,
     ) -> list[RetrievalHit]:
         if not self.index.chunks or self.index.bm25 is None:
             return []
@@ -97,9 +125,12 @@ class HybridRetriever:
         sw = float(cfg.get("sparse_weight") or 0.45)
         if not semantic:
             dw, sw = 0.0, 1.0
-        else:
-            dw, sw = 0.75, 0.25
-        query = expand_query(query)
+        # Keep the user ask for lexical alignment; expand only for BM25/dense.
+        original_query = query
+        query = expand_query(query, extra_terms)
+        # Broader candidate pool when entities/intent need curated recall.
+        if entities or intent in {"family_planning_methods", "eligibility", "missed_dose"}:
+            cand = max(cand, 80)
         q_tokens = tokenize(query)
         bm25_raw = np.array(self.index.bm25.get_scores(q_tokens), dtype=np.float32)
         if semantic and bm25_raw.max() > 0:
@@ -111,15 +142,52 @@ class HybridRetriever:
         else:
             bm25_n = bm25_raw
         dense_n = np.zeros(len(self.index.chunks), dtype=np.float32)
-        q_vec = None
         if self.index.embeddings is not None:
-            q_vec = self.embedder.encode([preprocess(query).normalized])[0]
-            sims = cosine(q_vec, self.index.embeddings)[0]
-            dense_n = ((sims + 1.0) / 2.0).astype(np.float32)
-        fused = dw * dense_n + sw * bm25_n
-        order = np.argsort(-fused)[:cand]
-        q_pol = _polarity(query)
-        q_bf = any(c.lower() in query.lower() for c in BF_CUES)
+            q_texts = [preprocess(original_query).normalized]
+            if bool(cfg.get("dual_query_encode", True)):
+                expanded_norm = preprocess(query).normalized
+                if expanded_norm and expanded_norm != q_texts[0]:
+                    q_texts.append(expanded_norm)
+            q_vecs = self.embedder.encode(q_texts)
+            sims = cosine(q_vecs, self.index.embeddings)
+            # Max over original + expanded query vectors.
+            best = sims.max(axis=0) if sims.ndim == 2 else sims
+            dense_n = ((best + 1.0) / 2.0).astype(np.float32)
+        fusion = str(cfg.get("fusion") or "weighted").lower()
+        if semantic and fusion == "rrf":
+            rrf_k = float(cfg.get("rrf_k") or 60)
+            bm25_rank = np.argsort(np.argsort(-bm25_raw))
+            dense_rank = np.argsort(np.argsort(-dense_n))
+            fused = (sw / (rrf_k + bm25_rank + 1.0)) + (dw / (rrf_k + dense_rank + 1.0))
+            fused = fused.astype(np.float32)
+        else:
+            fused = (dw * dense_n + sw * bm25_n).astype(np.float32)
+        # Hybrid pool: union of top BM25 + top dense, then rank by fused.
+        # Dense-only top-k buries strong Amharic lexical hits when MiniLM ranks are noisy.
+        pool: set[int] = set(int(i) for i in np.argsort(-bm25_raw)[:cand])
+        if semantic:
+            pool.update(int(i) for i in np.argsort(-dense_n)[:cand])
+        order = sorted(pool, key=lambda i: float(-fused[i]))
+        seen = set(order)
+        # Force-include curated / high-signal chunks BM25 may bury under large KBs.
+        # Use original_query for alignment so expand() synonym dumps don't fake distinctive tokens.
+        extras: list[tuple[float, int]] = []
+        for i, chunk in enumerate(self.index.chunks):
+            if i in seen:
+                continue
+            pri = should_force_include(
+                query=original_query, chunk=chunk, intent=intent, entities=entities
+            )
+            if pri > 0:
+                extras.append((pri, i))
+        extras.sort(reverse=True)
+        for _, i in extras[:20]:
+            if i not in seen:
+                order.append(i)
+                seen.add(i)
+
+        q_pol = _polarity(original_query)
+        q_bf = any(c.lower() in (original_query or "").lower() for c in BF_CUES)
         hits: list[RetrievalHit] = []
         for idx in order:
             chunk = self.index.chunks[int(idx)]
@@ -131,14 +199,21 @@ class HybridRetriever:
             c_pol = _polarity(f"{chunk.amharic_text} {chunk.english_text}")
             polarity_conflict = q_pol in {"contra", "allow"} and c_pol in {"contra", "allow"} and q_pol != c_pol
             c_bf = any(c.lower() in (chunk.amharic_text + chunk.english_text).lower() for c in BF_CUES)
+            blob = blob_of(chunk)
+            eid = str(chunk.evidence_id or "")
+            demo = is_demo_chunk(chunk)
             score = float(fused[int(idx)])
-            blob = f"{chunk.amharic_text} {chunk.english_text}".lower()
-            if intent:
-                if any(n.lower() in blob for n in INTENT_NEEDLES.get(intent) or ()):
-                    score += 0.45 if intent == "missed_dose" else 0.12
+            score += relevance_boost(
+                query=original_query,
+                blob=blob,
+                intent=intent,
+                entities=entities,
+                evidence_id=eid,
+                demo=demo,
+            )
+            # Keep a light method-term bump for non-entity lexical hits.
             for term in method_terms(entities or []):
                 if term.lower() in blob:
-                    score += 0.18
                     break
             if polarity_conflict:
                 score -= float(cfg.get("polarity_penalty") or 0.55)
@@ -171,3 +246,16 @@ class HybridRetriever:
         min_s = float(cfg.get("min_fused_score") or 0.0)
         hits = [h for h in hits if h.fused_score >= min_s]
         return hits[:k]
+
+
+# Re-export cues used by pipeline/tests.
+__all__ = [
+    "HybridRetriever",
+    "KnowledgeIndex",
+    "_polarity",
+    "BF_CUES",
+    "LAM_CUES",
+    "METHOD_LIST_CUES",
+    "ALLOW_CUES",
+    "CONTRA_CUES",
+]

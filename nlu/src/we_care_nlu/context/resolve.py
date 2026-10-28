@@ -16,13 +16,61 @@ FOLLOW_CUES = (
     "its side",
 )
 
+CONDITION_TYPES = {"condition", "breastfeeding_status", "pregnancy_status"}
+# Intents that are complete topical asks — never force "which FP method?".
+STANDALONE_INTENTS = {
+    "definition",
+    "family_planning_methods",
+    "access",
+    "how_it_works",
+    "duration",
+    "emergency",
+    "greeting",
+    "conversation_end",
+    "out_of_domain",
+}
+CARRY_INTENTS = {
+    "eligibility",
+    "contraindications",
+    "side_effects",
+    "pregnancy_breastfeeding",
+    "follow_up",
+}
+
 
 def looks_like_followup(text: str) -> bool:
     pre = preprocess(text)
     if any(c in pre.normalized for c in FOLLOW_CUES):
         return True
-    # Very short question with no new method/condition entity often needs prior topic.
-    return len(pre.normalized) < 28 and pre.normalized.endswith("?")
+    # Elliptical follow-ups only (e.g. "ጎንዮሽ?" / "ለምን?"). Full questions like
+    # "ክሪፕቲክ እርግዝና ምንድን ነው?" must not inherit "which method?" from prior turns.
+    body = pre.normalized.strip().rstrip("?؟።")
+    toks = [t for t in body.split() if t]
+    return len(toks) <= 2 and pre.normalized.endswith(("?", "؟"))
+
+
+def _as_entity(item: ContextEntity | Entity | dict) -> Entity:
+    if isinstance(item, Entity):
+        return item
+    if isinstance(item, ContextEntity):
+        return Entity(
+            type=item.type,
+            value=item.value,
+            surface=item.surface or item.value,
+            start=-1,
+            end=-1,
+            confidence=0.7,
+            source="context",
+        )
+    return Entity(
+        type=str(item.get("type") or ""),
+        value=str(item.get("value") or ""),
+        surface=str(item.get("surface") or item.get("value") or ""),
+        start=-1,
+        end=-1,
+        confidence=0.7,
+        source="context",
+    )
 
 
 def resolve_context(
@@ -36,6 +84,7 @@ def resolve_context(
         "assumed_missing_slot": False,
         "needs_clarification": False,
         "reason": "",
+        "inherited_intent": None,
     }
     if context is None:
         return entities, info
@@ -46,35 +95,68 @@ def resolve_context(
     if not has_history:
         return entities, info
 
+    entities = list(entities)
     has_method = any(e.type == "contraceptive_method" for e in entities)
-    follow = looks_like_followup(text) or intent in {"follow_up", "side_effects", "contraindications", "eligibility"}
-
-    if has_method or not follow:
-        return entities, info
-
-    prior_methods = [e for e in context.last_entities if e.type == "contraceptive_method"]
+    has_condition = any(e.type in CONDITION_TYPES for e in entities)
+    prior_methods = [e for e in context.last_entities if getattr(e, "type", None) == "contraceptive_method" or (isinstance(e, dict) and e.get("type") == "contraceptive_method")]
+    prior_conditions = [
+        e
+        for e in context.last_entities
+        if getattr(e, "type", None) in CONDITION_TYPES
+        or (isinstance(e, dict) and e.get("type") in CONDITION_TYPES)
+    ]
     if context.last_method and not prior_methods:
         prior_methods = [
             ContextEntity(type="contraceptive_method", value=context.last_method, surface=context.last_method)
         ]
 
+    prior_intent = ""
+    if context.last_intents:
+        prior_intent = str(context.last_intents[0] or "")
+    elif context.last_topic:
+        prior_intent = str(context.last_topic)
+
+    # Carry condition/BF status into a method-only follow-up (e.g. HIV ask → "መርፌ").
+    if prior_conditions and not has_condition:
+        for item in prior_conditions:
+            entities.append(_as_entity(item))
+        has_condition = True
+        info["resolved_from_previous_turn"] = True
+        info["reason"] = "Attached prior condition/breastfeeding status to this turn."
+
+    bare_method = has_method and len((text or "").strip()) <= 24
+    follow = (
+        looks_like_followup(text)
+        or intent in CARRY_INTENTS
+        or (bare_method and prior_intent in CARRY_INTENTS)
+        or (bare_method and bool(prior_conditions))
+    )
+
+    # New topical ask (definition / methods list / access / …) — answer on its own terms.
+    if intent in STANDALONE_INTENTS and not bare_method and not looks_like_followup(text):
+        return entities, info
+
+    # Eligibility/condition asks are answerable without naming a method (e.g. HIV + FP).
+    if has_condition and intent in {"eligibility", "contraindications", "pregnancy_breastfeeding", "hiv"}:
+        return entities, info
+    if has_condition and bare_method:
+        # Keep clinical aspect from prior turn when user only names a method.
+        if prior_intent in CARRY_INTENTS:
+            info["inherited_intent"] = prior_intent
+        info["resolved_from_previous_turn"] = True
+        if not info["reason"]:
+            info["reason"] = "Method follow-up under prior condition/eligibility context."
+        return entities, info
+
+    if has_method or not follow:
+        return entities, info
+
     if len(prior_methods) == 1:
-        m = prior_methods[0]
-        value = m.value
-        surface = m.surface or value
-        entities = list(entities) + [
-            Entity(
-                type="contraceptive_method",
-                value=value,
-                surface=surface,
-                start=-1,
-                end=-1,
-                confidence=0.7,
-                source="context",
-            )
-        ]
+        entities.append(_as_entity(prior_methods[0]))
         info["resolved_from_previous_turn"] = True
         info["reason"] = "Attached the single prior contraceptive method to a follow-up."
+        if prior_intent in CARRY_INTENTS and intent not in CARRY_INTENTS:
+            info["inherited_intent"] = prior_intent
         return entities, info
 
     if len(prior_methods) > 1:
@@ -82,7 +164,8 @@ def resolve_context(
         info["reason"] = "Multiple prior methods; not assuming which one the follow-up refers to."
         return entities, info
 
-    if follow and not prior_methods:
+    # Do not ask "which method?" when the user already named a condition (HIV, BF, …).
+    if follow and not prior_methods and not has_condition and not prior_conditions:
         info["needs_clarification"] = True
         info["reason"] = "Follow-up has no method/condition in this turn or in supplied state."
         return entities, info

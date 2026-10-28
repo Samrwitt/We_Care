@@ -1,6 +1,6 @@
 .venv/
 venv/
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
@@ -8,22 +8,40 @@ __pycache__/
 htmlcov/
 dist/
 build/
+.DS_Store
+.env
+*.swp
+
+# Runtime / generated
 logs/
+**/logs/
 cache/
+**/cache/
 checkpoints/
+**/checkpoints/
 output/
+**/output/
 outputs/
+mt/cache/
+mt/checkpoints/
+mt/output/
+mt/logs/
+nlu/output/
+nlu/logs/
+
+# Model weights
 *.safetensors
 *.bin
 *.pt
 .hf_cache/
+**/hf_cache/
 models/downloaded/
-.DS_Store
-.env
-*.swp
+
+# Large / local guideline copies
 RH Guidelines-*.zip
+Docs/**/*.zip
 data/guidelines/*.pdf
 mt/data/source_pdfs/*.pdf
 nlu/data/kb/rh_guidelines_en.json
-examples/output/**
-!examples/output/README.md
+# Built KB can be large; keep source Docs/ in repo or local disk
+nlu/data/kb/docs_amharic_kb.json

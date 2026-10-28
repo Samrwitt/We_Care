@@ -113,8 +113,12 @@ def ingest_alignment(
         except (TypeError, ValueError):
             page_i = None
         text_for_terms = f"{en} {am}"
-        if is_article:
+        if is_article and "translated_guideline" not in flags:
             source_kind = "wecare_article"
+        elif "translated_guideline" in flags or (
+            "source_amharic" in flags and "wecare_article" not in flags
+        ):
+            source_kind = "amharic_guideline"
         elif "source_english" in flags:
             source_kind = "english_guideline"
         else:

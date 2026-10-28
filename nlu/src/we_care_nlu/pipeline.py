@@ -22,7 +22,13 @@ from we_care_nlu.translation.mt_client import TranslatorNotReady
 from we_care_nlu.translation.phrase_map import covered_question, map_to_english
 from we_care_nlu.translation.advice import intent_advice
 from we_care_nlu.translation.compose import compose_amharic_reply, shape_english_answer
-from we_care_nlu.translation.reply import TEMPLATES, citation, reply_qa, select_span, with_article_cite
+from we_care_nlu.translation.reply import (
+    TEMPLATES,
+    citation,
+    reply_qa,
+    select_span,
+    with_article_cite,
+)
 
 _ETHIOPIC = re.compile(r"[\u1200-\u137F]")
 
@@ -37,7 +43,12 @@ class NLUEngine:
         try:
             self.embedder = load_embedder(key, spec)
             self.embedder_fallback = False
-        except Exception:
+        except Exception as load_exc:
+            print(
+                f"we-care-nlu: embedder={key} failed ({load_exc.__class__.__name__}: {load_exc}); "
+                "falling back to hash (BM25-only — not semantic)",
+                flush=True,
+            )
             self.embedder = load_embedder("hash", models.get("hash") or {"kind": "hash"})
             self.embedder_fallback = True
         self.retriever = HybridRetriever(self.cfg.get("retrieval") or {}, self.embedder)
@@ -46,12 +57,15 @@ class NLUEngine:
         self.model_key = self.embedder.model_key
         self.translator = build_translator(self.cfg)
 
-    def ingest_alignment_dict(self, payload: dict[str, Any], **kwargs) -> int:
+    def ingest_alignment_dict(self, payload: dict[str, Any], *, rebuild: bool = True, **kwargs) -> int:
         chunks = ingest_alignment(payload, **kwargs)
-        return self.retriever.add_chunks(chunks)
+        return self.retriever.add_chunks(chunks, rebuild=rebuild)
 
-    def ingest_file(self, path: str, **kwargs) -> int:
-        return self.retriever.add_chunks(ingest_path(path, **kwargs))
+    def ingest_file(self, path: str, *, rebuild: bool = True, **kwargs) -> int:
+        return self.retriever.add_chunks(ingest_path(path, **kwargs), rebuild=rebuild)
+
+    def rebuild_index(self) -> None:
+        self.retriever.rebuild_index()
 
     def analyze(self, req: AnalyzeRequest) -> AnalyzeResponse:
         pre = preprocess(req.text)
@@ -59,6 +73,18 @@ class NLUEngine:
         entities = self.ner.extract(pre.normalized)
         ctx_info = {}
         entities, ctx_info = resolve_context(pre.normalized, entities, req.context, intent_out["intent"])
+        inherited = ctx_info.get("inherited_intent")
+        if inherited and intent_out["intent"] in {
+            "general_medical_info",
+            "definition",
+            "family_planning_methods",
+            "follow_up",
+        }:
+            intent_out["intent"] = str(inherited)
+            labels = list(intent_out.get("intent_labels") or [])
+            if inherited not in labels:
+                labels.insert(0, str(inherited))
+            intent_out["intent_labels"] = labels
         emergency = emergency_flags(pre.original + " " + pre.normalized)
         if emergency["is_emergency"]:
             intent_out["intent"] = "emergency"
@@ -66,13 +92,19 @@ class NLUEngine:
                 intent_out["intent_labels"].insert(0, "emergency")
 
         filters = dict(req.filters or {})
-        search_q = expand_query(pre.normalized, method_terms(entities))
+        extra_terms = list(method_terms(entities))
+        # Condition eligibility without explicit FP wording still needs FP retrieval cues.
+        if any(getattr(e, "type", "") == "condition" and getattr(e, "value", "") == "hiv" for e in entities):
+            extra_terms.extend(
+                ["የእርግዝና መከላከያ", "family planning", "contraceptive", "ኤች.አይ.ቪ", "HIV"]
+            )
         hits = self.retriever.search(
-            search_q,
+            pre.normalized,
             top_k=req.top_k,
             filters=filters,
             intent=intent_out["intent"],
             entities=entities,
+            extra_terms=extra_terms,
         )
         conflicts = evidence_conflicts(hits, pre.normalized)
         review = review_warnings(hits)
@@ -163,26 +195,124 @@ class NLUEngine:
 
         span_query = original if search_lang == "am" else english_query
         span, hit = select_span(span_query, analysis.retrieval_results, analysis.intent)
-        if not span:
-            from we_care_nlu.translation.reply import _content_tokens
+        # General entity/intent re-rank over retrieval hits (not TOC / wrong-doc dumps).
+        from we_care_nlu.retrieval.relevance import answer_quality, relevant_enough
+        from we_care_nlu.translation.reply import _content_tokens
 
-            need = _content_tokens(span_query)
-            for candidate in analysis.retrieval_results:
-                if candidate.polarity_conflict:
-                    continue
-                stored = (candidate.amharic_text or "").strip()
-                english = (candidate.english_text or "").strip()
-                blob = f"{stored} {english}".lower()
-                if need and not any(tok.lower() in blob for tok in need):
-                    continue
-                if stored and _ETHIOPIC.search(stored):
-                    hit = candidate
-                    span = stored[:700]
-                    break
-                if english:
-                    hit = candidate
-                    span = english[:700]
-                    break
+        need = _content_tokens(span_query)
+        from we_care_nlu.retrieval.relevance import (
+            distinctive_overlap,
+            distinctive_query_tokens,
+            is_demo_chunk,
+        )
+
+        dist = distinctive_query_tokens(span_query)
+        ranked = []
+        for candidate in analysis.retrieval_results:
+            if candidate.polarity_conflict:
+                continue
+            stored = (candidate.amharic_text or "").strip()
+            english = (candidate.english_text or "").strip()
+            text = stored if (stored and _ETHIOPIC.search(stored)) else english
+            if not text or len(text) < 25:
+                continue
+            if not relevant_enough(
+                text,
+                query=span_query,
+                intent=analysis.intent,
+                entities=analysis.entities,
+                need_tokens=need,
+            ):
+                continue
+            quality = answer_quality(
+                text,
+                intent=analysis.intent,
+                query=span_query,
+                entities=analysis.entities,
+                evidence_id=str(candidate.evidence_id or ""),
+                fused=float(candidate.fused_score or 0),
+            )
+            if quality < 0:
+                continue
+            ranked.append((quality, float(candidate.fused_score or 0), len(text), candidate, text))
+        ranked.sort(reverse=True)
+        # General answer shaping (any topic):
+        # - definition → keep definition-shaped spans only (not FAQ titles / treatment dumps)
+        # - no method entity → prefer docs that share distinctive terms over curated fillers
+        _DEF_SHAPE = ("ነው።", "ነው፡", "is a", "is an", "ማለት", "ይባላል", "የሚታወቅ", "refers to", "means", "የሚከሠተው")
+        from we_care_nlu.retrieval.relevance import entity_method_values
+
+        methods = entity_method_values(analysis.entities)
+        if analysis.intent == "definition" and ranked:
+            shaped = [
+                row
+                for row in ranked
+                if any(c in row[4] for c in _DEF_SHAPE)
+                and not row[4].strip().endswith(("?", "؟"))
+            ]
+            if shaped:
+                ranked = shaped
+        if dist and ranked and not methods:
+            grounded = [
+                row
+                for row in ranked
+                if distinctive_overlap(row[4], dist) > 0 and not is_demo_chunk(row[3])
+            ]
+            if grounded:
+                ranked = grounded
+        if ranked:
+            best_q, _, _, best_hit, best_text = ranked[0]
+            span_q = (
+                answer_quality(
+                    span or "",
+                    intent=analysis.intent,
+                    query=span_query,
+                    entities=analysis.entities,
+                    evidence_id=str(getattr(hit, "evidence_id", "") or ""),
+                    fused=float(getattr(hit, "fused_score", 0) or 0),
+                )
+                if span
+                else -99.0
+            )
+            if (
+                not span
+                or not hit
+                or len((span or "").strip()) < 50
+                or span_q + 0.8 < best_q
+                or best_q >= 8.0
+            ):
+                hit = best_hit
+                span = best_text[:900]
+        # Methods-*list* asks with TOC/category teasers → curated overview advice.
+        list_ask = any(
+            cue in (original or "").lower()
+            for cue in (
+                "ምንድን ናቸው",
+                "አማራጮች",
+                "ዘዴዎች ምን",
+                "what methods",
+                "which methods",
+                "method options",
+                "contraceptive options",
+            )
+        )
+        if span and hit and analysis.intent == "family_planning_methods" and list_ask:
+            from we_care_nlu.translation.reply import method_cue_count
+
+            body = span or ""
+            eid = str(hit.evidence_id or "")
+            if not eid.startswith("chunk_") and method_cue_count(body) < 3:
+                advice = intent_advice(analysis.intent)
+                if advice:
+                    amharic, english = advice
+                    return self._reply_from_analysis(
+                        analysis,
+                        amharic_reply=amharic,
+                        english_query=english_query,
+                        english_reply=english,
+                        status="template",
+                        cited={},
+                    )
         if (analysis.safety.get("unsupported_question") and not hit) or not span:
             advice = intent_advice(analysis.intent)
             if advice:

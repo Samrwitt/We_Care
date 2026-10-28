@@ -187,6 +187,9 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
             # Prefer a compact grounded sentence over a long paragraph dump.
             if len(words) > 45:
                 score -= 1.5
+            # Definition intent: never prefer a bare FAQ question as the answer span.
+            if intent == "definition" and sentence.strip().endswith(("?", "؟")):
+                score -= 25.0
             if score > best_score:
                 best_score = score
                 best_span = sentence[:700]
@@ -194,6 +197,45 @@ def select_span(query: str, hits: list[RetrievalHit], intent: str | None) -> tup
     if best_hit is None:
         return "", None
     return best_span[:700], best_hit
+
+
+_ETH_MONTH_TITLE = re.compile(
+    r"(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ|"
+    r"january|february|march|april|may|june|july|august|september|october|november|december)",
+    re.I,
+)
+_METHOD_LIST_CUES = (
+    "ኮንዶም", "ክኒን", "መርፌ", "ኢምፕላንት", "አይዩ", "አይ.ዩ", "አስቸኳይ", "ቋሚ",
+    "condom", "pill", "injectable", "implant", "iud", "iucd",
+)
+
+
+def _title_is_date(title: str) -> bool:
+    t = (title or "").strip()
+    if not t:
+        return True
+    if re.fullmatch(r"\d{4}", t):
+        return True
+    return bool(_ETH_MONTH_TITLE.search(t) and re.search(r"\d{4}", t) and len(t) < 40)
+
+
+def method_cue_count(text: str) -> int:
+    body = (text or "").lower()
+    return sum(1 for cue in _METHOD_LIST_CUES if cue.lower() in body)
+
+
+def evidence_quality(text: str, *, intent: str | None = None, query: str = "", entities: list | None = None) -> float:
+    """Higher is better. Penalize TOC teasers and mid-list fragments."""
+    from we_care_nlu.retrieval.relevance import answer_quality
+
+    return answer_quality(
+        text,
+        intent=intent,
+        query=query or "",
+        entities=entities,
+        evidence_id="",
+        fused=0.0,
+    )
 
 
 def citation(hit: RetrievalHit | None) -> dict[str, Any]:
@@ -208,10 +250,23 @@ def citation(hit: RetrievalHit | None) -> dict[str, Any]:
             "source_url": "",
             "source_kind": "",
         }
+    title = (hit.document_title or "").strip()
+    # Collapse OCR/layout-spaced Latin (e.g. "ET H I O P I A B E M O N C").
+    title = re.sub(r"\b(?:[A-Za-z]\s+){3,}[A-Za-z]\b", lambda m: m.group(0).replace(" ", ""), title)
+    title = re.sub(r"\s{2,}", " ", title).strip()
+    # Drop bare dates and titles that are mostly a publication date line.
+    if _title_is_date(title) or re.search(
+        r"(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)"
+        r"[^\n]{0,12}\d{4}\s*$",
+        title,
+    ):
+        title = hit.section if hit.section and not _title_is_date(hit.section) else ""
+        if not title or _title_is_date(title):
+            title = (hit.document_id or "").replace("_", " ")
     return {
         "evidence_id": hit.evidence_id,
         "document_id": hit.document_id,
-        "document_title": hit.document_title,
+        "document_title": title,
         "page": hit.page,
         "section": hit.section,
         "review_status": hit.review_status,

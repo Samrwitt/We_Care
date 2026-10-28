@@ -26,10 +26,11 @@ def _pair(am: str, en: str) -> tuple[str, str]:
 
 _ADVICE: dict[str, tuple[str, str]] = {
     "family_planning_methods": _pair(
-        "የተለመዱ የእርግዝና መከላከያ ዘዴዎች ኮንዶም፣ ክኒን፣ በመርፌ የሚሰጥ መከላከያ፣ ኢምፕላንት እና በማሕፀን ውስጥ የሚገባ መከላከያ ናቸው። "
-        "የሚስማማው ዘዴ በእያንዳንዱ ሰው ሁኔታ ይለያያል። "
-        f"ተጨማሪ መረጃ፦ {_SITE}",
-        "Common contraceptive methods include condoms, pills, injectables, implants, and intrauterine devices. "
+        "የእርግዝና መከላከያ ዘዴዎች በርካታ አማራጮች አሉ። የመከላከያ ዘዴዎች ኮንዶምን ያካትታሉ። "
+        "የሆርሞን ዘዴዎች ክኒን፣ መርፌ እና ኢምፕላንት ናቸው። በማሕፀን ውስጥ የሚገባ መከላከያ (አይዩሲዲ) ለረጅም ጊዜ ይቆያል። "
+        "የአስቸኳይ መከላከያ እና ቋሚ ዘዴዎችም አሉ። የሚስማማው ዘዴ በእያንዳንዱ ሰው ሁኔታ ይለያያል።",
+        "Contraceptive options include barrier methods such as condoms; hormonal methods such as pills, injectables, and implants; "
+        "intrauterine devices (IUCD); emergency contraception; and permanent methods. "
         "The suitable method depends on the person. "
         f"More information: {_SITE}",
     ),

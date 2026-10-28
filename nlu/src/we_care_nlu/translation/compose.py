@@ -73,8 +73,21 @@ def shape_english_answer(span: str, *, max_chars: int = 320) -> str:
     return out
 
 
-def polish_amharic(text: str) -> str:
+_DATE_LINE = re.compile(
+    r"(?m)^(?:መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)"
+    r"[^\n\d]{0,20}\d{4}\s*$"
+)
+
+
+_METHOD_KEEP = (
+    "ኮንዶም", "ክኒን", "መርፌ", "ኢምፕላንት", "አይዩ", "አስቸኳይ", "ቋሚ",
+    "condom", "pill", "injectable", "implant", "iud", "iucd",
+)
+
+
+def polish_amharic(text: str, *, keep_list: bool = False) -> str:
     text = clean_evidence(text)
+    text = _DATE_LINE.sub("", text)
     for pattern, repl in _EXPAND:
         text = pattern.sub(repl, text)
     # Drop leftover isolated Latin tokens that survived glossary expansion.
@@ -85,7 +98,15 @@ def polish_amharic(text: str) -> str:
     text = _MULTI_SPACE.sub(" ", text).strip(" ;,")
     if text and text[-1] not in ".!?።":
         text += "።"
+    if keep_list:
+        # Do not chop a named method overview into a truncated first line.
+        return text[:900]
     return text
+
+
+def _is_method_overview(text: str) -> bool:
+    body = text or ""
+    return sum(1 for cue in _METHOD_KEEP if cue.lower() in body.lower()) >= 4
 
 
 def compose_amharic_reply(
@@ -100,11 +121,20 @@ def compose_amharic_reply(
     polished document Amharic sentence when MT is unavailable.
     """
     notes: list[str] = ["composed_reply"]
-    shaped = shape_english_answer(english_span)
+    # Native Amharic curated answers are already user-facing — keep them intact.
+    if document_amharic and _ETH.search(document_amharic) and (
+        _is_method_overview(document_amharic) or len(document_amharic) <= 520
+    ):
+        polished = polish_amharic(document_amharic, keep_list=True)
+        if polished and len(polished) >= 40:
+            notes.append("document_native_keep")
+            return polished, "composed", notes
+
+    shaped = shape_english_answer(english_span, max_chars=480)
     if translator is not None and getattr(translator, "can_translate_reply", False) and shaped:
         try:
             rendered = translator.to_amharic(shaped)
-            polished = polish_amharic(rendered)
+            polished = polish_amharic(rendered, keep_list=_is_method_overview(shaped))
             if polished and _ETH.search(polished):
                 notes.append("mt_rendered")
                 return polished, "composed", notes
@@ -112,17 +142,18 @@ def compose_amharic_reply(
         except Exception as exc:  # noqa: BLE001 — fall back to document Amharic
             notes.append(f"mt_fallback:{exc.__class__.__name__}")
 
-    fallback = polish_amharic(document_amharic) if document_amharic else ""
+    fallback = polish_amharic(document_amharic, keep_list=_is_method_overview(document_amharic)) if document_amharic else ""
     if not fallback and shaped:
         # Last resort: keep English shaped answer out of the Amharic field.
         fallback = polish_amharic(document_amharic or "")
     if fallback and _ETH.search(fallback):
-        # Prefer a single sentence when dumping document Amharic.
-        sentences = [s for s in re.split(r"(?<=[።!?])\s+", fallback) if s.strip()]
-        if sentences:
-            fallback = sentences[0].strip()
-            if fallback[-1] not in ".!?።":
-                fallback += "።"
+        if not _is_method_overview(fallback):
+            # Prefer a single sentence when dumping document Amharic.
+            sentences = [s for s in re.split(r"(?<=[።!?])\s+", fallback) if s.strip()]
+            if sentences:
+                fallback = sentences[0].strip()
+                if fallback[-1] not in ".!?።":
+                    fallback += "።"
         notes.append("document_polished")
         return fallback, "composed", notes
     return "", "composed", notes + ["compose_failed"]

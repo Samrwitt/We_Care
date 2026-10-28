@@ -4,8 +4,10 @@ service:
   generative_decoding: false
 
 embeddings:
-  default_model: labse          # semantic default when weights exist
-  test_model: hash              # CI / no-download
+  # Serve uses default_model: multilingual MiniLM (BERT-family sentence encoder) on CPU.
+  # Hash is tests-only. Amharic RoBERTa embedders are optional upgrades when cached.
+  default_model: st_multilingual_minilm
+  test_model: hash
   models:
     hash:
       kind: hash
@@ -13,6 +15,18 @@ embeddings:
       dim: 256
       amharic_sentence_encoder: false
       notes: Deterministic test backend. Not semantic.
+    st_multilingual_minilm:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      dim: 384
+      max_length: 128
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      batch_size: 64
+      notes: >-
+        Multilingual MiniLM (12-layer BERT student). Designed for CPU paraphrase/retrieval.
+        Primary dense encoder; pair with BM25 via RRF. Loads from local HF cache offline.
     amharic_base:
       kind: sentence_transformer
       hf_id: rasyosef/roberta-amharic-text-embedding-base
@@ -61,12 +75,17 @@ embeddings:
       notes: XLM-R family sentence-transformer. Evaluate on Amharic medical pairs before preferring it.
 
 retrieval:
-  dense_weight: 0.55
-  sparse_weight: 0.45
-  candidate_k: 40
-  top_k: 8
-  min_fused_score: 0.12
-  abstain_below: 0.22
+  # Sparse-leaning: multilingual MiniLM helps, but Amharic medical BM25 is still the safer anchor.
+  dense_weight: 0.40
+  sparse_weight: 0.60
+  candidate_k: 80
+  top_k: 12
+  min_fused_score: 0.10
+  abstain_below: 0.18
+  fusion: rrf                 # rrf | weighted
+  rrf_k: 60
+  dual_query_encode: true     # score max(original, expanded) dense similarities
+  embed_cache: true
   reranker: medical_features     # medical_features | cross_encoder | none
   cross_encoder_id: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
   cross_encoder_amharic_validated: false

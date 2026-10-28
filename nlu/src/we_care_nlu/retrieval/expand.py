@@ -59,11 +59,41 @@ def unique_join(parts: Iterable[str]) -> str:
     return " ".join(out)
 
 
+_QUERY_FILLER = {
+    "ምንድን",
+    "ምንድር",
+    "ነው",
+    "ናቸው",
+    "ለምን",
+    "እንዴት",
+    "መቼ",
+    "የት",
+    "what",
+    "is",
+    "are",
+    "how",
+    "why",
+}
+
+
+def _normalize_am_acronyms(text: str) -> str:
+    """Collapse dotted Ethiopic/Latin acronyms: አይ.ዩ.ዲ → አይዩዲ, I.U.D → IUD."""
+    import re
+
+    text = re.sub(r"(?<=[\u1200-\u137FA-Za-z])\.(?=[\u1200-\u137FA-Za-z])", "", text or "")
+    return text
+
+
 def expand_query(text: str, extra: Iterable[str] | None = None) -> str:
-    bits = [text]
-    low = (text or "").lower()
+    text = _normalize_am_acronyms(text)
+    # Drop bare question fillers so BM25 does not rank every FAQ title first.
+    kept = [tok for tok in (text or "").split() if tok.strip("?.!፡።").lower() not in _QUERY_FILLER]
+    core = " ".join(kept) if kept else text
+    bits = [text, core]
+    low = core.lower()
+    compact = _normalize_am_acronyms(low.replace(" ", ""))
     for terms in synonym_groups():
-        if any(term.lower() in low for term in terms):
+        if any(term.lower() in low or _normalize_am_acronyms(term.lower()) in compact for term in terms):
             bits.extend(terms)
     if extra:
         bits.extend(extra)

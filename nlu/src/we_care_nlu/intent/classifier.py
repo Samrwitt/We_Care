@@ -86,6 +86,32 @@ class IntentClassifier:
                 if "definition" in labels:
                     labels.remove("definition")
                 labels.insert(0, "definition")
+        # Location asks beat broad FP-catalogue matches ("የቤተሰብ ምጣኔ ... የት ይገኛል").
+        access_cue = any(
+            c in low
+            for c in ("የት ይገኛል", "የት እገኛለሁ", "የት ልውሰድ", "አገልግሎት የት", "where can i get", "where to get")
+        )
+        if access_cue and "access" in labels:
+            primary = "access"
+            labels = ["access"] + [x for x in labels if x != "access"]
+        # Condition + "can I use" is eligibility, not a methods catalogue.
+        can_use = any(
+            c in low
+            for c in (
+                "መጠቀም ይቻላል",
+                "መጠቀም እችላለሁ",
+                "መጠቀም ትችላለህ",
+                "መጠቀም ትችያለሽ",
+                "እችላለሁ",
+                "can i use",
+            )
+        )
+        condition_ask = "hiv" in labels or any(
+            c in low for c in ("ኤች.አይ.ቪ", "ኤችአይቪ", "ኤድስ", "hiv", "aids")
+        )
+        if can_use and condition_ask:
+            primary = "eligibility"
+            labels = ["eligibility"] + [x for x in labels if x != "eligibility"]
         return {
             "intent": primary,
             "intent_labels": labels,
