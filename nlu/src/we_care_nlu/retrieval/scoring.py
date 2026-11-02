@@ -28,6 +28,7 @@ from we_care_nlu.retrieval.chunk_signals import (
     LAM_CUES,
     METHOD_CHUNK_PREFIX,
     METHOD_LIST_CUES,
+    _OFF_TOPIC_COINFECTION,
     bf_hit,
     blob_of,
     curated_aligned_with_query,

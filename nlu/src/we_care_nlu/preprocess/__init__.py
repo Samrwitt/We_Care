@@ -1,3 +1,5 @@
-from we_care_nlu.preprocess.normalize import PreprocessResult, preprocess
+"""Text normalization for Amharic/English asks (NFC, light spelling, negation kept)."""
 
-__all__ = ["PreprocessResult", "preprocess"]
+from we_care_nlu.preprocess.normalize import detect_language, has_negation, preprocess
+
+__all__ = ["detect_language", "has_negation", "preprocess"]

@@ -11,6 +11,9 @@ from typing import Any
 from we_care_nlu.intent.lexicon import _scan, load_lexicon
 from we_care_nlu.preprocess.normalize import preprocess
 
+# Re-export for callers that historically imported load_lexicon from here.
+__all__ = ["IntentClassifier", "load_lexicon"]
+
 
 class IntentClassifier:
     def __init__(self, lexicon: dict[str, Any] | None = None):

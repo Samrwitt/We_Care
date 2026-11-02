@@ -1,4 +1,8 @@
-"""Additive query expansion. Does not replace polarity checks."""
+"""Additive query expansion (method/topic/intent surfaces for BM25 recall).
+
+Does not replace polarity checks. TOPIC_SURFACES and INTENT_NEEDLES feed
+NLUEngine.analyze() extra_terms.
+"""
 
 from __future__ import annotations
 

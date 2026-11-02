@@ -1,4 +1,8 @@
-"""Hybrid BM25 + dense retrieval with medical polarity reranking."""
+"""Hybrid BM25 + dense retrieval with medical polarity reranking.
+
+HybridRetriever.search() is the main entry used by NLUEngine.analyze().
+Relevance features come from retrieval/relevance.py (query_facets / chunk_signals / scoring).
+"""
 
 from __future__ import annotations
 

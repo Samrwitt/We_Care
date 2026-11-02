@@ -6,7 +6,7 @@ FP-method carry-over from earlier turns.
 
 from __future__ import annotations
 
-from we_care_nlu.contracts.schemas import ContextEntity, ContextState, Entity
+from we_care_nlu.contracts.schemas import ContextEntity, Entity
 from we_care_nlu.preprocess.normalize import preprocess
 
 FOLLOW_CUES = (

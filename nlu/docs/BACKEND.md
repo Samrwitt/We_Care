@@ -12,9 +12,10 @@ OpenAPI docs when the server is up: `http://127.0.0.1:8088/docs`
 | Server startup / KB load | `src/we_care_nlu/api/lifecycle.py` |
 | Main “ask → answer” logic | `src/we_care_nlu/pipeline.py` (`analyze`) + `reply_pipeline.py` (`reply`) |
 | Request/response shapes | `src/we_care_nlu/contracts/schemas.py` |
-| Intent labels (definition, symptoms, …) | `src/we_care_nlu/intent/classifier.py` + `data/intents/` |
-| Conversation follow-ups | `src/we_care_nlu/context/resolve.py` |
-| Search + ranking | `src/we_care_nlu/retrieval/` |
+| Intent labels (definition, symptoms, …) | `src/we_care_nlu/intent/` + `data/intents/` |
+| Conversation follow-ups | `src/we_care_nlu/context/` |
+| Search + ranking | `src/we_care_nlu/retrieval/` (see `docs/NLU.md`) |
+| NLU stage map (preprocess→retrieve) | [`docs/NLU.md`](NLU.md) |
 | Template answers when KB misses | `src/we_care_nlu/translation/advice.py` |
 | Chat UI | `src/we_care_nlu/api/static/README.md` |
 
