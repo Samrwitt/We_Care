@@ -1,9 +1,10 @@
-version: 2.0.0
+version: 2.1.0
 language: am
 notes:
 - Lexical matching for routing only, not clinical diagnosis or validated triage.
 - Match safety patterns in context; do not treat informational mentions as confirmed emergencies.
 - Intent and topic are independent dimensions.
+- Overlay paraphrases load from lexicon_*.yaml (merged additively by IntentClassifier.load_lexicon).
 intents:
   greeting:
     patterns:
@@ -192,7 +193,9 @@ intents:
     - ጎንዮሽ
     - አሉታዊ ተፅእኖ
     - የማይፈለግ ተፅዕኖ
+    - side effects
     - side effect
+    - adverse effects
     - adverse effect
     - adverse reaction
   contraindications:
@@ -282,9 +285,15 @@ intents:
     - ምን አማራጮች አሉ
     - እርግዝናን ለመከላከል ምን
     - contraceptive options
+    - contraceptive methods
+    - what contraceptive
+    - what methods are available
+    - what birth control
     - family planning methods
     - birth control options
+    - birth control methods
     - which methods
+    - what methods
   access:
     patterns:
     - የት ይገኛል

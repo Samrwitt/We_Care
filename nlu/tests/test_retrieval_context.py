@@ -49,6 +49,28 @@ def test_followup_resolves_single_prior_method():
     assert out.requires_clarification is False
 
 
+def test_period_pain_followup_does_not_keep_injectable_bf_context():
+    """መዛባት → ሲያመኝ must not answer leftover Depo+breastfeeding chunks."""
+    eng = user_engine()
+    ctx = ContextState(
+        turn_index=4,
+        last_intents=["eligibility"],
+        last_topic="irregular_menses",
+        last_method="injectable_contraceptive",
+        last_entities=[
+            {"type": "contraceptive_method", "value": "injectable_contraceptive", "surface": "መርፌ"},
+            {"type": "breastfeeding_status", "value": "breastfeeding", "surface": "ጡት"},
+        ],
+    )
+    analyzed = eng.analyze(AnalyzeRequest(text="ሲያመኝ ምን ላድርግ?", context=ctx))
+    assert analyzed.context_resolution.get("dropped_prior_method_context") is True
+    assert not any(e.type == "contraceptive_method" for e in (analyzed.entities or []))
+    assert not any(e.type == "breastfeeding_status" for e in (analyzed.entities or []))
+    out = eng.reply(AnalyzeRequest(text="ሲያመኝ ምን ላድርግ?", context=ctx))
+    assert out.evidence_id != "chunk_bf_allowed"
+    assert "ፕሮጄስቲን ብቻ ያለው መርፌ" not in (out.amharic_reply or "")
+
+
 def test_followup_ambiguous_does_not_guess():
     eng = engine()
     ctx = ContextState(

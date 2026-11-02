@@ -27,8 +27,8 @@ from we_care_nlu.safety.rules import emergency_flags, evidence_conflicts, review
 from we_care_nlu.terminology.index import ConceptIndex
 from we_care_nlu.translation import build_translator
 from we_care_nlu.translation.mt_client import TranslatorNotReady
-from we_care_nlu.translation.phrase_map import covered_question, map_to_english
-from we_care_nlu.translation.advice import intent_advice
+from we_care_nlu.translation.phrase_map import covered_question, map_to_amharic_terms, map_to_english
+from we_care_nlu.translation.advice import advice_key, intent_advice
 from we_care_nlu.translation.compose import compose_amharic_reply, shape_english_answer
 from we_care_nlu.translation.reply import (
     TEMPLATES,
@@ -36,6 +36,7 @@ from we_care_nlu.translation.reply import (
     reply_qa,
     focus_span_for_query,
     select_span,
+    tidy_reply_span,
     with_article_cite,
 )
 
@@ -93,10 +94,13 @@ class NLUEngine:
         except Exception as exc:  # noqa: BLE001
             print(f"we-care-nlu: terminology extract skipped ({exc.__class__.__name__}: {exc})", flush=True)
 
-    def analyze(self, req: AnalyzeRequest) -> AnalyzeResponse:
+    def analyze(self, req: AnalyzeRequest, *, retrieval_text: str | None = None) -> AnalyzeResponse:
+        # Intent/NER always use the ask as written. Retrieval may use an expanded string
+        # (e.g. English ask + Amharic BM25 boost) without flipping the classifier.
         pre = preprocess(req.text)
         intent_out = self.intents.predict(pre.normalized)
         entities = self.ner.extract(pre.normalized)
+        pre_retr = preprocess(retrieval_text) if (retrieval_text and retrieval_text != req.text) else pre
 
         # Layer B: KB/gazetteer concepts (approved+seeded only).
         matched_concepts = self.concepts.match(pre.normalized, limit=6)
@@ -144,6 +148,8 @@ class NLUEngine:
             topics = [
                 (c.canonical_english or c.canonical_amharic or c.concept_id) for c in matched_concepts
             ]
+        if not topic and ctx_info.get("inherited_topic"):
+            topic = str(ctx_info["inherited_topic"])
         if (
             not topic
             and req.context
@@ -152,6 +158,11 @@ class NLUEngine:
         ):
             topic = req.context.last_topic
             ctx_info["inherited_topic"] = topic
+        # Keep sibling menses labels so retrieval expands both irregular + period-pain surfaces.
+        if str(topic or "").lower() in {"irregular_menses", "menstruation", "endometriosis"}:
+            for label in ("menstruation", "irregular_menses"):
+                if label not in topics:
+                    topics.append(label)
 
         emergency = emergency_flags(pre.original + " " + pre.normalized)
         if emergency["is_emergency"]:
@@ -169,6 +180,12 @@ class NLUEngine:
         for surf in TOPIC_SURFACES.get(topic_key, ()):
             if surf and surf not in concept_terms:
                 concept_terms.append(surf)
+        # Period-pain follow-ups after መዛባት: pull both irregular + menstruation surfaces.
+        if topic_key in {"irregular_menses", "menstruation", "endometriosis"}:
+            for key in ("menstruation", "irregular_menses"):
+                for surf in TOPIC_SURFACES.get(key, ()):
+                    if surf and surf not in concept_terms:
+                        concept_terms.append(surf)
         conditions = [
             str(getattr(e, "value", "") or "")
             for e in entities
@@ -193,7 +210,7 @@ class NLUEngine:
         for group in soft_topic_groups(pre.normalized):
             extra_terms.extend(list(group[:6]))
         hits = self.retriever.search(
-            pre.normalized,
+            pre_retr.normalized,
             top_k=req.top_k,
             filters=filters,
             intent=intent_label,
@@ -201,7 +218,7 @@ class NLUEngine:
             extra_terms=extra_terms,
             concept_terms=concept_terms,
         )
-        conflicts = evidence_conflicts(hits, pre.normalized)
+        conflicts = evidence_conflicts(hits, pre_retr.normalized)
         review = review_warnings(hits)
         abstain_thr = float((self.cfg.get("retrieval") or {}).get("abstain_below") or 0.22)
         top_score = hits[0].fused_score if hits else 0.0
@@ -264,6 +281,18 @@ class NLUEngine:
             safety=safety,
         )
 
+    def _advice_for(self, analysis: AnalyzeResponse) -> tuple[str, str] | None:
+        """Template advice keyed by clinical topic when the question-type intent is generic."""
+        key = advice_key(analysis.intent, analysis.topic)
+        advice = intent_advice(analysis.intent, analysis.topic)
+        if advice and key and key != analysis.intent:
+            analysis.intent = key
+            labels = list(analysis.intent_labels or [])
+            if key not in labels:
+                labels = [key] + labels
+            analysis.intent_labels = labels
+        return advice
+
     def reply(self, req: AnalyzeRequest) -> ReplyResponse:
         original = req.text or ""
         translator_loading = False
@@ -280,18 +309,21 @@ class NLUEngine:
             search_lang = "am"
         else:
             english_query = original
-            search_text = original
+            # Boost Amharic KB recall for English asks (methods, conditions, FP terms).
+            am_terms = map_to_amharic_terms(original, limit=16)
+            search_text = " ".join([original] + am_terms) if am_terms else original
             search_lang = "en"
         analysis = self.analyze(
             AnalyzeRequest(
-                text=search_text,
+                text=original,
                 language=search_lang,
                 conversation_id=req.conversation_id,
                 context=req.context,
                 filters=req.filters,
                 top_k=req.top_k or 20,
                 model_key=req.model_key,
-            )
+            ),
+            retrieval_text=search_text if search_text != original else None,
         )
         emergency = emergency_flags(original + " " + english_query)
         if emergency["is_emergency"]:
@@ -322,27 +354,38 @@ class NLUEngine:
                 continue
             stored = (candidate.amharic_text or "").strip()
             english = (candidate.english_text or "").strip()
-            text = stored if (stored and _ETHIOPIC.search(stored)) else english
+            # Match reply language to the ask: English asks prefer English evidence.
+            if ask_amharic:
+                text = stored if (stored and _ETHIOPIC.search(stored)) else english
+            else:
+                text = english if english else stored
             if not text or len(text) < 25:
                 continue
+            # Relevance uses Amharic body when available so soft-topic cues still fire.
+            check_blob = stored if (stored and _ETHIOPIC.search(stored)) else text
             if not relevant_enough(
-                text,
-                query=span_query,
+                check_blob,
+                query=span_query if ask_amharic else (search_text or span_query),
                 intent=analysis.intent,
                 entities=analysis.entities,
                 need_tokens=need,
             ):
                 continue
             quality = answer_quality(
-                text,
+                check_blob,
                 intent=analysis.intent,
-                query=span_query,
+                query=span_query if ask_amharic else (search_text or span_query),
                 entities=analysis.entities,
                 evidence_id=str(candidate.evidence_id or ""),
                 fused=float(candidate.fused_score or 0),
             )
             if quality < 0:
                 continue
+            # English asks: strongly prefer passages that already have English text.
+            if not ask_amharic and english:
+                quality += 2.5
+            elif not ask_amharic and text and _ETHIOPIC.search(text):
+                quality -= 4.0
             ranked.append((quality, float(candidate.fused_score or 0), len(text), candidate, text))
         # Avoid comparing RetrievalHit when scores tie.
         ranked.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
@@ -385,7 +428,12 @@ class NLUEngine:
             grounded = [
                 row
                 for row in ranked
-                if distinctive_overlap(row[4], dist) > 0 and not is_demo_chunk(row[3])
+                if (
+                    distinctive_overlap(row[4], dist) > 0
+                    or distinctive_overlap((row[3].amharic_text or ""), dist) > 0
+                    or distinctive_overlap((row[3].english_text or ""), dist) > 0
+                )
+                and not is_demo_chunk(row[3])
             ]
             if grounded:
                 ranked = grounded
@@ -413,7 +461,7 @@ class NLUEngine:
                 hit = best_hit
                 span = best_text[:900]
         if span:
-            span = focus_span_for_query(span, span_query)[:900]
+            span = tidy_reply_span(focus_span_for_query(span, span_query)[:900])
         # Methods-*list* asks with TOC/category teasers → curated overview advice.
         list_ask = any(
             cue in (original or "").lower()
@@ -433,7 +481,7 @@ class NLUEngine:
             body = span or ""
             eid = str(hit.evidence_id or "")
             if not eid.startswith("chunk_") and method_cue_count(body) < 3:
-                advice = intent_advice(analysis.intent)
+                advice = self._advice_for(analysis)
                 if advice:
                     amharic, english = advice
                     return self._reply_from_analysis(
@@ -445,7 +493,7 @@ class NLUEngine:
                         cited={},
                     )
         if (analysis.safety.get("unsupported_question") and not hit) or not span:
-            advice = intent_advice(analysis.intent)
+            advice = self._advice_for(analysis)
             if advice:
                 amharic, english = advice
                 return self._reply_from_analysis(
@@ -505,7 +553,8 @@ class NLUEngine:
                 failed.amharic_reply = amharic
                 return failed
             if not english or _ETHIOPIC.search(english):
-                english = span
+                advice = self._advice_for(analysis)
+                english = advice[1] if advice else (TEMPLATES.get("abstain", {}).get("en") or "")
             english = with_article_cite(english[:700], source_url, amharic=False)
             return self._reply_from_analysis(
                 analysis,
@@ -543,11 +592,22 @@ class NLUEngine:
                 failed = self._reply_template("qa_fail", "qa_failed", original, english_query, analysis, cited)
                 failed.qa_ok = False
                 failed.qa_notes = qa_flags
-                failed.english_reply = span if not span_is_amharic else ""
+                failed.english_reply = self._english_reply_body(hit, span, ask_amharic=ask_amharic)
                 return failed
-            english_shown = shape_english_answer(span) if not span_is_amharic else ""
-            if not english_shown and not span_is_amharic:
-                english_shown = span
+            english_shown = self._english_reply_body(hit, span, ask_amharic=ask_amharic)
+            if not ask_amharic and (not english_shown or _ETHIOPIC.search(english_shown)):
+                # Never show Amharic as the English answer — fall back to intent advice.
+                advice = self._advice_for(analysis)
+                if advice:
+                    return self._reply_from_analysis(
+                        analysis,
+                        amharic_reply=advice[0],
+                        english_query=english_query,
+                        english_reply=advice[1],
+                        status="template",
+                        cited=cited,
+                    )
+                english_shown = TEMPLATES.get("abstain", {}).get("en") or ""
             shown = self._reply_from_analysis(
                 analysis,
                 amharic_reply=amharic[:700],
@@ -565,12 +625,25 @@ class NLUEngine:
         mt_loading = translator_loading or any(
             note.startswith("mt_fallback:TranslatorNotReady") for note in compose_notes
         )
+        english_fallback = self._english_reply_body(hit, span, ask_amharic=ask_amharic)
+        if not ask_amharic and (not english_fallback or _ETHIOPIC.search(english_fallback)):
+            advice = self._advice_for(analysis)
+            if advice:
+                return self._reply_from_analysis(
+                    analysis,
+                    amharic_reply=advice[0],
+                    english_query=english_query,
+                    english_reply=advice[1],
+                    status="template",
+                    cited=cited,
+                )
+            english_fallback = TEMPLATES.get("abstain", {}).get("en") or ""
         if mt_loading:
             return self._reply_from_analysis(
                 analysis,
                 amharic_reply=TEMPLATES["loading"]["am"],
                 english_query=english_query,
-                english_reply=span,
+                english_reply=english_fallback if not ask_amharic else span,
                 status="source_only",
                 cited=cited,
             )
@@ -578,12 +651,36 @@ class NLUEngine:
         notice = TEMPLATES["source_only"]["am"]
         return self._reply_from_analysis(
             analysis,
-            amharic_reply=notice,
+            amharic_reply=notice if ask_amharic else (amharic or notice)[:700],
             english_query=english_query,
-            english_reply=span,
+            english_reply=english_fallback if not ask_amharic else (span if not span_is_amharic else ""),
             status="source_only",
             cited=cited,
         )
+
+    def _english_reply_body(self, hit: Any, span: str, *, ask_amharic: bool) -> str:
+        """Prefer curated English evidence for English asks; never echo Amharic as English."""
+        span = (span or "").strip()
+        en_src = ((getattr(hit, "english_text", None) or "") if hit else "").strip()
+        if not ask_amharic:
+            if en_src:
+                shaped = shape_english_answer(en_src) or en_src
+                return shaped[:700]
+            if span and not _ETHIOPIC.search(span):
+                return (shape_english_answer(span) or span)[:700]
+            if span and getattr(self.translator, "can_translate_reply", False):
+                try:
+                    translated = self.translator.to_english(span)
+                    if translated and not _ETHIOPIC.search(translated):
+                        return translated[:700]
+                except Exception:
+                    pass
+            return ""
+        if span and not _ETHIOPIC.search(span):
+            return (shape_english_answer(span) or span)[:700]
+        if en_src:
+            return (shape_english_answer(en_src) or en_src)[:700]
+        return ""
 
     def _reply_template(
         self,
@@ -616,6 +713,10 @@ class NLUEngine:
         cited: dict,
         translation_backend: str | None = None,
     ) -> ReplyResponse:
+        # Hard guard: never put Ethiopic text in english_reply (UI shows it for EN asks).
+        if english_reply and _ETHIOPIC.search(english_reply):
+            advice = self._advice_for(analysis)
+            english_reply = (advice[1] if advice else "") or TEMPLATES.get("abstain", {}).get("en") or ""
         return ReplyResponse(
             amharic_reply=amharic_reply,
             english_query=english_query,

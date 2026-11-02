@@ -34,10 +34,14 @@ _GENERIC_TOPIC = {
 
 # Light synonym / stem families so distinctive tokens can match paraphrase evidence.
 _DISTINCTIVE_ALIASES: tuple[tuple[str, ...], ...] = (
-    ("ሲያመኝ", "ያመኛል", "ያመማል", "አመመ", "አመም", "ህመም", "ሕመም", "ቁርጠት", "pain", "cramp", "ache"),
-    ("ላድርግ", "ማድረግ", "ማስታገስ", "ያስታግሳል", "መድኃኒት", "መድሃኒት", "ibuprofen", "paracetamol"),
-    ("ተዛባ", "መዛባት", "ተዛቡ", "irregular"),
-    ("ክሪፕቲክ", "ስውር", "ሚስጥራዊ", "cryptic"),
+    ("ሲያመኝ", "ያመኛል", "ያመማል", "አመመ", "አመም", "ህመም", "ሕመም", "ቁርጠት", "pain", "cramp", "ache", "dysmenorrhea"),
+    ("ላድርግ", "ላደርግ", "ማድረግ", "ማስታገስ", "ያስታግሳል", "መድኃኒት", "መድሃኒት", "ibuprofen", "paracetamol", "NSAID"),
+    ("ተዛባ", "መዛባት", "ተዛቡ", "irregular", "oligomenorrhea", "amenorrhea"),
+    ("ክሪፕቲክ", "ስውር", "ሚስጥራዊ", "cryptic", "denied pregnancy"),
+    ("ኤች.አይ.ቪ", "ኤችአይቪ", "HIV", "ኤድስ", "ART", "antiretroviral"),
+    ("አይዩሲዲ", "አይዩዲ", "IUD", "IUCD", "ሉፕ", "intrauterine"),
+    ("ኢምፕላንት", "በትር", "implant", "jadelle"),
+    ("ፖስት ፒል", "አስቸኳይ", "emergency contraception", "morning after"),
 )
 
 # Soft domain anchors in the ask → answer must share the same domain (not just ሕመም/መድኃኒት).
@@ -51,9 +55,18 @@ _SOFT_TOPIC_CUES: tuple[tuple[str, ...], ...] = (
         "ዲስሜኖሬያ",
         "endometriosis",
         "ኢንዶሜትሪዮሲስ",
+        "መዛባት",
+        "ተዛባ",
+        "irregular period",
+        "irregular cycle",
     ),
-    ("ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "ኤድስ", "aids"),
-    ("እርግዝና", "pregnant", "pregnancy", "እርጉዝ"),
+    ("ኤች.አይ.ቪ", "ኤችአይቪ", "hiv", "ኤድስ", "aids", "art", "antiretroviral"),
+    ("እርግዝና", "pregnant", "pregnancy", "እርጉዝ", "ነፍሰ ጡር", "cryptic", "ክሪፕቲክ"),
+    ("አባላዘር", "sti", "std", "ጨብጥ", "ቂጥኝ", "chlamydia", "gonorrhea"),
+    ("ኮንዶም", "condom"),
+    ("ኢምፕላንት", "implant", "በትር"),
+    ("መርፌ", "injectable", "dmpa", "ዴፖ"),
+    ("አይዩ", "iud", "iucd", "ሉፕ"),
 )
 
 # Specific symptoms/conditions that must not hijack a vaguer ask in the same domain.
@@ -65,6 +78,9 @@ _UNSPECIFIED_DISTRACTORS: tuple[tuple[str, ...], ...] = (
     ("ኤችኤስቪ", "hsv", "herpes"),
     ("ፒአይዲ", "pid", "pelvic inflammatory", "ኢንዶሜትሪተስ", "endometritis"),
     ("ከማኅፀን ውጪ", "ectopic", "ሜቶትሪክሴት", "methotrexate"),
+    # Period-pain asks must not latch onto labour analgesia / BF injectable chunks.
+    ("ምጥ", "labour", "labor pain", "epidural", "በኢኮኖሚ በአደጉት"),
+    ("ጡት ማጥባት", "breastfeeding", "lactational", "ፕሮጄስቲን ብቻ ያለው መርፌ"),
 )
 _AM_SUFFIXES = ("ዎች", "ዎት", "ዋ", "ው", "ን", "ም")
 

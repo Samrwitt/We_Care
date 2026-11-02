@@ -103,19 +103,33 @@ def test_missing_guideline_uses_intent_advice_and_referral():
     out = eng.reply(AnalyzeRequest(text="የብልት ቁስለት ምንድን ነው?"))
     assert out.translation_status == "template"
     assert out.intent == "genital_ulcer"
-    assert "9394" in out.amharic_reply
-    assert "https://wecare.et/articles/135" in out.amharic_reply
-    assert "https://wecare.et/booking" in out.amharic_reply
+    assert "ቁስለት" in out.amharic_reply or "ቁስል" in out.amharic_reply
+    assert "http" not in out.amharic_reply.lower()
+    assert "wecare.et" not in out.amharic_reply.lower()
     english = eng.reply(AnalyzeRequest(text="What is a genital ulcer?"))
     assert english.intent == "genital_ulcer"
-    assert "9394" in english.english_reply
-    assert "https://wecare.et/articles/135" in english.english_reply
+    assert "ulcer" in english.english_reply.lower() or "sore" in english.english_reply.lower()
+    assert "http" not in english.english_reply.lower()
+    assert "wecare.et" not in english.english_reply.lower()
     discharge = eng.reply(AnalyzeRequest(text="I have unusual vaginal discharge"))
     assert discharge.intent == "vaginal_discharge"
-    assert "https://wecare.et/articles/420" in discharge.english_reply
+    assert "discharge" in discharge.english_reply.lower()
+    assert "http" not in discharge.english_reply.lower()
     hiv = eng.reply(AnalyzeRequest(text="ስለ ኤች.አይ.ቪ ማወቅ እፈልጋለሁ"))
     assert hiv.intent == "hiv"
-    assert "https://wecare.et/articles/410" in hiv.amharic_reply
+    assert "ኤች" in hiv.amharic_reply or "ኤች.አይ.ቪ" in hiv.amharic_reply
+    assert "http" not in hiv.amharic_reply.lower()
+    assert "wecare.et" not in hiv.amharic_reply.lower()
+    from we_care_nlu.translation.advice import intent_advice
+
+    miss_am, miss_en = intent_advice("general_medical_info")
+    assert miss_am == (
+        "ለዚህ ጥያቄ በመመሪያው መረጃ አላገኘሁም። ለበለጠ መረጃ 9394 ይደውሉ ወይም https://wecare.et/booking ላይ ቀጠሮ ይያዙ።"
+    )
+    assert "https://wecare.et/booking" in miss_en
+    assert "9394" in miss_en
+    assert "https://wecare.et/articles" not in miss_am
+    assert "https://wecare.et/articles" not in miss_en
 
 
 def test_reply_uses_english_span_without_neural_translation():
@@ -407,7 +421,9 @@ def test_amharic_ask_returns_article_span_without_mt():
     assert out.translation_status == "translated"
     assert out.translation_backend == "article"
     assert "አይ.ዩ.ዲ" in out.amharic_reply or "IUD" in out.amharic_reply
-    assert "wecare.et" in out.amharic_reply or out.source_url.startswith("https://wecare.et/")
+    assert "http" not in out.amharic_reply.lower()
+    assert "wecare.et" not in out.amharic_reply.lower()
+    assert out.source_url.startswith("https://wecare.et/")
     assert out.english_reply == ""
     assert out.evidence_id
 
@@ -436,5 +452,7 @@ def test_english_ask_translates_article_span():
     assert out.translation_status == "translated"
     assert out.translation_backend == "mt"
     assert "IUD" in out.english_reply
-    assert "wecare.et" in out.english_reply or out.source_url.startswith("https://wecare.et/")
+    assert "http" not in out.english_reply.lower()
+    assert "wecare.et" not in out.english_reply.lower()
+    assert out.source_url.startswith("https://wecare.et/")
     assert any("\u1200" <= ch <= "\u137F" for ch in out.amharic_reply)

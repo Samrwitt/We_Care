@@ -35,6 +35,23 @@ def _is_abbrev_period(text: str, period_index: int) -> bool:
     return False
 
 
+def _is_list_marker_period(text: str, period_index: int) -> bool:
+    """True for '1.' / '12.' list markers — not sentence boundaries."""
+    if period_index <= 0 or text[period_index] != ".":
+        return False
+    i = period_index - 1
+    if not text[i].isdigit():
+        return False
+    while i >= 0 and text[i].isdigit():
+        i -= 1
+    digit_start = i + 1
+    if period_index - digit_start > 2:
+        return False
+    if digit_start == 0:
+        return True
+    return text[digit_start - 1] in " \t\n([{\"'\u201c\u2018፦:;,-–—"
+
+
 def split_sentences(text: str) -> list[str]:
     text = clean_text(text)
     if not text:
@@ -45,7 +62,9 @@ def split_sentences(text: str) -> list[str]:
     start = 0
     for match in _SENT_END.finditer(text):
         punct_at = match.start(1)
-        if _is_abbrev_period(text, punct_at):
+        if text[punct_at] == "." and (
+            _is_abbrev_period(text, punct_at) or _is_list_marker_period(text, punct_at)
+        ):
             continue
         piece = text[start : match.end(2)].strip()
         if piece:

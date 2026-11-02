@@ -21,8 +21,13 @@ _BENIGN_EMERGENCY_PHRASES = (
     "የአስቸኳይ የእርግዝና መከላከያ",
     "የአስቸኳይ መከላከያ",
     "የአስቸኳይ ክኒን",
+    "የአደጋ ጊዜ መከላከያ",
+    "ፖስት ፒል",
+    "ፖስትፒል",
     "emergency contraception",
     "emergency contraceptive",
+    "morning after",
+    "morning-after",
 )
 
 

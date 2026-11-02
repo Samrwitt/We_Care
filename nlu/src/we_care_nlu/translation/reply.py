@@ -59,8 +59,8 @@ TEMPLATES: dict[str, dict[str, str]] = {
         "am": "ይህ ጥያቄ ስለ የትኛው የእርግዝና መከላከያ ዘዴ ነው?",
     },
     "abstain": {
-        "en": "I cannot find a matching statement in the guidelines.",
-        "am": "በመመሪያዎቹ ውስጥ የሚዛመድ መግለጫ አላገኘሁም።",
+        "en": "I could not find information for this question in the guidelines. For more information call 9394 or book at https://wecare.et/booking.",
+        "am": "ለዚህ ጥያቄ በመመሪያው መረጃ አላገኘሁም። ለበለጠ መረጃ 9394 ይደውሉ ወይም https://wecare.et/booking ላይ ቀጠሮ ይያዙ።",
     },
     "qa_fail": {
         "en": "A matching guideline statement was found, but the Amharic translation failed the safety check, so it is not shown.",
@@ -292,12 +292,30 @@ def citation(hit: RetrievalHit | None, *, query: str = "") -> dict[str, Any]:
 
 
 def with_article_cite(text: str, url: str, *, amharic: bool) -> str:
+    """Return the answer body only — no source URLs in user-facing replies."""
+    del url, amharic
+    return tidy_reply_span(text or "")
+
+
+_NUMBERED_LIST = re.compile(r"(?:^|[\s፦])\d{1,2}\.\s+\S")
+
+
+def drop_incomplete_list_items(text: str) -> str:
+    """Remove empty numbered slots (e.g. dangling '2.' / trailing '4.')."""
     body = (text or "").strip()
-    link = (url or "").strip()
-    if not link or link in body:
+    if not body:
         return body
-    cite = f"ተጨማሪ፦ {link}" if amharic else f"More: {link}"
-    return f"{body}\n{cite}" if body else cite
+    prev = None
+    while prev != body:
+        prev = body
+        body = re.sub(r"(?:(?<=\s)|^)\d{1,2}\.\s*(?=\d{1,2}\.)", "", body)
+        body = re.sub(r"\s*\d{1,2}\.\s*$", "", body)
+    return re.sub(r"\s{2,}", " ", body).strip()
+
+
+def tidy_reply_span(text: str) -> str:
+    """Keep user-facing spans complete: drop empty list markers and trim junk."""
+    return drop_incomplete_list_items(text)
 
 
 def focus_span_for_query(text: str, query: str) -> str:
@@ -305,12 +323,16 @@ def focus_span_for_query(text: str, query: str) -> str:
 
     General shaping (not topic-specific): if evidence opens with supporting contrast
     and buries the asked facet, bring grounded sentences forward.
+    Never reorder numbered lists — that scrambles item markers from content.
     """
     from we_care_nlu.retrieval.relevance import distinctive_overlap, distinctive_query_tokens
 
-    body = (text or "").strip()
+    body = tidy_reply_span(text or "")
     dist = distinctive_query_tokens(query or "")
     if not body or not dist:
+        return body
+    # Numbered steps must stay in source order or markers detach from their points.
+    if len(_NUMBERED_LIST.findall(body)) >= 2:
         return body
     sents = split_sentences(body)
     if len(sents) < 2:
@@ -331,4 +353,4 @@ def focus_span_for_query(text: str, query: str) -> str:
             "ከላይ ከተጠቀሰው የጤናማ የወር አበባ ዑደት",
             "ጤናማ ከሚባለው የወር አበባ ዑደት",
         ).replace("ከላይ ከተጠቀሰው", "ጤናማ ከሚባለው")
-    return " ".join(ordered).strip() or body
+    return tidy_reply_span(" ".join(ordered).strip() or body)

@@ -71,9 +71,8 @@
       font-weight: 600;
       color: var(--primary);
     }
-    .welcome p { margin: 0 0 14px; color: var(--primary); font-size: 15px; line-height: 1.55; }
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip, .send {
+    .welcome p { margin: 0; color: var(--primary); font-size: 15px; line-height: 1.55; }
+    .send {
       font-family: inherit;
       cursor: pointer;
       border: 1px solid var(--primary);
@@ -83,7 +82,6 @@
       padding: 8px 12px;
       font-size: 13px;
     }
-    .chip:hover { background: var(--primary); color: #fff; }
     .user {
       align-self: flex-end;
       max-width: 92%;
@@ -163,22 +161,13 @@
     </div>
   </div>
   <script>
-    const STARTERS = [
-      "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?",
-      "ኮንዶም ምንድን ነው?",
-      "ክኒን ከተረሳ ምን ላድርግ?",
-      "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
-      "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
-      "What are the contraceptive methods?",
-      "How long does an implant last?",
-    ];
     const CLARIFY = {
       which_method: "የትኛውን የእርግዝና መከላከያ ዘዴ ማለትዎ ነው?",
     };
     const TALK = {
-      greeting: "ሰላም፣ እንኳን ደህና መጡ። ስለ እርግዝና መከላከያ መጠየቅ ይችላሉ።",
+      greeting: "እንኳን ደህና መጡ",
       conversation_end: "ደህና ሁኑ። ሌላ ጥያቄ ካለዎት እዚህ ይመለሱ።",
-      out_of_domain: "አሁን የምሰጠው መረጃ ስለ የቤተሰብ ምጣኔ ነው። እባክዎ ስለ እርግዝና መከላከያ ይጠይቁ።",
+      out_of_domain: "አሁን የምሰጠው መረጃ ስለ የሥርዓተ-ተዋልዶ ጤና ነው። እባክዎ ስለ የሥርዓተ-ተዋልዶ ጤና ይጠይቁ።",
     };
     const log = document.getElementById("log");
     const q = document.getElementById("q");
@@ -208,18 +197,9 @@
     const welcome = add(`
       <div class="welcome">
         <h2>እንኳን ደህና መጡ</h2>
-        <p>ስለ እርግዝና መከላከያ በአማርኛ ወይም በእንግሊዝኛ መጠየቅ ይችላሉ። You can ask in Amharic or English. ከታች ካሉት ጥያቄዎች አንዱን ይንኩ ወይም የራስዎን ይጻፉ።</p>
-        <div class="chips" id="starters"></div>
+        <p>ስለ የሥርዓተ-ተዋልዶ ጤና በአማርኛ ወይም በእንግሊዝኛ መጠየቅ ይችላሉ። You can ask in Amharic or English.</p>
       </div>
     `);
-    STARTERS.forEach((t) => {
-      const b = document.createElement("button");
-      b.className = "chip";
-      b.type = "button";
-      b.textContent = t;
-      b.onclick = () => { q.value = t; send(); };
-      document.getElementById("starters").appendChild(b);
-    });
 
     function linkify(s) {
       return esc(s).replace(/https?:\/\/[^\s]+/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
@@ -229,28 +209,22 @@
       const lat = (String(text).match(/[A-Za-z]/g) || []).length;
       return lat > eth;
     }
+    function stripSources(s) {
+      // Keep the booking URL on no-match fallbacks; drop other source/article links.
+      return String(s || "")
+        .replace(/https?:\/\/(?!wecare\.et\/booking)\S+/gi, "")
+        .replace(/(?:ተጨማሪ(?:\s*መረጃ)?|More(?:\s*information)?)\s*[:፦]\s*/gi, "")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
     function renderTurn(data, userText) {
       const am = data.amharic_reply || "";
       const en = data.english_reply || "";
       const englishAsk = askedInEnglish(userText || "");
-      const reply = englishAsk ? (en || am) : (am || en);
-      let html = `<p class="am">${linkify(reply)}</p>`;
-      const title = (data.document_title || "").trim();
-      const looksLikeDate = /^(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ).*\d{4}$/i.test(title)
-        || /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)[^\n]{0,12}\d{4}\s*$/i.test(title)
-        || /^\d{4}$/.test(title)
-        || title.length < 28 && /\d{4}/.test(title) && /(መስከረም|ጥቅምት|ኅዳር|ህዳር|ታህሳስ|ጥር|የካቲት|መጋቢት|ሚያዝያ|ግንቦት|ሰኔ|ሐምሌ|ነሐሴ|ጳጉሜ)/i.test(title);
-      const norm = (s) => String(s || "").trim().toLowerCase().replace(/[\s?.!؟፡።]+$/g, "").replace(/\s+/g, " ");
-      const echoesAsk = norm(title) && norm(userText) && (
-        norm(title) === norm(userText)
-        || norm(userText).includes(norm(title))
-        || norm(title).includes(norm(userText))
-      );
-      if (title && !looksLikeDate && !echoesAsk) {
-        const page = data.page ? (englishAsk ? " · page " : " · ገጽ ") + data.page : "";
-        html += `<p class="cite">${esc(title)}${page}</p>`;
-      }
-      return html;
+      const reply = stripSources(englishAsk ? (en || am) : (am || en));
+      // Answer text only — no document titles/pages; booking link allowed on abstain.
+      return `<p class="am">${linkify(reply).replace(/\n/g, "<br>")}</p>`;
     }
     function replyText(data) {
       const emergency = (data.safety || {}).emergency || {};
@@ -288,14 +262,28 @@
       const method = ents.find((e) => e.type === "contraceptive_method");
       // Medical topic (Layer B) is independent of conversational intent (Layer A).
       const topic = data.topic || (data.topics && data.topics[0]) || null;
+      const topicKey = String(topic || "").toLowerCase();
+      // Menses / non-method clinical topics must not keep a leftover Depo/BF slot
+      // (that caused "ሲያመኝ ምን ላድርግ?" to answer breastfeeding injectable).
+      const clearMethodTopics = new Set([
+        "menstruation", "irregular_menses", "endometriosis", "menopause",
+        "cryptic_pregnancy", "vaginal_discharge", "genital_ulcer", "uti",
+        "cervical_cancer", "breast_cancer", "mental_health",
+      ]);
+      const clearMethod = clearMethodTopics.has(topicKey);
+      let kept = ents.map((e) => ({ type: e.type, value: e.value, surface: e.surface }));
+      if (clearMethod) {
+        kept = kept.filter((e) => e.type !== "contraceptive_method" && e.type !== "breastfeeding_status");
+      }
       return {
         turn_index: (context && context.turn_index || 0) + 1,
         last_intents: [data.intent].concat(data.intent_labels || []).slice(0, 6),
-        last_entities: ents.map((e) => ({ type: e.type, value: e.value, surface: e.surface })),
+        last_entities: kept,
         last_topic: topic || null,
-        last_method: (method && method.value) || null,
+        last_method: clearMethod ? null : ((method && method.value) || null),
       };
     }
+    const BRAND_TAG = "የሥርዓተ-ተዋልዶ ጤና መረጃ · Reproductive health information";
     function setStatus(msg) {
       if (statusTag) statusTag.textContent = msg;
     }
@@ -323,9 +311,7 @@
             }
             engineReady = true;
             go.disabled = false;
-            setStatus(
-              `ዝግጁ · ${h.embedder || "embedder"} · ${h.chunks || 0} chunks · Reproductive health information`
-            );
+            setStatus(BRAND_TAG);
             return;
           }
           if (h.status === "error") {

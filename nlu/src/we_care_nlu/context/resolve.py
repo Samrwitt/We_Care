@@ -44,6 +44,67 @@ CARRY_INTENTS = {
     "dosage",
 }
 
+# Clinical asks that stand on their own — do NOT attach a prior FP method / BF status.
+# Example bug: after injectable+breastfeeding, "ሲያመኝ ምን ላድርግ?" must not answer Depo+BF.
+_METHOD_INDEPENDENT_CUES = (
+    "ሲያመኝ",
+    "ያመኛል",
+    "መዛባት",
+    "ተዛባ",
+    "ወር አበባ",
+    "የወር አበባ",
+    "ቁርጠት",
+    "period pain",
+    "irregular period",
+    "irregular cycle",
+    "dysmenorrhea",
+    "menstrual",
+    "cryptic",
+    "ክሪፕቲክ",
+    "ስውር እርግዝና",
+    "ቁስለት",
+    "ፈሳሽ",
+    "ሽንት ማቃጠል",
+    "endometriosis",
+    "ኢንዶሜትሪዮሲስ",
+    "pcos",
+    "ፒሲኦኤስ",
+)
+_METHOD_SURFACES = (
+    "መርፌ",
+    "ክኒን",
+    "ኪኒን",
+    "ኢምፕላንት",
+    "በትር",
+    "ኮንዶም",
+    "አይዩ",
+    "አይ.ዩ",
+    "ሉፕ",
+    "ፖስት",
+    "pill",
+    "implant",
+    "injectable",
+    "depo",
+    "dmpa",
+    "condom",
+    "iud",
+    "iucd",
+    "jadelle",
+)
+
+
+def _mentions_fp_method(text: str) -> bool:
+    low = (text or "").casefold()
+    return any(surface.casefold() in low for surface in _METHOD_SURFACES)
+
+
+def _method_independent_clinical(text: str) -> bool:
+    """True when the ask is about a clinical symptom/condition, not a prior FP method."""
+    blob = text or ""
+    if not any(cue in blob for cue in _METHOD_INDEPENDENT_CUES):
+        return False
+    return not _mentions_fp_method(blob)
+
 
 def looks_like_followup(text: str) -> bool:
     pre = preprocess(text)
@@ -122,6 +183,24 @@ def resolve_context(
         prior_intent = str(context.last_intents[0] or "")
     elif context.last_topic:
         prior_intent = str(context.last_topic)
+
+    # Period-pain / menses / similar clinical asks: never glue on a leftover Depo/BF/HIV-FP slot.
+    if _method_independent_clinical(text):
+        info["dropped_prior_method_context"] = True
+        if context.last_topic and (
+            looks_like_followup(text)
+            or intent in CARRY_INTENTS
+            or len([t for t in (text or "").split() if t]) <= 8
+        ):
+            info["resolved_from_previous_turn"] = True
+            info["inherited_topic"] = context.last_topic
+            info["reason"] = (
+                "Clinical domain cues present; kept prior topic but did not attach "
+                "prior contraceptive method or breastfeeding status."
+            )
+        else:
+            info["reason"] = "Clinical domain cues present; ignored prior FP method context."
+        return entities, info
 
     # Carry condition/BF status into a method-only follow-up (e.g. HIV ask → "መርፌ").
     if prior_conditions and not has_condition:

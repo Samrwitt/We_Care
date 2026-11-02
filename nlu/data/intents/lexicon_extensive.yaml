@@ -1,0 +1,926 @@
+version: 2.1.0-extensive
+notes:
+- Overlay merged by IntentClassifier.load_lexicon — additive paraphrases only.
+intents:
+  greeting:
+    patterns:
+    - ሰላም ነው
+    - ታዲያስ ነሽ
+    - እንደምን አደርሽ
+    - እንደምን ዋልሽ
+    - ደህና ነሽ
+    - ደህና ናችሁ
+    - ጤና ይስጥልን
+    - እንኳን ደህና መጣህ
+    - እንኳን ደህና መጣሽ
+    - ሰላም ልበል
+    - hey
+    - good afternoon
+    - good evening
+    - ሰላም ነሽ
+    - ሃይ ሰላም
+    - welcome
+  conversation_end:
+    patterns:
+    - በቃልኝ
+    - በቃ
+    - ይብቃኝ
+    - አሁን በቃ
+    - እሺ አመሰግናለሁ
+    - ደህና ሁኚ
+    - ደህና ሁኑ
+    - ቻዎ
+    - ቻው ቻው
+    - መልካም ቀን
+    - see you
+    - that is all
+    - that's all
+    - i am done
+    - በቃልኝ እናመሰግናለን
+    - እሺ በቃ
+    - done thanks
+  clarification:
+    patterns:
+    - አልገባኝም ድገምልኝ
+    - እንደገና ንገረኝልኝ
+    - በቀላሉ ንገረኝ
+    - በአጭሩ ንገረኝ
+    - ማለትህ ምንድን ነው
+    - ምን ማለትህ ነው?
+    - አብራራልኝ
+    - በዝርዝር አብራራ
+    - can you explain
+    - say that again
+    - i don't understand
+    - ድገምልኝ
+    - በቀላል ቋንቋ
+    - in simple words
+    - more clearly
+  correction:
+    patterns:
+    - አይ ያ አይደለም
+    - የፈለግኩት ያ አይደለም
+    - ስህተት ነበር
+    - አስተካክለህ ንገረኝ
+    - ማለቴ ሌላ ነው
+    - not that
+    - i meant something else
+    - wrong answer
+    - አይ ክኒን ነው
+    - መርፌ ማለቴ ነው
+    - ኢምፕላንት ማለቴ
+  acknowledgement:
+    patterns:
+    - እሺ ገባኝ
+    - ጥሩ ነው
+    - አዎ ገባኝ
+    - በጣም ጥሩ
+    - እሺ እሺ
+    - ደግ ነው
+    - sure
+    - got it
+    - makes sense
+    - እሺ አመሰግናለሁ
+    - ገባኝ እናመሰግናለን
+  definition:
+    patterns:
+    - ምንድር ነው
+    - ምንድረ ነው
+    - ምንድን ነው?
+    - ማለት ምንድን ነው
+    - ምን ማለት ነው?
+    - እንዴት ይገለጻል
+    - ትርጓሜው ምንድን ነው
+    - ምንድን ማለት ነው
+    - ይባላል እንዴ
+    - what does it mean
+    - what does mean
+    - explain what
+    - ምንድን ናቸው?
+    - ማለቱ ምንድን ነው
+    - እንዴት ይገለጻል?
+    - ይባላል?
+    - ምን አይነት ነው
+    - ምን ዓይነት ነው
+    - describe
+    - definition of
+  symptoms:
+    patterns:
+    - ምን ምልክቶች አሉት
+    - ምልክቶቹ ምንድን ናቸው
+    - እንዴት ይታወቃል
+    - እንዴት አውቃለሁ
+    - ምን ይሰማል
+    - ምን ምልክት ያሳያል
+    - ምልክቱ ምንድን ነው
+    - what are the signs
+    - how do i know if
+    - warning signs
+    - ምልክት አለው?
+    - ምን ምልክት ይታያል
+    - እንዴት እረዳለሁ
+    - ምን ይሰማኛል
+    - signs and symptoms
+    - clinical features
+    - presenting symptoms
+  causes:
+    patterns:
+    - ለምን ይሆናል
+    - ምክንያቱ ምንድን ነው?
+    - ምን ያመጣዋል
+    - ከምን የተነሳ
+    - ምን ምክንያት አለው
+    - why does this happen
+    - what is the cause
+    - root cause
+    - ለምን የወር አበባ ይዛባል
+    - ለምን ህመም ያመጣል
+    - why is my period irregular
+    - why do i have cramps
+  risk_factors:
+    patterns:
+    - ማን ይጋለጣል
+    - አደጋውን የሚጨምር
+    - ተጋላጭ የሚያደርግ
+    - who is at risk
+    - risk factor
+    - increases risk
+    - አደጋ የሚጨምሩ ነገሮች
+    - ' predisposing factors'
+    - who gets it
+  prevention:
+    patterns:
+    - እንዴት እከላከላለሁ
+    - ለመከላከል ምን ማድረግ
+    - መከላከያ መንገዶች
+    - እንዳይመጣ
+    - how can i prevent
+    - how to prevent
+    - prevention methods
+    - protect myself
+    - እንዴት እከላከላለሁ ከኤች.አይ.ቪ
+    - ኮንዶም እንዴት ይከላከላል
+    - safer sex
+    - dual protection
+  screening:
+    patterns:
+    - መቼ ልመረመር
+    - ምርመራ መቼ ነው
+    - ስክሪን ማድረግ
+    - ቅድመ ምርመራ መቼ
+    - should i get tested
+    - when to get tested
+    - screening test
+    - lab test when
+    - ኤች.አይ.ቪ ምርመራ መቼ
+    - የእርግዝና ምርመራ መቼ
+    - ፓፕ ስሚር መቼ
+    - HIV test when
+    - pregnancy test when
+  diagnosis_info:
+    patterns:
+    - እንዴት ይረጋገጣል
+    - እንዴት ይመረመራል?
+    - ምርመራው ምንድን ነው?
+    - ውጤቱ ምን ማለት ነው
+    - how is it diagnosed
+    - how do they test
+    - diagnostic test
+    - ውጤቴ አዎንታዊ ከሆነ
+    - negative result means
+    - positive test means
+  treatment:
+    patterns:
+    - ምን ላድርግ?
+    - ምን ላደርግ?
+    - ምን ማድረግ አለብኝ
+    - መፍትሄው ምንድን ነው
+    - እንዴት ይታከማል?
+    - ሕክምናው ምንድን ነው?
+    - ህክምናው ምንድን ነው
+    - ማከም ይቻላል?
+    - ምን ይደረግ
+    - እንዴት ነው የሚታከመው
+    - what can i do
+    - how is it treated
+    - how do i treat
+    - cure for
+    - remedy for
+    - ምን ላድርግ አሁን
+    - እንዴት ነው የሚታከመው?
+    - መድኃኒት አለው?
+    - ሕክምና አለ?
+    - ህክምና አለ?
+    - ምን ይመከራል
+    - management of
+    - how to manage
+    - first aid for
+  medication:
+    patterns:
+    - የትኛው መድሃኒት
+    - መድኃኒቱ ምንድን ነው
+    - ክኒኑ ምንድን ነው
+    - which medicine
+    - which medication
+    - what drug
+    - ኤ.አር.ቲ መድኃኒት
+    - አንቲሬትሮቫይራል
+    - ART drugs
+    - antiretroviral medicines
+  dosage:
+    patterns:
+    - መጠኑ ስንት ነው
+    - ስንት መውሰድ አለብኝ
+    - dosage amount
+    - how many pills
+    - mg dose
+    - በቀን ስንት ክኒን
+    - አንድ ጊዜ በቀን
+    - twice daily
+    - once a day
+  administration:
+    patterns:
+    - እንዴት ነው የሚወሰደው
+    - እንዴት ልጠቀምበት
+    - መቼ መውሰድ አለብኝ
+    - how should i take
+    - how do i use it
+    - ከምግብ በፊት
+    - ከምግብ በኋላ
+    - under the skin
+    - in the uterus
+    - intramuscular
+  missed_dose:
+    patterns:
+    - ክኒን ረሳሁ
+    - ክኒኔን ረሳሁ
+    - መውሰድ ረሳሁት
+    - አንድ ቀን አለፈኝ
+    - ሁለት ክኒን ረሳሁ
+    - ከረሳሁ ምን ላድርግ
+    - ከረሳሁስ
+    - ረስቻለሁ
+    - forgot my pill
+    - i forgot my pill
+    - missed my pill
+    - skipped a pill
+    - አንድ ክኒን ረሳሁ
+    - ሁለት ቀን ረሳሁ
+    - ሦስት ክኒን ረሳሁ
+    - መርፌዬን ረሳሁ
+    - ቀጠሮዬን አመለጥኩ
+    - late for injection
+    - late injectable
+    - forgot injection
+  side_effects:
+    patterns:
+    - የጎንዮሽ ጉዳቶች ምንድን ናቸው
+    - ጎንዮሽ ጉዳቱ ምንድን ነው
+    - አሉታዊ ተጽእኖ
+    - ምን ችግር ያመጣል
+    - side effects of
+    - what are the side effects
+    - adverse effects
+    - ደም መፍሰስ ያመጣል?
+    - ክብደት ይጨምራል?
+    - ራስ ምታት ያመጣል?
+    - does it cause
+    - common side effects
+  contraindications:
+    patterns:
+    - ማን መጠቀም የለበትም
+    - ለማን አይመከርም?
+    - መውሰድ የማይገባ
+    - who should not use
+    - who cannot take
+    - መቼ አልጠቀም
+    - በምን ሁኔታ አይመከርም
+    - absolute contraindication
+    - MEC category 4
+  eligibility:
+    patterns:
+    - ጡት እያጠባሁ መርፌ
+    - ጡት እያጠባሁ ክኒን
+    - ጡት እያጠባሁ ኢምፕላንት
+    - እያጠባሁ መርፌ
+    - እያጠባሁ መጠቀም
+    - መጠቀም እችላለሁ?
+    - ለእኔ ይስማማል?
+    - ብቁ ነኝ?
+    - ካለብኝ መጠቀም እችላለሁ
+    - can i take
+    - is it ok if i
+    - am i eligible
+    - safe for me
+    - ጡት እያጠባሁ መጠቀም እችላለሁ
+    - እርጉዝ ሆኜ መጠቀም እችላለሁ
+    - ኤች.አይ.ቪ ካለብኝ መጠቀም እችላለሁ
+    - hypertension ካለብኝ
+    - can i use while
+    - is it allowed
+  interactions:
+    patterns:
+    - አብሮ መውሰድ ይቻላል?
+    - ከሌላ መድኃኒት ጋር
+    - drug interactions
+    - can i take together
+  how_it_works:
+    patterns:
+    - እንዴት ነው የሚሰራው
+    - እንዴት ነው የሚሠራው
+    - በምን መንገድ ይከላከላል
+    - how it works
+    - mechanism
+    - እንዴት እርግዝናን ይከላከላል
+    - እንቁላልን እንዴት ያቆማል
+    - stops ovulation
+    - thickens mucus
+  effectiveness:
+    patterns:
+    - ምን ያህል ይከላከላል?
+    - ውጤታማነቱ ምን ያህል ነው
+    - የስኬት መጠን ስንት
+    - how well does it work
+    - failure rate
+    - በመቶ ስንት ውጤታማ
+    - ምን ያህል አስተማማኝ
+    - perfect use
+    - typical use
+  duration:
+    patterns:
+    - ለምን ያህል ጊዜ ይቆያል
+    - ስንት አመት ይቆያል?
+    - ስንት ወር ይቆያል
+    - እስከ መቼ ይሰራል
+    - how long does it last
+    - how many years
+    - how many months
+    - ለስንት ጊዜ
+    - ስንት ቀን
+    - ስንት ሳምንት
+    - ስንት ወር
+    - validity period
+    - expires after
+  frequency:
+    patterns:
+    - በየስንት ጊዜ
+    - በስንት ጊዜ አንዴ
+    - ስንት ጊዜ በቀን
+    - how often do i
+    - how many times
+  method_comparison:
+    patterns:
+    - የትኛው ይሻላል?
+    - ልዩነቱ ምንድን ነው
+    - ከሁለቱ የትኛው
+    - which is better
+    - compare methods
+    - 'vs '
+    - ክኒን እና መርፌ ልዩነት
+    - ኢምፕላንት ወይስ አይዩዲ
+    - pill vs injection
+    - implant vs iud
+  family_planning_methods:
+    patterns:
+    - ምን ዓይነት ዘዴዎች አሉ
+    - ምን ዘዴዎች አሉ
+    - የቤተሰብ ምጣኔ ምን አማራጮች
+    - እርግዝናን ለመከላከል ምን አለ
+    - ዘዴዎቹ ምንድን ናቸው
+    - list of contraceptives
+    - types of birth control
+    - what fp methods
+    - የዘመናዊ ዘዴዎች
+    - ዘመናዊ መከላከያዎች
+    - ተፈጥሯዊ ዘዴዎች
+    - modern methods
+    - natural methods
+    - long acting
+    - short acting
+    - LARC
+  access:
+    patterns:
+    - የት እገኛለሁ?
+    - የት ይገኛል?
+    - የት ልሂድ?
+    - ማንን ላነጋግር?
+    - ክሊኒክ የት
+    - where do i get
+    - where can i find
+    - nearest clinic
+    - health post
+    - የት ይሰጣል
+    - በጤና ጣቢያ አለ?
+    - በሆስፒታል አለ?
+    - ከፋርማሲ እገኛለሁ?
+    - pharmacy
+    - woreda health office
+    - health extension
+  referral:
+    patterns:
+    - ወደ የት ልሄድ
+    - ስፔሻሊስት ልሄድ
+    - ሐኪም ማማከር
+    - need a referral
+    - see a specialist
+    - ወደ ሆስፒታል ልሂድ?
+    - አስቸኳይ ክትትል
+    - go to ER
+    - emergency department
+  cost:
+    patterns:
+    - ዋጋው ስንት ነው
+    - ስንት ብር ነው
+    - በነፃ ነው?
+    - how much is it
+    - is it free
+    - cost of
+    - ክፍያው ስንት
+    - በኢንሹራንስ ይሸፈናል?
+    - CBHI
+    - community based health insurance
+  follow_up:
+    patterns:
+    - እና ከዚያስ
+    - ስለዚያስ
+    - የቀድሞውስ
+    - what about that
+    - and after that
+    - ቀጥሎስ
+    - እና ከዚያ ምን
+    - next steps
+    - follow up care
+  general_medical_info:
+    patterns:
+    - መረጃ ስጠኝ ስለ
+    - ስለዚህ ንገረኝ
+    - በአጭሩ ንገረኝ
+    - overview please
+    - tell me more about
+    - አስረዳኝ ስለ
+    - በዝርዝር ስለ
+    - background on
+    - basic info
+topics:
+  family_planning:
+    patterns:
+    - ቤተሰብ ምጣኔ
+    - የወሊድ መከላከያ
+    - ወሊድ መቆጣጠሪያ
+    - ልጅ አለመውለድ
+    - የወሊድ ክልከላ
+    - fp
+    - birth-control
+    - contraceptives
+    - የቤተሰብ ምጣኔ አገልግሎት
+    - FP clinic
+    - SRH
+    - የመራቢያ ጤና
+  contraceptive_implant:
+    patterns:
+    - ኢምፕላንቱ
+    - በትር መከላከያ
+    - በትሩ
+    - የእጅ መከላከያ
+    - implanon
+    - levoplant
+    - የእጅ በትር
+    - በቆዳ ስር
+    - subdermal implant
+  contraceptive_injection:
+    patterns:
+    - መርፌው
+    - የመርፌ መከላከያ
+    - በመርፌ
+    - ሳይንቶፊት
+    - sayana
+    - depo
+    - injectable
+    - የሦስት ወር መርፌ
+    - የሁለት ወር መርፌ
+    - 3-month injection
+    - 2-month injection
+  contraceptive_pill:
+    patterns:
+    - ክኒኑ
+    - ኪኒን
+    - የወሊድ መከላከያ ክኒን
+    - combined pill
+    - progestin only pill
+    - minipill
+    - mini pill
+    - የዕለት ክኒን
+    - የወር ክኒን
+    - daily pill
+    - combined oral
+    - POP
+  iud:
+    patterns:
+    - አይ.ዩ.ዲ
+    - አይ.ዩ.ሲ.ዲ
+    - ሉፕ መከላከያ
+    - መዳብ አይዩዲ
+    - copper iud
+    - hormonal iud
+    - mirena
+    - በማሕፀን ውስጥ
+    - በማህፀን ውስጥ የሚገባ
+    - መዳብ ሉፕ
+    - ሆርሞን ሉፕ
+    - copper T
+    - LNG-IUD
+  condom:
+    patterns:
+    - የወንድ ኮንዶም
+    - የሴት ኮንዶም
+    - female condom
+    - male condom
+    - rubber
+    - መከላከያ ኮንዶም
+    - dual protection condom
+  emergency_contraception:
+    patterns:
+    - አስቸኳይ መከላከያ
+    - አስቸኳይ ክኒን
+    - ፖስት ፒል
+    - ፖስትፒል
+    - post pill
+    - postpill
+    - morning-after
+    - የአደጋ ጊዜ ክኒን
+    - የአስቸኳይ ጊዜ ክኒን
+    - በ72 ሰዓት
+    - within 72 hours
+    - within 5 days
+    - ulipristal
+    - levonorgestrel EC
+  sterilization:
+    patterns:
+    - ቋሚ መከላከያ
+    - ቱቦ መዝጋት
+    - vasectomy
+    - tubal ligation
+    - permanent method
+  pregnancy:
+    patterns:
+    - እርግዝናዬ
+    - እርጉዝ ነኝ
+    - ነፍሰጡር
+    - የእርግዝና ምልክት
+    - pregnancy test
+    - urine test pregnancy
+    - ያልታሰበ እርግዝና
+    - unintended pregnancy
+    - wanted pregnancy
+  antenatal_care:
+    patterns:
+    - የእርግዝና ክትትል
+    - ቅድመወሊድ
+    - anc visit
+    - prenatal checkup
+    - 4 የእርግዝና ክትትል
+    - focused ANC
+    - ANC contact
+  postpartum:
+    patterns:
+    - ከወለድኩ በኋላ
+    - ድህረወሊድ
+    - ከወሊድ በኋላ ክትትል
+    - after delivery
+    - after birth
+    - ከወሊድ በኋላ የቤተሰብ ምጣኔ
+    - postpartum family planning
+    - PPFP
+  breastfeeding:
+    patterns:
+    - ጡት እያጠባሁ ነው
+    - ጡት በማጥባት
+    - ማጥባት
+    - የጡት ወተት
+    - exclusive breastfeeding
+    - lactating
+    - ብቻ ጡት ማጥባት
+    - EBF
+    - mixed feeding
+  menstruation:
+    patterns:
+    - የወር አበባዬ
+    - ወራበባ
+    - ጊዜዬ
+    - ሜንስ
+    - menses
+    - period cramps
+    - cramps
+    - ህመም ወር አበባ
+    - የወር አበባ ሕመም
+    - ቁርጠት ወር አበባ
+    - heavy period
+    - ከባድ የወር አበባ
+    - የወር አበባ ዑደት
+    - cycle length
+    - menstrual cycle
+    - spotting
+  irregular_menses:
+    patterns:
+    - የወር አበባ መዛባት
+    - የወር አበባ ተዛባ
+    - ዑደት መዛባት
+    - ተዛባ የወር አበባ
+    - መደበኛ ያልሆነ የወር አበባ
+    - irregular period
+    - irregular cycle
+    - irregular menses
+    - oligomenorrhea
+    - amenorrhea
+    - ያልተጠበቀ ደም መፍሰስ
+    - በመካከል መድማት
+    - የወር አበባ አልመጣም
+    - ዘግይቶ መጣ
+    - በየጊዜው ይቀያየራል
+    - missed period
+    - late period
+  cryptic_pregnancy:
+    patterns:
+    - ክሪፕቲክ እርግዝና
+    - ስውር እርግዝና
+    - ሚስጥራዊ እርግዝና
+    - ያልታወቀ እርግዝና
+    - cryptic pregnancy
+    - denied pregnancy
+    - without knowing pregnant
+    - እርጉዝ መሆኔን አላውቅም
+    - no period but not pregnant feeling
+  menopause:
+    patterns:
+    - ማረጡ
+    - የማረጥ ምልክት
+    - hot flush
+    - hot flash
+  fertility:
+    patterns:
+    - መካንነት
+    - ለማርገዝ አልቻልኩም
+    - የመውለድ ችግር
+    - trying to conceive
+    - ttc
+    - infertile
+    - ኦቭዩሌሽን
+    - ovulation
+    - sperm count
+  endometriosis:
+    patterns:
+    - ኢንዶሜትሪዮሲስ
+    - ኢንዶሜትሪዎሲስ
+    - endometriosis
+    - ከባድ የወር አበባ ህመም
+    - painful periods endometriosis
+  pcos:
+    patterns:
+    - ፒሲኦኤስ
+    - ፖሊሲስቲክ
+    - pcos
+    - polycystic ovary
+    - polycystic ovarian
+    - እንቁላል ቤት ሲስት
+    - ovarian cysts
+    - hirsutism
+  ectopic_pregnancy:
+    patterns:
+    - ከማህፀን ውጭ እርግዝና
+    - ከማሕፀን ውጪ እርግዝና
+    - ectopic pregnancy
+    - tubal pregnancy
+    - ከባድ ሆድ ሕመም እርግዝና
+    - shoulder tip pain
+  hiv:
+    patterns:
+    - ኤች አይ ቪ
+    - ኤድስ በሽታ
+    - ኤ.አር.ቲ
+    - አርት
+    - ኤችአይቪ ሕክምና
+    - living with hiv
+    - plhiv
+    - ቫይረስ ጭነት
+    - ሲዲ4
+    - viral load
+    - CD4
+    - undetectable
+  sti:
+    patterns:
+    - በግብረ ሥጋ ግንኙነት የሚተላለፍ
+    - በወሲብ የሚተላለፍ
+    - አባላዘር በሽታ
+    - stds
+    - sexually transmitted
+    - ጨብጥ
+    - ቂጥኝ
+    - ክላሚዲያ
+    - trichomonas
+    - ትሪኮሞናስ
+  genital_ulcer:
+    patterns:
+    - የብልት ቁስል
+    - ብልት ላይ ቁስለት
+    - ሄርፕስ
+    - genital herpes
+    - ቁስለት ብልት ላይ
+    - painful sore genital
+  vaginal_discharge:
+    patterns:
+    - ያልተለመደ ፈሳሽ
+    - የብልት ፈሳሽ
+    - ዓሳ ሽታ
+    - yeast
+    - candida
+    - bv
+    - bacterial vaginosis
+    - ነጭ ፈሳሽ
+    - ቢጫ ፈሳሽ
+    - white discharge
+    - fishy smell
+  uti:
+    patterns:
+    - ሽንት ማቃጠል
+    - በሽንት ጊዜ ሕመም
+    - urinary infection
+    - burning urine
+    - ተደጋጋሚ ሽንት
+    - frequent urination
+    - dysuria
+  cervical_cancer:
+    patterns:
+    - የማኅፀን ጫፍ ካንሰር
+    - ፓፕ ስሚር
+    - via
+    - hpv vaccine
+    - cervical screening
+    - HPV
+    - ኤችፒቪ
+    - VIA positive
+  breast_cancer:
+    patterns:
+    - የጡት እጢ
+    - ጡት ላይ እብጠት
+    - breast lump
+  abortion_care:
+    patterns:
+    - ውርጃ ክብካቤ
+    - ደህንነቱ የተጠበቀ ውርጃ
+    - ያልተሟላ ውርጃ
+    - miscarriage care
+    - post abortion
+    - incomplete abortion
+    - safe abortion care
+  maternal_health:
+    patterns:
+    - የእናቶች ሞት
+    - የእናት ጤና
+    - safe motherhood
+  newborn_health:
+    patterns:
+    - አራስ ሕፃን
+    - የአራስ እንክብካቤ
+    - neonatal care
+    - newborn
+  adolescent_health:
+    patterns:
+    - የወጣት ጤና
+    - ታዳጊ
+    - adolescent srhr
+    - youth friendly
+  gender_based_violence:
+    patterns:
+    - የፆታ በደል
+    - የጾታ በደል
+    - አስገድዶ መድፈር
+    - rape
+    - gbv care
+    - intimate partner violence
+    - የቤት ውስጥ ጥቃት
+    - domestic violence
+  mental_health:
+    patterns:
+    - ድብርት
+    - ጭንቀት
+    - ስሜት መዛባት
+    - postpartum depression
+    - anxiety
+    - ከወሊድ በኋላ ድብርት
+    - baby blues
+  health_facility:
+    patterns:
+    - ጤና ጣቢያ
+    - ጤና ኬላ
+    - ሆስፒታል
+    - ክሊኒክ
+    - health post
+    - health centre
+    - health center
+    - የጤና ኤክስቴንሽን
+    - HEW
+    - health extension worker
+  sexual_health:
+    patterns:
+    - የወሲብ ጤና
+    - የግብረ ሥጋ ጤና
+    - sexual health
+    - safe sex
+    - ደህንነቱ የተጠበቀ ወሲብ
+    - consent
+  male_involvement:
+    patterns:
+    - የወንድ ተሳትፎ
+    - ባለቤቴ
+    - partner involvement
+    - male engagement
+modifiers:
+  follow_up:
+    patterns:
+    - እናስ
+    - ከዚያስ
+    - ይኸስ
+    - ያስ
+    - what about it
+  urgency:
+    patterns:
+    - አሁን
+    - በፍጥነት
+    - አስቸኳይ
+    - right now
+    - urgent
+  negation:
+    patterns:
+    - አይደለም
+    - የለም
+    - አልፈልግም
+  uncertainty:
+    patterns:
+    - እርግጠኛ አይደለሁም
+    - አላውቅም
+    - maybe
+    - not sure
+safety_triggers:
+  emergency_bleeding:
+    patterns:
+    - ከባድ መድማት
+    - ደም አያቆምም
+    - soaking pads
+    - heavy bleeding won't stop
+  emergency_breathing:
+    patterns:
+    - መተንፈስ አልችልም
+    - እስትንፋስ ማጠር
+    - cannot breathe
+    - short of breath
+  emergency_pain:
+    patterns:
+    - ከባድ ሆድ ሕመም
+    - ድንገተኛ ከባድ ሕመም
+    - severe abdominal pain
+    - sudden severe pain
+  emergency_pregnancy:
+    patterns:
+    - እርጉዝ ነኝና ደም እየፈሰሰ
+    - vaginal bleeding pregnancy
+    - fainting pregnant
+priority:
+- greeting
+- conversation_end
+- clarification
+- correction
+- acknowledgement
+- definition
+- symptoms
+- causes
+- risk_factors
+- prevention
+- screening
+- diagnosis_info
+- treatment
+- medication
+- dosage
+- administration
+- missed_dose
+- side_effects
+- contraindications
+- eligibility
+- interactions
+- how_it_works
+- effectiveness
+- duration
+- frequency
+- method_comparison
+- family_planning_methods
+- access
+- referral
+- cost
+- follow_up
+- general_medical_info
+- irregular_menses
+- cryptic_pregnancy
+- endometriosis
+- pcos
+- ectopic_pregnancy
+- sexual_health
+- male_involvement

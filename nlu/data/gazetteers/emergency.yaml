@@ -1,7 +1,11 @@
 # Rule-based emergency cues. These fire even if classifiers disagree.
+# Avoid bare "አስቸኳይ" / "emergency" — they collide with emergency contraception.
 amharic:
-  - አስቸኳይ
+  - አስቸኳይ እርዳታ
+  - አስቸኳይ ሕክምና
+  - አስቸኳይ ህክምና
   - ከባድ መድማት
+  - ከባድ ደም መፍሰስ
   - መተንፈስ አልችልም
   - ንቃተ ህሊና የለኝም
   - ደረት ሕመም
@@ -9,7 +13,8 @@ amharic:
   - ራስን መሳት
   - ራስን የማጥፋት
 english:
-  - emergency
+  - need emergency help
+  - medical emergency
   - heavy bleeding
   - cannot breathe
   - can't breathe
@@ -18,4 +23,5 @@ english:
   - seizure
   - suicide
   - overdosed
+  - kill myself
 action: "This engine does not give first-aid instructions. Flag for Component 3 to route to emergency guidance and advise seeking in-person care."

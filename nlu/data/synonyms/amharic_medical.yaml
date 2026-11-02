@@ -5,58 +5,211 @@ groups:
     - የእርግዝና መከላከያ ዘዴዎች
     - የእርግዝና መከላከያ
     - የቤተሰብ ምጣኔ
+    - የቤተሰብ ምጣኔ ዘዴዎች
+    - የወሊድ መከላከያ
+    - ወሊድ መቆጣጠሪያ
     - እርግዝናን ለመከላከል
     - አማራጮች
     - ዘዴዎች
     - ልጅ ላለመውለድ
+    - ዘመናዊ ዘዴዎች
+    - contraception
+    - contraceptive methods
+    - family planning
+    - birth control
   injectable:
     - መርፌ
+    - መርፌው
     - በመርፌ የሚሰጥ የእርግዝና መከላከያ
+    - የእርግዝና መከላከያ መርፌ
     - ዴፖ
+    - ዴፖ ፕሮቬራ
     - injectable
     - DMPA
+    - Depo
+    - Sayana
   implant:
     - ኢምፕላንት
+    - ኢምፕላን
+    - ኢምፕላንቱ
     - በትር
+    - በትሩ
+    - ጀዴል
+    - ጃዴል
+    - ኔክስፕላኖን
     - implant
+    - Jadelle
+    - Nexplanon
+    - Implanon
   iud:
     - አይዩዲ
     - አይ.ዩ.ዲ
     - አይዩሲዲ
     - አይ.ዩ.ሲ.ዲ
+    - ሉፕ
     - IUCD
     - IUD
     - ማህፀን ውስጥ መከላከያ
+    - ማሕፀን ውስጥ መከላከያ
     - በማህፀን ውስጥ የሚቀመጥ
+    - copper IUD
+    - intrauterine device
   condom:
     - ኮንዶም
+    - ኮንዶሙ
     - ኮንዶሞች
+    - የወንድ ኮንዶም
+    - የሴት ኮንዶም
     - condom
     - condoms
+    - male condom
+    - female condom
   pill:
     - ክኒን
+    - ክኒኑ
+    - ኪኒን
+    - የእርግዝና መከላከያ ክኒን
     - በአፍ የሚወሰድ
     - oral contraceptive
+    - birth control pill
+    - OCP
+    - combined pill
+    - minipill
   emergency:
     - የአስቸኳይ መከላከያ
+    - የአስቸኳይ የእርግዝና መከላከያ
     - የአስቸኳይ ክኒን
+    - የአደጋ ጊዜ መከላከያ
+    - ድንገተኛ መከላከያ
+    - ፖስት ፒል
+    - ፖስትፒል
     - emergency contraception
+    - morning after pill
+    - plan b
+  sterilization:
+    - ቋሚ ዘዴ
+    - ቋሚ የእርግዝና መከላከያ
+    - የወንድ ዘር ቱቦ መዝጋት
+    - የሴት ቱቦ መዝጋት
+    - vasectomy
+    - tubal ligation
+    - sterilization
   access:
     - የት ይገኛል
     - የት እገኛለሁ
+    - የት ልሂድ
     - ጤና ተቋም
+    - ጤና ጣቢያ
+    - ክሊኒክ
+    - ሆስፒታል
     - available
+    - health facility
+    - clinic
   side_effects:
     - የጎንዮሽ ጉዳት
     - የጎንዮሽ ጉዳቱ
+    - የጎንዮሽ ጉዳቶች
+    - ጎንዮሽ
+    - አሉታዊ ተፅእኖ
     - side effect
+    - side effects
+    - adverse effect
   contraindication:
     - ተቃራኒ ሁኔታ
     - የተከለከለ
+    - አይመከርም
+    - መጠቀም አይቻልም
     - contraindication
+    - contraindicated
   breastfeeding:
     - ጡት ማጥባት
     - ጡት እያጠባሁ
     - ጡት በማጥባት
+    - ማጥባት
+    - የጡት ወተት
     - breastfeeding
+    - breastfeed
     # Do not add bare "lactation" — it pulls LAM (ሊሊ) distractors for method+BF asks.
+  menstruation:
+    - የወር አበባ
+    - ወር አበባ
+    - የወር አበባ ህመም
+    - የወር አበባ ሕመም
+    - ሲያመኝ
+    - ቁርጠት
+    - ዑደት
+    - menstruation
+    - menstrual
+    - period
+    - period pain
+    - dysmenorrhea
+  irregular_menses:
+    - የወር አበባ መዛባት
+    - የወር አበባ ተዛባ
+    - መዛባት
+    - ተዛባ
+    - ዑደት መዛባት
+    - መደበኛ ያልሆነ የወር አበባ
+    - irregular period
+    - irregular cycle
+    - irregular menses
+  cryptic_pregnancy:
+    - ክሪፕቲክ እርግዝና
+    - ስውር እርግዝና
+    - ሚስጥራዊ እርግዝና
+    - cryptic pregnancy
+  hiv:
+    - ኤች.አይ.ቪ
+    - ኤችአይቪ
+    - ኤድስ
+    - ኤ.አር.ቲ
+    - አርት
+    - HIV
+    - AIDS
+    - ART
+    - antiretroviral
+  sti:
+    - አባላዘር
+    - የአባላዘር በሽታ
+    - በግብረ ሥጋ ግንኙነት የሚተላለፍ
+    - በወሲብ የሚተላለፍ
+    - STI
+    - STD
+    - ጨብጥ
+    - ቂጥኝ
+    - ቻላሚዲያ
+  pregnancy:
+    - እርግዝና
+    - እርጉዝ
+    - ነፍሰ ጡር
+    - pregnancy
+    - pregnant
+  missed_dose:
+    - ከተረሳ
+    - ረሳሁ
+    - ክኒን ከተረሳ
+    - missed pill
+    - missed dose
+    - forgot
+  treatment:
+    - ሕክምና
+    - ህክምና
+    - ምን ላድርግ
+    - ይታከማል
+    - treatment
+    - therapy
+  endometriosis:
+    - ኢንዶሜትሪዮሲስ
+    - endometriosis
+  pcos:
+    - ፒሲኦኤስ
+    - PCOS
+    - polycystic
+  ectopic:
+    - ከማህፀን ውጭ እርግዝና
+    - ከማሕፀን ውጪ እርግዝና
+    - ectopic
+  iucd_copper:
+    - መዳብ አይዩዲ
+    - copper IUD
+    - copper T

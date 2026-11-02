@@ -17,30 +17,53 @@ _ETH = re.compile(r"[\u1200-\u137F]")
 _FRAMES: list[tuple[str, str]] = [
     ("የአስቸኳይ የእርግዝና መከላከያ", "emergency contraception"),
     ("የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው", "what contraceptive methods are there"),
+    ("የቤተሰብ ምጣኔ ዘዴዎች", "family planning methods"),
     ("የእርግዝና መከላከያ", "contraceptive"),
     ("እርግዝናን ለመከላከል ምን አማራጮች አሉ", "what contraceptive options are there"),
+    ("የወር አበባ መዛባት", "irregular menstrual cycle"),
+    ("የወር አበባ ተዛባ", "irregular period"),
+    ("የወር አበባ ሲያመኝ", "period pain"),
+    ("የወር አበባ ህመም", "period pain"),
+    ("የወር አበባ ሕመም", "period pain"),
+    ("ክሪፕቲክ እርግዝና", "cryptic pregnancy"),
+    ("ስውር እርግዝና", "cryptic pregnancy"),
+    ("ኤች.አይ.ቪ ሕክምና", "HIV treatment"),
+    ("ኤች.አይ.ቪ ህክምና", "HIV treatment"),
+    ("ኤችአይቪ ሕክምና", "HIV treatment"),
+    ("ከማሕፀን ውጪ እርግዝና", "ectopic pregnancy"),
+    ("ከማህፀን ውጭ እርግዝና", "ectopic pregnancy"),
     ("የጎንዮሽ ጉዳቱስ", "what about the side effects"),
     ("የጎንዮሽ ጉዳት", "side effects"),
     ("ጡት እያጠባሁ", "while breastfeeding"),
     ("ጡት በማጥባት ጊዜ", "while breastfeeding"),
     ("ጡት ማጥባት", "breastfeeding"),
     ("መጠቀም ይቻላል", "can be used"),
+    ("መጠቀም እችላለሁ", "can I use"),
     ("መጠቀም አይቻልም", "must not be used"),
     ("አይመከርም", "contraindicated"),
     ("የተከለከለ", "contraindicated"),
     ("ተቃራኒ", "contraindicated"),
     ("የት ይገኛል", "where is it available"),
     ("የት እገኛለሁ", "where can I get"),
+    ("የት ልሂድ", "where should I go"),
     ("እንዴት ይሠራል", "how does it work"),
     ("እንዴት ይሰራል", "how does it work"),
+    ("እንዴት ይታከማል", "how is it treated"),
+    ("ምን ላድርግ", "what should I do"),
+    ("ምን ላደርግ", "what should I do"),
     ("ለምን ያህል ጊዜ", "how long"),
     ("ምን ያህል ጊዜ", "how long"),
+    ("ስንት አመት ይቆያል", "how many years does it last"),
     ("ከተረሳ", "missed dose"),
     ("ረሳሁ", "missed dose"),
+    ("ክኒን ከተረሳ", "missed pill"),
     ("ምንድን ናቸው", "what are they"),
     ("ምንድን ነው", "what is"),
+    ("ምንድር ነው", "what is"),
     ("ከባድ መድማት", "heavy bleeding"),
     ("መተንፈስ አልችልም", "cannot breathe"),
+    ("የብልት ፈሳሽ", "vaginal discharge"),
+    ("የብልት ቁስለት", "genital ulcer"),
 ]
 
 
@@ -125,6 +148,29 @@ def covered_question(text: str) -> str | None:
     if not mapped.strip() or _ETH.search(mapped):
         return None
     return mapped
+
+
+def map_to_amharic_terms(text: str, *, limit: int = 16) -> list[str]:
+    """Amharic surfaces whose English gloss appears in an English ask (for BM25)."""
+    low = (text or "").casefold()
+    if not low or _ETH.search(low):
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    # Longer English glosses first so "emergency contraception" beats "contraception".
+    pairs = sorted(_pairs(), key=lambda item: len(item[1]), reverse=True)
+    for amharic, english in pairs:
+        gloss = (english or "").casefold().strip()
+        if len(gloss) < 3 or gloss not in low:
+            continue
+        key = amharic.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(amharic)
+        if len(out) >= limit:
+            break
+    return out
 
 
 class PhraseMapTranslator:
