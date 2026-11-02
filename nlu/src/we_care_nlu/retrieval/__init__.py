@@ -1,3 +1,1 @@
-from we_care_nlu.retrieval.engine import HybridRetriever
-
-__all__ = ["HybridRetriever"]
+"""Hybrid BM25 + dense retrieval, query expansion, and relevance scoring."""

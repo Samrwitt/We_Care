@@ -2,7 +2,7 @@
 
 **Component 2.** Amharic (or English) question → retrieve guideline evidence → compose a short Amharic reply. No GPT-style free-form generation. `generative_answer` is always `null`.
 
-Architecture notes: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+Architecture notes: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Backend map for newcomers: [`docs/BACKEND.md`](docs/BACKEND.md)
 
 ## Document-first KB
 

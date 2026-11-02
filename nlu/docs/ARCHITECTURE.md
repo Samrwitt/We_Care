@@ -2,6 +2,8 @@
 
 Independent FastAPI service. It does **not** generate chatbot replies and does **not** call GPT/Gemini/Claude/Llama/Qwen or any generative SLM.
 
+**New to this codebase?** Start with [`BACKEND.md`](BACKEND.md) (module map + request flow).
+
 ```
 User message (Amharic)
         │

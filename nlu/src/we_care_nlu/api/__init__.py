@@ -1,3 +1,1 @@
-from we_care_nlu.api.app import app
-
-__all__ = ["app"]
+"""HTTP API: FastAPI app (`app.py`) + engine lifecycle (`lifecycle.py`) + static chat UI."""

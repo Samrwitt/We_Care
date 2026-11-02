@@ -1,4 +1,4 @@
-"""Turn-level translation. The knowledge base stays in English."""
+"""Phrase map, MT client, reply composition helpers, and no-KB advice templates."""
 
 from we_care_nlu.translation.mt_client import MTSpanClient
 from we_care_nlu.translation.phrase_map import PhraseMapTranslator

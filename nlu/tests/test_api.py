@@ -11,12 +11,9 @@ FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_kb.json"
 
 def client():
     # Reset singleton toward hash engine with empty KB, then ingest via API.
-    import sys
+    from we_care_nlu.api.lifecycle import runtime
 
-    mod = sys.modules["we_care_nlu.api.app"]
-    mod._ENGINE = NLUEngine(load_config(), model_key="hash")
-    mod._LOAD_ERROR = None
-    mod._READY.set()
+    runtime.install_for_tests(NLUEngine(load_config(), model_key="hash"))
     return TestClient(app)
 
 
@@ -26,7 +23,10 @@ def test_health_and_models():
     assert root.status_code == 200
     assert "text/html" in root.headers["content-type"]
     assert "ዌ ኬር" in root.text
-    assert "/nlp/reply" in root.text
+    assert "/static/app.js" in root.text
+    js = c.get("/static/app.js")
+    assert js.status_code == 200
+    assert "/nlp/reply" in js.text
     meta = c.get("/meta")
     assert meta.status_code == 200
     assert meta.json()["service"] == "we-care-nlu"

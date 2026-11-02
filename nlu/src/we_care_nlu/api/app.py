@@ -1,7 +1,14 @@
+"""FastAPI HTTP surface for We Care NLU.
+
+Routes are thin wrappers around NLUEngine. Startup/KB loading lives in
+`lifecycle.py`. Chat UI files are under `api/static/` (see README there).
+
+Newcomers: read docs/BACKEND.md first.
+"""
+
 from __future__ import annotations
 
-import logging
-import threading
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -9,152 +16,24 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from we_care_nlu import __version__
+from we_care_nlu.api.lifecycle import runtime
 from we_care_nlu.config import load_config
 from we_care_nlu.contracts.schemas import AnalyzeRequest, AnalyzeResponse, ReplyResponse, SearchRequest
-from we_care_nlu.pipeline import NLUEngine
 
-logger = logging.getLogger("we_care_nlu")
-
-# Chat UI: index.html + styles.css + app.js (see api/static/README.md).
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 _UI = _STATIC_DIR / "index.html"
-_KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
-# Document-first Amharic stack (Docs/ blogs + guideline DOCX, then curated fillers).
-_DOCS_KB = _KB_DIR / "docs_amharic_kb.json"
-_BILINGUAL_KB = _KB_DIR / "fp_guideline_bilingual.json"
-_DEFAULT_KB = _KB_DIR / "fp_user_kb.json"
-_ARTICLES_KB = _KB_DIR / "wecare_articles_am.json"
-_GUIDELINES_KB = _KB_DIR / "rh_guidelines_en.json"
-
-_ENGINE: NLUEngine | None = None
-_READY = threading.Event()
-_LOAD_ERROR: str | None = None
-_LOAD_LOCK = threading.Lock()
-
-
-def _ingest_default_kb(eng: NLUEngine) -> None:
-    """Load Docs Amharic KB + optional fillers. Skip if already populated."""
-    if len(eng.retriever.index.chunks) > 0:
-        return
-    loaded = False
-    # Defer dense rebuild until all sources are loaded (encode once).
-    if _DOCS_KB.exists():
-        eng.ingest_file(
-            str(_DOCS_KB),
-            document_version="docs-am",
-            default_review_status="source",
-            rebuild=False,
-        )
-        loaded = True
-    if _BILINGUAL_KB.exists():
-        eng.ingest_file(
-            str(_BILINGUAL_KB),
-            document_version="2021-06",
-            default_review_status="unreviewed",
-            rebuild=False,
-        )
-        loaded = True
-    if _DEFAULT_KB.exists():
-        eng.ingest_file(
-            str(_DEFAULT_KB),
-            document_version="demo",
-            default_review_status="unreviewed",
-            rebuild=False,
-        )
-        loaded = True
-    if _ARTICLES_KB.exists():
-        eng.ingest_file(
-            str(_ARTICLES_KB),
-            document_version="wecare-articles",
-            default_review_status="source",
-            rebuild=False,
-        )
-        loaded = True
-    if not loaded and _GUIDELINES_KB.exists():
-        eng.ingest_file(
-            str(_GUIDELINES_KB),
-            document_version="source",
-            default_review_status="source",
-            rebuild=False,
-        )
-        loaded = True
-    if loaded:
-        eng.rebuild_index()
-
-
-def _warm() -> None:
-    """Load embedder + KB off the request path so uvicorn can bind immediately."""
-    global _ENGINE, _LOAD_ERROR
-    import os
-
-    if os.environ.get("PYTEST_CURRENT_TEST"):
-        _READY.set()
-        return
-    try:
-        cfg = load_config()
-        emb = cfg.get("embeddings") or {}
-        key = (
-            os.environ.get("WE_CARE_NLU_MODEL")
-            or emb.get("default_model")
-            or emb.get("test_model")
-            or "hash"
-        )
-        print(f"we-care-nlu: loading embedder={key} (this can take several minutes on first boot)", flush=True)
-        try:
-            eng = NLUEngine(cfg, model_key=key)
-        except Exception as load_exc:
-            fallback = emb.get("test_model") or "hash"
-            print(
-                f"we-care-nlu: embedder={key} failed ({load_exc.__class__.__name__}: {load_exc}); "
-                f"falling back to {fallback}",
-                flush=True,
-            )
-            eng = NLUEngine(cfg, model_key=fallback)
-        print(f"we-care-nlu: embedder ready ({eng.model_key}); ingesting KB", flush=True)
-        _ingest_default_kb(eng)
-        with _LOAD_LOCK:
-            _ENGINE = eng
-            _LOAD_ERROR = None
-        print(
-            f"we-care-nlu: ready embedder={eng.model_key} chunks={len(eng.retriever.index.chunks)}",
-            flush=True,
-        )
-    except Exception as exc:
-        logger.exception("NLU failed to warm up")
-        print(f"we-care-nlu: warm-up failed: {exc.__class__.__name__}: {exc}", flush=True)
-        with _LOAD_LOCK:
-            _LOAD_ERROR = f"{exc.__class__.__name__}: {exc}"
-    finally:
-        _READY.set()
-
-
-def get_engine() -> NLUEngine:
-    if not _READY.is_set():
-        raise HTTPException(503, "NLU is still loading the embedding model and knowledge base.")
-    with _LOAD_LOCK:
-        if _LOAD_ERROR:
-            raise HTTPException(503, f"NLU failed to start: {_LOAD_ERROR}")
-        if _ENGINE is None:
-            raise HTTPException(503, "NLU engine is not ready.")
-        return _ENGINE
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    import os
-
+async def lifespan(_app: FastAPI):
+    """Bind HTTP immediately; load embedder+KB in the background (unless under pytest)."""
     if os.environ.get("PYTEST_CURRENT_TEST"):
-        # Tests construct engines directly; keep sync path for local TestClient setups.
-        cfg = load_config()
-        key = os.environ.get("WE_CARE_NLU_MODEL") or cfg.get("embeddings", {}).get("test_model") or "hash"
-        global _ENGINE
-        _ENGINE = NLUEngine(cfg, model_key=key)
-        _READY.set()
+        runtime.warm_sync_for_tests()
     else:
-        threading.Thread(target=_warm, name="nlu-warm", daemon=True).start()
+        runtime.warm_in_background()
     yield
 
 
@@ -165,8 +44,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CSS/JS for the chat page at GET /
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+
+# ---------------------------------------------------------------------------
+# Request bodies (API-only; core contracts live in contracts/schemas.py)
+# ---------------------------------------------------------------------------
 
 
 class IngestBody(BaseModel):
@@ -180,6 +63,11 @@ class IngestBody(BaseModel):
 class ResolveBody(BaseModel):
     text: str
     context: dict[str, Any] | None = None
+
+
+# ---------------------------------------------------------------------------
+# UI + meta
+# ---------------------------------------------------------------------------
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -211,58 +99,15 @@ def meta() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    # Never block on model download — Docker and the UI need a live HTTP server.
-    if not _READY.is_set():
-        return {
-            "status": "loading",
-            "component": 2,
-            "generative_decoding": False,
-            "chunks": 0,
-            "embedder": "",
-            "translation_backend": "",
-            "version": __version__,
-        }
-    with _LOAD_LOCK:
-        if _LOAD_ERROR:
-            return {
-                "status": "error",
-                "component": 2,
-                "error": _LOAD_ERROR,
-                "generative_decoding": False,
-                "chunks": 0,
-                "embedder": "",
-                "translation_backend": "",
-                "version": __version__,
-            }
-        eng = _ENGINE
-    if eng is None:
-        return {
-            "status": "error",
-            "component": 2,
-            "error": "engine missing",
-            "generative_decoding": False,
-            "chunks": 0,
-            "embedder": "",
-            "translation_backend": "",
-            "version": __version__,
-        }
-    return {
-        "status": "ok",
-        "component": 2,
-        "generative_decoding": False,
-        "chunks": len(eng.retriever.index.chunks),
-        "embedder": eng.model_key,
-        "translation_backend": getattr(eng.translator, "backend", ""),
-        "version": __version__,
-    }
+    return runtime.health_payload(version=__version__)
 
 
 @app.get("/models")
 def models() -> dict[str, Any]:
     cfg = load_config()
     active = ""
-    if _READY.is_set() and _ENGINE is not None:
-        active = _ENGINE.model_key
+    if runtime.ready.is_set() and runtime.engine is not None:
+        active = runtime.engine.model_key
     return {
         "embeddings": cfg.get("embeddings", {}).get("models", {}),
         "active": active,
@@ -278,9 +123,14 @@ def models() -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Core NLU endpoints
+# ---------------------------------------------------------------------------
+
+
 @app.post("/documents/ingest")
 def ingest(body: IngestBody) -> dict[str, Any]:
-    eng = get_engine()
+    eng = runtime.get()
     if body.alignment is None and not body.path:
         raise HTTPException(400, "Provide path or alignment JSON.")
     if body.path:
@@ -297,22 +147,28 @@ def ingest(body: IngestBody) -> dict[str, Any]:
             document_version=body.document_version,
             default_review_status=body.review_status,
         )
-    return {"ingested_chunks": n, "total_chunks": len(eng.retriever.index.chunks), "review_status": body.review_status}
+    return {
+        "ingested_chunks": n,
+        "total_chunks": len(eng.retriever.index.chunks),
+        "review_status": body.review_status,
+    }
 
 
 @app.post("/nlp/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
-    return get_engine().analyze(req)
+    """Structured understanding only (intent, entities, retrieval hits)."""
+    return runtime.get().analyze(req)
 
 
 @app.post("/nlp/reply", response_model=ReplyResponse)
 def reply(req: AnalyzeRequest) -> ReplyResponse:
-    return get_engine().reply(req)
+    """Full chat turn: analyze + compose Amharic/English answer text."""
+    return runtime.get().reply(req)
 
 
 @app.post("/retrieval/search")
 def search(req: SearchRequest) -> dict[str, Any]:
-    eng = get_engine()
+    eng = runtime.get()
     hits = eng.retriever.search(req.query, top_k=req.top_k, filters=req.filters)
     return {"query": req.query, "hits": [h.model_dump() for h in hits]}
 
@@ -322,7 +178,7 @@ def resolve_ctx(body: ResolveBody) -> dict[str, Any]:
     from we_care_nlu.contracts.schemas import ContextState
 
     ctx = ContextState.model_validate(body.context) if body.context else None
-    return get_engine().resolve_only(body.text, ctx)
+    return runtime.get().resolve_only(body.text, ctx)
 
 
 @app.get("/kb/coverage")
@@ -332,14 +188,14 @@ def kb_coverage() -> dict[str, Any]:
     from we_care_nlu.terminology.index import ConceptIndex
 
     idx = ConceptIndex().load()
-    if _READY.is_set() and _ENGINE is not None:
-        # Prefer live index terminology stats when the engine is up.
-        live = getattr(_ENGINE, "concepts", None)
+    if runtime.ready.is_set() and runtime.engine is not None:
+        live = getattr(runtime.engine, "concepts", None)
         if live is not None:
             idx = live
     report = audit_kb(concept_index=idx)
-    report["engine_ready"] = bool(_READY.is_set() and _ENGINE is not None)
-    if _ENGINE is not None:
-        report["live_chunks"] = len(_ENGINE.retriever.index.chunks)
-        report["live_embedder"] = _ENGINE.model_key
+    report["engine_ready"] = bool(runtime.ready.is_set() and runtime.engine is not None)
+    if runtime.engine is not None:
+        report["live_chunks"] = len(runtime.engine.retriever.index.chunks)
+        report["live_embedder"] = runtime.engine.model_key
     return report
+

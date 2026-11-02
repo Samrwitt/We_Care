@@ -1,3 +1,1 @@
-from we_care_nlu.intent.classifier import IntentClassifier
-
-__all__ = ["IntentClassifier"]
+"""Lexicon-based intent and topic routing (not a trained classifier by default)."""

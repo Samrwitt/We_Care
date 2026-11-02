@@ -2,6 +2,15 @@
 
 Goal: any (method, condition, intent) ask should prefer short grounded answers
 over long guideline dumps, TOC teasers, or distractors (e.g. LAM for injectable).
+
+Public entry points (read these first):
+  - distinctive_query_tokens / soft_topic_groups — what the ask is “about”
+  - relevant_enough — hard filter before scoring a chunk
+  - answer_quality — rank candidate answer spans
+  - HybridRetriever uses these via retrieval/engine.py
+
+Constants:
+  - FP_SCOPED_INTENTS vs CLINICAL_CONDITION_INTENTS — HIV/FP eligibility vs disease asks
 """
 
 from __future__ import annotations
