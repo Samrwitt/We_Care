@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from we_care_nlu import __version__
@@ -17,7 +18,9 @@ from we_care_nlu.pipeline import NLUEngine
 
 logger = logging.getLogger("we_care_nlu")
 
-_UI = Path(__file__).resolve().parent / "static" / "index.html"
+# Chat UI: index.html + styles.css + app.js (see api/static/README.md).
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
+_UI = _STATIC_DIR / "index.html"
 _KB_DIR = Path(__file__).resolve().parents[3] / "data" / "kb"
 # Document-first Amharic stack (Docs/ blogs + guideline DOCX, then curated fillers).
 _DOCS_KB = _KB_DIR / "docs_amharic_kb.json"
@@ -161,6 +164,9 @@ app = FastAPI(
     description="Amharic medical understanding and retrieval. No generative decoding.",
     lifespan=lifespan,
 )
+
+# CSS/JS for the chat page at GET /
+app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
 
 class IngestBody(BaseModel):

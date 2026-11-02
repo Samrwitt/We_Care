@@ -36,7 +36,7 @@ we-care-nlu = "we_care_nlu.cli:app"
 where = ["src"]
 
 [tool.setuptools.package-data]
-we_care_nlu = ["api/static/*"]
+we_care_nlu = ["api/static/*", "api/static/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
