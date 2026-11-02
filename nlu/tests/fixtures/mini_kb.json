@@ -1,0 +1,54 @@
+{
+  "document_name": "fp_mini.pdf",
+  "title": "Family Planning mini knowledge base",
+  "segments": [
+    {
+      "segment_id": "chunk_methods",
+      "kind": "paragraph",
+      "page_number": 8,
+      "source_text": "Contraceptive method options include condoms, oral contraceptive pills, injectables, implants, IUCD, emergency contraception, and permanent methods.",
+      "translated_text": "የእርግዝና መከላከያ ዘዴዎች ኮንዶም፣ በአፍ የሚወሰድ ክኒን፣ መርፌ፣ ኢምፕላንት፣ አይዩሲዲ፣ የአስቸኳይ መከላከያ እና ቋሚ ዘዴዎችን ያካትታሉ።",
+      "flags": ""
+    },
+    {
+      "segment_id": "chunk_injectable_def",
+      "kind": "paragraph",
+      "page_number": 10,
+      "source_text": "An injectable contraceptive is a progestin given by intramuscular injection, commonly every 13 weeks.",
+      "translated_text": "በመርፌ የሚሰጥ የእርግዝና መከላከያ በጡንቻ ውስጥ የሚሰጥ ፕሮጄስቲን ሲሆን ብዙ ጊዜ በየ 13 ሳምንቱ ይሰጣል።",
+      "flags": ""
+    },
+    {
+      "segment_id": "chunk_injectable_se",
+      "kind": "paragraph",
+      "page_number": 11,
+      "source_text": "Side effects of the injectable may include irregular bleeding and delayed return to fertility. These are not the same as contraindications.",
+      "translated_text": "የመርፌ የጎንዮሽ ጉዳት መደበኛ ያልሆነ የደም መፍሰስ እና ወደ መውለድ ችሎታ መዘግየትን ሊያካትት ይችላል። ይህ ከተቃራኒ ሁኔታ ጋር አንድ አይደለም።",
+      "flags": ""
+    },
+    {
+      "segment_id": "chunk_bf_allowed",
+      "kind": "paragraph",
+      "page_number": 12,
+      "source_text": "Progestin-only injectables can be used while breastfeeding after the first six weeks postpartum.",
+      "translated_text": "ፕሮጄስቲን ብቻ ያለው መርፌ ከወሊድ በኋላ ከስድስት ሳምንታት በኋላ ጡት በማጥባት ጊዜ መጠቀም ይቻላል።",
+      "flags": ""
+    },
+    {
+      "segment_id": "chunk_bf_contra",
+      "kind": "paragraph",
+      "page_number": 13,
+      "source_text": "Combined hormonal contraceptives are contraindicated during the first six months of breastfeeding.",
+      "translated_text": "ጥምር ሆርሞናዊ የእርግዝና መከላከያዎች በጡት ማጥባት የመጀመሪያዎቹ ስድስት ወራት የተከለከሉ ናቸው።",
+      "flags": ""
+    },
+    {
+      "segment_id": "chunk_emergency_contra",
+      "kind": "paragraph",
+      "page_number": 14,
+      "source_text": "Misoprostol must not be used if ectopic pregnancy is suspected.",
+      "translated_text": "ከማህፀን ውጭ እርግዝና ከተጠረጠረ ሚሶፕሮስቶል መጠቀም የተከለከለ ነው።",
+      "flags": ""
+    }
+  ]
+}

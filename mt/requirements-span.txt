@@ -1,0 +1,8 @@
+# Minimal deps for chat span serve (NLLB / Google). PDF pipeline uses requirements.txt.
+torch>=2.1.0
+transformers>=4.40.0
+sentencepiece>=0.2.0
+protobuf>=3.20.0
+pyyaml>=6.0
+typer>=0.12.0
+tqdm>=4.66.0

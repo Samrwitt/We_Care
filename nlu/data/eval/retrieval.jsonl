@@ -1,0 +1,6 @@
+{"id": "r01", "cluster": "fp-methods", "query": "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?", "relevant_ids": ["chunk_methods"], "hard_negatives": ["chunk_emergency_contra"]}
+{"id": "r02", "cluster": "fp-methods", "query": "እርግዝናን ለመከላከል ምን አማራጮች አሉ?", "relevant_ids": ["chunk_methods"], "hard_negatives": ["chunk_emergency_contra"]}
+{"id": "r03", "cluster": "fp-methods", "query": "ልጅ ላለመውለድ ምን መጠቀም ይቻላል?", "relevant_ids": ["chunk_methods"], "hard_negatives": ["chunk_injectable_se"]}
+{"id": "r04", "cluster": "se", "query": "የመርፌ የጎንዮሽ ጉዳት ምንድን ነው?", "relevant_ids": ["chunk_injectable_se"], "hard_negatives": ["chunk_bf_contra"]}
+{"id": "r05", "cluster": "bf-allow", "query": "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?", "relevant_ids": ["chunk_bf_allowed"], "hard_negatives": ["chunk_bf_contra"]}
+{"id": "r06", "cluster": "bf-contra", "query": "ጡት በማጥባት ጊዜ የትኛው ዘዴ የተከለከለ ነው?", "relevant_ids": ["chunk_bf_contra"], "hard_negatives": ["chunk_bf_allowed"]}

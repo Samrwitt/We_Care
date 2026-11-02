@@ -1,0 +1,10 @@
+{"id": "i01", "cluster": "fp-methods", "text": "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?", "intent": "family_planning_methods", "label_status": "developer_draft"}
+{"id": "i02", "cluster": "fp-methods", "text": "እርግዝናን ለመከላከል ምን አማራጮች አሉ?", "intent": "family_planning_methods", "label_status": "developer_draft"}
+{"id": "i03", "cluster": "fp-methods", "text": "ልጅ ላለመውለድ ምን መጠቀም ይቻላል?", "intent": "family_planning_methods", "label_status": "developer_draft"}
+{"id": "i04", "cluster": "se-injectable", "text": "የእርግዝና መከላከያ መርፌ የጎንዮሽ ጉዳቱ ምንድን ነው?", "intent": "side_effects", "label_status": "developer_draft"}
+{"id": "i05", "cluster": "contra-bf", "text": "ይህ ዘዴ ጡት በማጥባት ጊዜ የተከለከለ ነው?", "intent": "contraindications", "label_status": "developer_draft"}
+{"id": "i06", "cluster": "elig-bf", "text": "ጡት እያጠባሁ ይህን መርፌ መጠቀም ይቻላል?", "intent": "eligibility", "label_status": "developer_draft"}
+{"id": "i07", "cluster": "greet", "text": "ሰላም", "intent": "greeting", "label_status": "developer_draft"}
+{"id": "i08", "cluster": "ood", "text": "የእግር ኳስ ውጤት ስንት ሆነ?", "intent": "out_of_domain", "label_status": "developer_draft"}
+{"id": "i09", "cluster": "emerg", "text": "ከባድ መድማት አለብኝ አስቸኳይ ነው", "intent": "emergency", "label_status": "developer_draft"}
+{"id": "i10", "cluster": "def-inj", "text": "እርግዝና መከላከያ መርፌ ምንድን ነው?", "intent": "definition", "label_status": "developer_draft"}

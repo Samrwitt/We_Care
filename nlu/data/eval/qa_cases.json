@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "description": "Multi-topic Amharic NLU reply regression cases (FP, HIV, pregnancy, menses, follow-ups).",
+  "cases": [
+    {
+      "id": "fp_methods_list",
+      "topic": "family_planning",
+      "question": "የእርግዝና መከላከያ ዘዴዎች ምንድን ናቸው?",
+      "expect": {
+        "evidence_id": "chunk_methods",
+        "must_contain": ["ኮንዶም", "መርፌ"],
+        "must_not_contain": ["ሊሊ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "bf_injectable_ok",
+      "topic": "breastfeeding",
+      "question": "ጡት እያጠባሁ መርፌ መጠቀም ይቻላል?",
+      "expect": {
+        "evidence_id": "chunk_bf_allowed",
+        "must_contain": ["መርፌ", "ጡት"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "condom_definition",
+      "topic": "condom",
+      "question": "ኮንዶም ምንድን ነው?",
+      "expect": {
+        "evidence_id": "chunk_condom_def",
+        "must_contain": ["ኮንዶም"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "pill_missed",
+      "topic": "pill",
+      "question": "ክኒን ከተረሳ ምን ላድርግ?",
+      "expect": {
+        "evidence_id": "chunk_pill_missed",
+        "must_contain": ["ክኒን"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "implant_duration",
+      "topic": "implant",
+      "question": "ኢምፕላንት ለምን ያህል ጊዜ ይቆያል?",
+      "expect": {
+        "evidence_id": "chunk_implant_def",
+        "must_contain": ["ኢምፕላንት"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "ec_when",
+      "topic": "emergency_contraception",
+      "question": "የአስቸኳይ መከላከያ መቼ ይወሰዳል?",
+      "expect": {
+        "evidence_id": "chunk_ec_when",
+        "must_contain": ["አስቸኳይ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "condom_access",
+      "topic": "access",
+      "question": "ኮንዶም የት ይገኛል?",
+      "expect": {
+        "evidence_id": "chunk_condom_access",
+        "must_contain": ["ኮንዶም"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "injectable_side_effects",
+      "topic": "injectable",
+      "question": "የመርፌ የጎንዮሽ ጉዳት ምንድን ነው?",
+      "expect": {
+        "evidence_id": "chunk_injectable_se",
+        "must_contain": ["መርፌ", "ጎንዮሽ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "injectable_how",
+      "topic": "injectable",
+      "question": "መርፌ እንዴት ይሠራል?",
+      "expect": {
+        "evidence_id": "chunk_injectable_how",
+        "must_contain": ["መርፌ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "fp_service_where",
+      "topic": "access",
+      "question": "የቤተሰብ ምጣኔ አገልግሎት የት ይገኛል?",
+      "expect": {
+        "evidence_id": "chunk_where",
+        "must_contain": ["ጤና"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "hiv_fp_eligibility",
+      "topic": "hiv",
+      "question": "ኤች.አይ.ቪ ያለብኝ የእርግዝና መከላከያ መጠቀም እችላለሁ?",
+      "expect": {
+        "evidence_id": "chunk_hiv_fp",
+        "must_contain": ["ኤች.አይ.ቪ", "መከላከያ"],
+        "must_not_contain": ["methotrexate"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "hiv_eligibility_short",
+      "topic": "hiv",
+      "question": "ኤች.አይ.ቪ ያለብኝ መጠቀም እችላለሁ?",
+      "context": {
+        "turn_index": 1,
+        "last_intents": ["family_planning_methods"],
+        "last_topic": "family_planning_methods",
+        "last_entities": []
+      },
+      "expect": {
+        "evidence_id": "chunk_hiv_fp",
+        "must_contain": ["ኤች.አይ.ቪ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "hiv_then_injectable_followup",
+      "topic": "hiv",
+      "question": "መርፌ",
+      "context": {
+        "turn_index": 1,
+        "last_intents": ["eligibility"],
+        "last_topic": "eligibility",
+        "last_entities": [{"type": "condition", "value": "hiv", "surface": "ኤች.አይ.ቪ"}]
+      },
+      "expect": {
+        "evidence_id": "chunk_hiv_fp",
+        "must_contain": ["ኤች.አይ.ቪ"],
+        "intent_in": ["eligibility"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "hiv_symptoms_then_treatment",
+      "topic": "hiv",
+      "needs_docs": true,
+      "turns": [
+        {"question": "ኤች.አይ.ቪ ምልክቶች"},
+        {"question": "እንዴት ይታከማል?"}
+      ],
+      "expect": {
+        "evidence_id_not": ["chunk_hiv_fp"],
+        "must_not_contain": ["አብዛኞቹ የእርግዝና መከላከያ"],
+        "must_contain_any": ["ሕክምና", "መድኃኒት", "መድሃኒት", "ኤ.አር.ቲ", "ART", "ቫይረስ", "antiretroviral"],
+        "intent_in": ["treatment", "medication", "how_it_works", "general_medical_info", "follow_up"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "cryptic_pregnancy",
+      "topic": "pregnancy",
+      "needs_docs": true,
+      "question": "ክሪፕቲክ እርግዝና ምንድን ነው?",
+      "expect": {
+        "must_contain_any": ["ክሪፕቲክ", "ስውር"],
+        "must_not_contain": ["ኢምፕላንት"],
+        "evidence_id_not": ["chunk_implant_def"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "irregular_menses_when",
+      "topic": "menses",
+      "needs_docs": true,
+      "question": "የወር አበባ ዑደት ተዛባ የሚባለው መቼ ነው?",
+      "expect": {
+        "must_contain": ["መዛባት"],
+        "must_contain_any": ["ጤናማ", "21", "ቀናት"],
+        "must_not_contain": ["ማስፈንጠሪያ"],
+        "reply_starts_with_any": ["የጤና ባለሙያዎች", "ስለዚህ የጤና"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "sti_discharge_treatment_shape",
+      "topic": "sti",
+      "needs_docs": true,
+      "question": "ከብልት የሚወጣ ፈሳሽ እንዴት ይታከማል?",
+      "expect": {
+        "must_contain_any": ["ሕክምና", "መድኃኒት", "አንቲባዮቲክ", "ፈሳሽ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "ivf_what_is",
+      "topic": "fertility",
+      "needs_docs": true,
+      "question": "IVF ምንድን ነው?",
+      "expect": {
+        "must_contain_any": ["IVF", "እንቁላል", "ፅንስ", "ላቦራቶሪ"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "serodiscordant_couples",
+      "topic": "hiv",
+      "needs_docs": true,
+      "question": "የተለያየ የኤች.አይ.ቪ ውጤት ያላቸው ጥንዶች ምን ማለት ነው?",
+      "expect": {
+        "must_contain_any": ["ኤች.አይ.ቪ", "አጋር", "ሴሮ"],
+        "evidence_id_not": ["chunk_hiv_fp"],
+        "clarify": false
+      }
+    },
+    {
+      "id": "which_method_clarify",
+      "topic": "clarify",
+      "question": "የትኛውን ዘዴ ልጠቀም?",
+      "expect": {
+        "clarify": true
+      }
+    }
+  ]
+}

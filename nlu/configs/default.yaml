@@ -1,0 +1,119 @@
+service:
+  name: we-care-nlu
+  component: 2
+  generative_decoding: false
+
+embeddings:
+  # Dedicated Amharic passage retriever. Benchmark against MiniLM before production rollout.
+  default_model: amharic_base
+  test_model: hash
+  models:
+    hash:
+      kind: hash
+      hf_id: null
+      dim: 256
+      amharic_sentence_encoder: false
+      notes: "Tests only; not a semantic model. Never use as production fallback."
+    st_multilingual_minilm:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      dim: 384
+      max_length: 128
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      batch_size: 32
+      notes: "CPU-friendly multilingual baseline; benchmark on Amharic medical retrieval."
+    amharic_base:
+      kind: sentence_transformer
+      hf_id: rasyosef/roberta-amharic-text-embedding-base
+      dim: 768
+      max_length: 510
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      batch_size: 16
+      domain: "General Amharic passage retrieval; not clinically validated."
+    amharic_medium:
+      kind: sentence_transformer
+      hf_id: rasyosef/roberta-amharic-text-embedding-medium
+      dim: 512
+      max_length: 510
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      batch_size: 16
+      domain: "General Amharic passage retrieval; not clinically validated."
+    labse:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/LaBSE
+      dim: 768
+      max_length: 256
+      pooling: cls
+      normalize: true
+      amharic_sentence_encoder: true
+      languages_include_amharic: true
+      notes: "Cross-lingual alternative; benchmark before adoption."
+    afro_xlmr:
+      kind: encoder_mean_pool
+      hf_id: Davlan/afro-xlmr-base
+      dim: 768
+      max_length: 256
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: false
+      notes: "Masked-language-model encoder; mean pooling is a baseline, not retrieval fine-tuning."
+    st_multilingual_mpnet:
+      kind: sentence_transformer
+      hf_id: sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      dim: 768
+      max_length: 128
+      pooling: mean
+      normalize: true
+      amharic_sentence_encoder: true
+      notes: "Multilingual comparison candidate."
+
+retrieval:
+  # Starting weights, not measured optima. Check implementation of weighted RRF.
+  dense_weight: 0.40
+  sparse_weight: 0.60
+  candidate_k: 80
+  top_k: 12
+  # Existing score thresholds retained for compatibility; calibrate with actual
+  # score distributions and labeled positive/negative Amharic questions.
+  min_fused_score: 0.10
+  abstain_below: 0.18
+  fusion: rrf
+  rrf_k: 60
+  dual_query_encode: true
+  embed_cache: true
+  # This is a rule/feature reranker, not a neural cross-encoder.
+  reranker: medical_features
+  cross_encoder_id: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+  cross_encoder_amharic_validated: false
+  polarity_penalty: 0.55
+  unreviewed_penalty: 0.08
+
+intent:
+  # Swap to encoder_trained only after training and validating a classifier.
+  backend: lexicon_prototype
+  min_confidence: 0.35
+  multi_label_threshold: 0.5
+
+ner:
+  backend: gazetteer_regex
+  min_confidence: 0.5
+
+terminology:
+  auto_extract_on_ingest: true
+  approved_path: data/terminology/approved.json
+  candidates_path: data/terminology/candidates.jsonl
+
+translation:
+  backend: mt
+  mt_url: http://127.0.0.1:8090
+
+safety:
+  emergency_always_rule_based: true
+  require_source_for_claims: true
+  unreviewed_is_not_verified: true

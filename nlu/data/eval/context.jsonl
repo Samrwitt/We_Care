@@ -1,0 +1,2 @@
+{"id": "c01", "text": "የጎንዮሽ ጉዳቱስ?", "context": {"turn_index": 1, "last_intents": ["definition"], "last_method": "injectable_contraceptive", "last_entities": [{"type": "contraceptive_method", "value": "injectable_contraceptive", "surface": "መርፌ"}]}, "expect_resolved_method": "injectable_contraceptive", "expect_clarification": false}
+{"id": "c02", "text": "የጎንዮሽ ጉዳቱስ?", "context": {"turn_index": 1, "last_entities": [{"type": "contraceptive_method", "value": "injectable_contraceptive"}, {"type": "contraceptive_method", "value": "implant"}]}, "expect_clarification": true}

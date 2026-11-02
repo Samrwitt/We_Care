@@ -1,0 +1,538 @@
+{
+  "version": 1,
+  "concepts": [
+    {
+      "concept_id": "concept_0122f257fe92",
+      "canonical_amharic": "ክኒን",
+      "canonical_english": "OCP",
+      "synonyms_amharic": [
+        "ክኒን",
+        "በአፍ የሚወሰድ"
+      ],
+      "synonyms_english": [
+        "OCP",
+        "pill",
+        "oral_pill"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_1b0a66cf7e25",
+      "canonical_amharic": "ነፍሰ ጡር",
+      "canonical_english": "pregnant",
+      "synonyms_amharic": [
+        "ነፍሰ ጡር",
+        "እርጉዝ",
+        "እርግዝና"
+      ],
+      "synonyms_english": [
+        "pregnant"
+      ],
+      "category": "pregnancy_status",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_25df0a004b9b",
+      "canonical_amharic": "ሲጋራ",
+      "canonical_english": "smok",
+      "synonyms_amharic": [
+        "ሲጋራ"
+      ],
+      "synonyms_english": [
+        "smok",
+        "smoking"
+      ],
+      "category": "risk_factor",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_2908e262574c",
+      "canonical_amharic": "ኢምፕላንት",
+      "canonical_english": "implant",
+      "synonyms_amharic": [
+        "ኢምፕላንት",
+        "በትር"
+      ],
+      "synonyms_english": [
+        "implant",
+        "Implanon",
+        "Jadelle"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_2baf437c915d",
+      "canonical_amharic": "ከወሊድ በኋላ",
+      "canonical_english": "postpartum",
+      "synonyms_amharic": [
+        "ከወሊድ በኋላ"
+      ],
+      "synonyms_english": [
+        "postpartum"
+      ],
+      "category": "pregnancy_status",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_2d2da6d64d57",
+      "canonical_amharic": "የደም ግፊት",
+      "canonical_english": "hypertension",
+      "synonyms_amharic": [
+        "የደም ግፊት"
+      ],
+      "synonyms_english": [
+        "hypertension"
+      ],
+      "category": "risk_factor",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_309a9b7570a0",
+      "canonical_amharic": "ከወሊድ በኋላ የደም መፍሰስ",
+      "canonical_english": "PPH",
+      "synonyms_amharic": [
+        "ከወሊድ በኋላ የደም መፍሰስ"
+      ],
+      "synonyms_english": [
+        "PPH",
+        "pph"
+      ],
+      "category": "condition",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_375153d98837",
+      "canonical_amharic": "ቋሚ ዘዴ",
+      "canonical_english": "vasectomy",
+      "synonyms_amharic": [
+        "ቋሚ ዘዴ"
+      ],
+      "synonyms_english": [
+        "vasectomy",
+        "tubal",
+        "sterilization"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_4137abc442c4",
+      "canonical_amharic": "ኤች.አይ.ቪ",
+      "canonical_english": "HIV",
+      "synonyms_amharic": [
+        "ኤች.አይ.ቪ",
+        "ኤድስ"
+      ],
+      "synonyms_english": [
+        "HIV",
+        "AIDS",
+        "hiv"
+      ],
+      "category": "condition",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_4507394d179d",
+      "canonical_amharic": "ኮንዶም",
+      "canonical_english": "condom",
+      "synonyms_amharic": [
+        "ኮንዶም"
+      ],
+      "synonyms_english": [
+        "condom"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_5105abe43ebc",
+      "canonical_amharic": "ከማህፀን ውጭ እርግዝና",
+      "canonical_english": "ectopic",
+      "synonyms_amharic": [
+        "ከማህፀን ውጭ እርግዝና"
+      ],
+      "synonyms_english": [
+        "ectopic",
+        "ectopic_pregnancy"
+      ],
+      "category": "condition",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_68e9bb57bbf9",
+      "canonical_amharic": "ሚፌፕሪስቶን",
+      "canonical_english": "mifepristone",
+      "synonyms_amharic": [
+        "ሚፌፕሪስቶን"
+      ],
+      "synonyms_english": [
+        "mifepristone"
+      ],
+      "category": "medicine",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_78c329c047f1",
+      "canonical_amharic": "ራስ ምታት",
+      "canonical_english": "headache",
+      "synonyms_amharic": [
+        "ራስ ምታት"
+      ],
+      "synonyms_english": [
+        "headache"
+      ],
+      "category": "symptom",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_79328d8aa764",
+      "canonical_amharic": "ማኅጸን ጫፍ",
+      "canonical_english": "cervix",
+      "synonyms_amharic": [
+        "ማኅጸን ጫፍ"
+      ],
+      "synonyms_english": [
+        "cervix"
+      ],
+      "category": "anatomy",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_82e56b94002a",
+      "canonical_amharic": "ጡት ማጥባት",
+      "canonical_english": "breastfeed",
+      "synonyms_amharic": [
+        "ጡት ማጥባት",
+        "ጡት እያጠባ"
+      ],
+      "synonyms_english": [
+        "breastfeed",
+        "lactat",
+        "breastfeeding"
+      ],
+      "category": "breastfeeding_status",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_854c7600a06b",
+      "canonical_amharic": "ዶክሲሳይክሊን",
+      "canonical_english": "doxycycline",
+      "synonyms_amharic": [
+        "ዶክሲሳይክሊን"
+      ],
+      "synonyms_english": [
+        "doxycycline"
+      ],
+      "category": "medicine",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_8c4fffb36e48",
+      "canonical_amharic": "በጡት ማጥባት የሚደረግ መከላከያ",
+      "canonical_english": "LAM",
+      "synonyms_amharic": [
+        "በጡት ማጥባት የሚደረግ መከላከያ"
+      ],
+      "synonyms_english": [
+        "LAM",
+        "lam"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_90c9aaa5fef4",
+      "canonical_amharic": "ሕመም",
+      "canonical_english": "pain",
+      "synonyms_amharic": [
+        "ሕመም"
+      ],
+      "synonyms_english": [
+        "pain"
+      ],
+      "category": "symptom",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_94a5a25d3b33",
+      "canonical_amharic": "መርፌ",
+      "canonical_english": "injectable",
+      "synonyms_amharic": [
+        "መርፌ",
+        "በመርፌ የሚሰጥ",
+        "ዴፖ"
+      ],
+      "synonyms_english": [
+        "injectable",
+        "DMPA",
+        "Depo",
+        "injectable_contraceptive"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_981adfd636e4",
+      "canonical_amharic": "ምክር",
+      "canonical_english": "counselling",
+      "synonyms_amharic": [
+        "ምክር"
+      ],
+      "synonyms_english": [
+        "counselling",
+        "counseling"
+      ],
+      "category": "procedure",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_9b05f4178e8c",
+      "canonical_amharic": "የማኅጸን ጫፍ ካንሰር",
+      "canonical_english": "cervical cancer",
+      "synonyms_amharic": [
+        "የማኅጸን ጫፍ ካንሰር"
+      ],
+      "synonyms_english": [
+        "cervical cancer",
+        "cervical_cancer"
+      ],
+      "category": "condition",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_9ec87bb03ea3",
+      "canonical_amharic": "ማይግሬን",
+      "canonical_english": "migraine",
+      "synonyms_amharic": [
+        "ማይግሬን"
+      ],
+      "synonyms_english": [
+        "migraine"
+      ],
+      "category": "risk_factor",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_b78f6461e8a4",
+      "canonical_amharic": "አይዩዲ",
+      "canonical_english": "IUCD",
+      "synonyms_amharic": [
+        "አይዩዲ",
+        "አይዩሲዲ",
+        "ማህፀን ውስጥ"
+      ],
+      "synonyms_english": [
+        "IUCD",
+        "IUD",
+        "iud"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_c942b527fac2",
+      "canonical_amharic": "ሪፈራል",
+      "canonical_english": "referral",
+      "synonyms_amharic": [
+        "ሪፈራል"
+      ],
+      "synonyms_english": [
+        "referral"
+      ],
+      "category": "procedure",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_d6af47fed8a7",
+      "canonical_amharic": "ኦክሲቶሲን",
+      "canonical_english": "oxytocin",
+      "synonyms_amharic": [
+        "ኦክሲቶሲን"
+      ],
+      "synonyms_english": [
+        "oxytocin"
+      ],
+      "category": "medicine",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_da65beb522f0",
+      "canonical_amharic": "የአስቸኳይ የእርግዝና መከላከያ",
+      "canonical_english": "emergency contracept",
+      "synonyms_amharic": [
+        "የአስቸኳይ የእርግዝና መከላከያ",
+        "የአስቸኳይ ክኒን",
+        "የአስቸኳይ መከላከያ"
+      ],
+      "synonyms_english": [
+        "emergency contracept",
+        "emergency_contraception"
+      ],
+      "category": "contraceptive_method",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_e0cf8464b855",
+      "canonical_amharic": "ኤስቲአይ",
+      "canonical_english": "STI",
+      "synonyms_amharic": [
+        "ኤስቲአይ",
+        "በግብረ ሥጋ ግንኙነት የሚተላለፍ"
+      ],
+      "synonyms_english": [
+        "STI",
+        "sti"
+      ],
+      "category": "condition",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_e2040bc51a49",
+      "canonical_amharic": "ማህፀን",
+      "canonical_english": "uterus",
+      "synonyms_amharic": [
+        "ማህፀን"
+      ],
+      "synonyms_english": [
+        "uterus"
+      ],
+      "category": "anatomy",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_e331087c9eb2",
+      "canonical_amharic": "መድማት",
+      "canonical_english": "bleeding",
+      "synonyms_amharic": [
+        "መድማት",
+        "የደም መፍሰስ"
+      ],
+      "synonyms_english": [
+        "bleeding"
+      ],
+      "category": "symptom",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_fc2ba964baaa",
+      "canonical_amharic": "ጡት",
+      "canonical_english": "breast",
+      "synonyms_amharic": [
+        "ጡት"
+      ],
+      "synonyms_english": [
+        "breast"
+      ],
+      "category": "anatomy",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    },
+    {
+      "concept_id": "concept_fd33628ca7f0",
+      "canonical_amharic": "ሚሶፕሮስቶል",
+      "canonical_english": "misoprostol",
+      "synonyms_amharic": [
+        "ሚሶፕሮስቶል"
+      ],
+      "synonyms_english": [
+        "misoprostol"
+      ],
+      "category": "medicine",
+      "source_document_ids": [],
+      "source_evidence_ids": [],
+      "review_status": "seeded",
+      "notes": "Seeded from data/gazetteers/entities.yaml"
+    }
+  ]
+}

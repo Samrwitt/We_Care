@@ -1,0 +1,62 @@
+# Alternative expressions that share meaning. Used for query expansion (additive),
+# never as a substitute for retrieval polarity checks.
+groups:
+  contraceptive_methods:
+    - የእርግዝና መከላከያ ዘዴዎች
+    - የእርግዝና መከላከያ
+    - የቤተሰብ ምጣኔ
+    - እርግዝናን ለመከላከል
+    - አማራጮች
+    - ዘዴዎች
+    - ልጅ ላለመውለድ
+  injectable:
+    - መርፌ
+    - በመርፌ የሚሰጥ የእርግዝና መከላከያ
+    - ዴፖ
+    - injectable
+    - DMPA
+  implant:
+    - ኢምፕላንት
+    - በትር
+    - implant
+  iud:
+    - አይዩዲ
+    - አይ.ዩ.ዲ
+    - አይዩሲዲ
+    - አይ.ዩ.ሲ.ዲ
+    - IUCD
+    - IUD
+    - ማህፀን ውስጥ መከላከያ
+    - በማህፀን ውስጥ የሚቀመጥ
+  condom:
+    - ኮንዶም
+    - ኮንዶሞች
+    - condom
+    - condoms
+  pill:
+    - ክኒን
+    - በአፍ የሚወሰድ
+    - oral contraceptive
+  emergency:
+    - የአስቸኳይ መከላከያ
+    - የአስቸኳይ ክኒን
+    - emergency contraception
+  access:
+    - የት ይገኛል
+    - የት እገኛለሁ
+    - ጤና ተቋም
+    - available
+  side_effects:
+    - የጎንዮሽ ጉዳት
+    - የጎንዮሽ ጉዳቱ
+    - side effect
+  contraindication:
+    - ተቃራኒ ሁኔታ
+    - የተከለከለ
+    - contraindication
+  breastfeeding:
+    - ጡት ማጥባት
+    - ጡት እያጠባሁ
+    - ጡት በማጥባት
+    - breastfeeding
+    # Do not add bare "lactation" — it pulls LAM (ሊሊ) distractors for method+BF asks.

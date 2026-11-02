@@ -1,0 +1,34 @@
+{
+  "scheme": "BIO",
+  "labels": [
+    "O",
+    "B-CONDITION",
+    "I-CONDITION",
+    "B-SYMPTOM",
+    "I-SYMPTOM",
+    "B-MEDICINE",
+    "I-MEDICINE",
+    "B-CONTRACEPTIVE_METHOD",
+    "I-CONTRACEPTIVE_METHOD",
+    "B-PROCEDURE",
+    "I-PROCEDURE",
+    "B-ANATOMY",
+    "I-ANATOMY",
+    "B-PREGNANCY_STATUS",
+    "I-PREGNANCY_STATUS",
+    "B-BREASTFEEDING_STATUS",
+    "I-BREASTFEEDING_STATUS",
+    "B-AGE",
+    "I-AGE",
+    "B-DURATION",
+    "I-DURATION",
+    "B-DOSAGE",
+    "I-DOSAGE",
+    "B-RISK_FACTOR",
+    "I-RISK_FACTOR"
+  ],
+  "example": {
+    "tokens": ["ጡት", "እያጠባሁ", "መርፌ", "መጠቀም", "ይቻላል"],
+    "tags": ["B-BREASTFEEDING_STATUS", "I-BREASTFEEDING_STATUS", "B-CONTRACEPTIVE_METHOD", "O", "O"]
+  }
+}
